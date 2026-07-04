@@ -14,7 +14,8 @@ public class Award {
     private String awardLevel; // 一等奖、二等奖、三等奖
     private LocalDateTime awardTime;
 
-    public Award()
+    public Award() {
+    }
 
     public Integer getAwardId() {
         return awardId;
