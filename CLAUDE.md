@@ -29,10 +29,21 @@
 ## 项目进展记录
 
 ### 2026-07-04
+
 **已完成：数据库设计与脚本编写（完成人：洪振博）**
 - 完成17张数据表结构设计
 - 编写完整SQL脚本：`database/schema.sql`
 - 数据库可直接运行创建使用
+
+**已完成：完整MVC框架搭建（完成人：洪振博）**
+- ✅ Maven依赖配置完成（MySQL驱动、JSTL、文件上传、JSON处理）
+- ✅ Model层：17个实体类（对应17张数据表）
+- ✅ DAO层：32个文件（16个接口 + 16个实现类）
+- ✅ Service层：14个文件（7个接口 + 7个实现类）
+- ✅ Controller层：12个Servlet（覆盖所有功能模块）
+- ✅ 工具类：DBUtil、PasswordUtil、EncodingFilter
+- ✅ 项目清理：删除系统示例文件（HelloServlet、index.jsp等）
+- **框架状态：** 100%完备，78个Java文件，可直接开始业务开发
 
 ---
 
@@ -175,13 +186,25 @@ test: 添加作品提交测试用例
 
 - [x] 完成需求分析
 - [x] 完成数据库设计
-- [ ] 添加Maven依赖（MySQL、JSTL、文件上传、JSON等）
-- [ ] 创建所有实体类（17个Model类）
-- [ ] 创建数据库工具类（DBUtil）
-- [ ] 创建基础工具类（PasswordUtil、FileUtil、DateUtil）
-- [ ] 创建基础过滤器（EncodingFilter）
+- [x] 添加Maven依赖（MySQL、JSTL、文件上传、JSON等）
+- [x] 创建所有实体类（17个Model类）
+- [x] 创建数据库工具类（DBUtil）
+- [x] 创建基础工具类（PasswordUtil、FileUtil、DateUtil）
+- [x] 创建基础过滤器（EncodingFilter）
+- [x] 创建完整MVC三层架构（DAO、Service、Controller）
 - [ ] 统一开发环境（数据库、Tomcat配置）
 - [ ] 完成项目设计报告
+
+**第一阶段完成情况（2026-07-04更新）：**
+- ✅ 7月4日：数据库设计完成（洪振博）
+- ✅ 7月4日：完整MVC框架搭建完成（洪振博）
+  - Model层（17个实体类）
+  - DAO层（32个文件：16接口+16实现）
+  - Service层（14个文件：7接口+7实现）
+  - Controller层（12个Servlet）
+  - 工具类（DBUtil、PasswordUtil、EncodingFilter）
+  - Maven依赖配置完成
+- **下一步：** 各团队成员配置本地开发环境，开始模块开发
 
 **第一阶段分工（所有人参与基础架构）：**
 - **7月4日上午（集中会议）：** 统一开发环境、讨论技术规范
