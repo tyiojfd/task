@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * 获奖设置实体类
- * @author 团队共建
+ * @author 团队共建的
  * @date 2026-07-04
  */
 public class Award {
