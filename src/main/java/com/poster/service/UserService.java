@@ -1,6 +1,8 @@
 package com.poster.service;
 
+import com.poster.model.Role;
 import com.poster.model.User;
+import java.util.List;
 
 /**
  * 用户服务接口
@@ -43,4 +45,14 @@ public interface UserService {
      * 启用/禁用用户
      */
     boolean updateUserStatus(Integer userId, Integer status);
+
+    /**
+     * 获取所有用户
+     */
+    List<User> getAllUsers();
+
+    /**
+     * 获取用户角色列表
+     */
+    List<Role> getUserRoles(Integer userId);
 }
