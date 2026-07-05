@@ -17,43 +17,105 @@ public class RoleDAOImpl implements RoleDAO {
 
     @Override
     public int insert(Role role) {
-        // TODO: 实现角色插入
         String sql = "INSERT INTO role (role_name, role_desc) VALUES (?, ?)";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, role.getRoleName());
+            ps.setString(2, role.getRoleDesc());
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
     @Override
     public int deleteById(Integer roleId) {
-        // TODO: 实现根据ID删除角色
         String sql = "DELETE FROM role WHERE role_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roleId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
     @Override
     public int update(Role role) {
-        // TODO: 实现角色更新
         String sql = "UPDATE role SET role_name=?, role_desc=? WHERE role_id=?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, role.getRoleName());
+            ps.setString(2, role.getRoleDesc());
+            ps.setInt(3, role.getRoleId());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
     @Override
     public Role findById(Integer roleId) {
-        // TODO: 实现根据ID查询角色
         String sql = "SELECT * FROM role WHERE role_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roleId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractRole(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public Role findByName(String roleName) {
-        // TODO: 实现根据角色名查询
         String sql = "SELECT * FROM role WHERE role_name = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roleName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractRole(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public List<Role> findAll() {
-        // TODO: 实现查询所有角色
         String sql = "SELECT * FROM role";
-        return new ArrayList<>();
+        List<Role> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(extractRole(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private Role extractRole(ResultSet rs) throws SQLException {
+        Role role = new Role();
+        role.setRoleId(rs.getInt("role_id"));
+        role.setRoleName(rs.getString("role_name"));
+        role.setRoleDesc(rs.getString("role_desc"));
+        return role;
     }
 }
