@@ -3,9 +3,9 @@ package com.poster.controller;
 import com.poster.service.NewsService;
 import com.poster.service.impl.NewsServiceImpl;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
 import java.io.IOException;
 
 /**

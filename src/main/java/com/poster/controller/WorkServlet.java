@@ -4,9 +4,9 @@ import com.poster.model.Work;
 import com.poster.service.WorkService;
 import com.poster.service.impl.WorkServiceImpl;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
 import java.io.IOException;
 
 /**
