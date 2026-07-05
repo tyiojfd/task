@@ -4,12 +4,8 @@
 <%@ page import="java.util.List" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
-    if (sessionUser == null) {
-        response.sendRedirect(request.getContextPath() + "/login");
-        return;
-    }
     @SuppressWarnings("unchecked")
-    List<Role> userRoles = (List<Role>) session.getAttribute("roles");
+    List<Role> userRoles = (sessionUser != null) ? (List<Role>) session.getAttribute("roles") : null;
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -37,12 +33,23 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/profile">个人中心</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">退出登录</a>
-                    </li>
+                    <% if (sessionUser != null) { %>
+                        <!-- 已登录用户显示 -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/profile">个人中心</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">退出登录</a>
+                        </li>
+                    <% } else { %>
+                        <!-- 未登录用户显示 -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/login">登录</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/register">注册</a>
+                        </li>
+                    <% } %>
                 </ul>
             </div>
         </div>
@@ -51,33 +58,47 @@
     <div class="container mt-4">
         <!-- 欢迎卡片 -->
         <div class="card welcome-card mb-4">
-            <div class="welcome-header">
-                <h2>欢迎回来，<%= sessionUser.getRealName() %>！</h2>
-                <p class="mb-0">大学生海报设计竞赛系统 - 一站式竞赛管理平台</p>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-4">
-                        <h5>用户名</h5>
-                        <p class="text-muted">@<%= sessionUser.getUsername() %></p>
-                    </div>
-                    <div class="col-md-4">
-                        <h5>邮箱</h5>
-                        <p class="text-muted"><%= sessionUser.getEmail() != null ? sessionUser.getEmail() : "未设置" %></p>
-                    </div>
-                    <div class="col-md-4">
-                        <h5>角色</h5>
-                        <p class="text-muted">
-                            <% if (userRoles != null) {
-                                for (int i = 0; i < userRoles.size(); i++) {
-                                    %><span class="badge bg-primary"><%= userRoles.get(i).getRoleName() %></span><%
-                                    if (i < userRoles.size() - 1) { %> <% }
-                                }
-                            } else { %>未分配<% } %>
-                        </p>
+            <% if (sessionUser != null) { %>
+                <!-- 已登录用户 -->
+                <div class="welcome-header">
+                    <h2>欢迎回来，<%= sessionUser.getRealName() %>！</h2>
+                    <p class="mb-0">大学生海报设计竞赛系统 - 一站式竞赛管理平台</p>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h5>用户名</h5>
+                            <p class="text-muted">@<%= sessionUser.getUsername() %></p>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>邮箱</h5>
+                            <p class="text-muted"><%= sessionUser.getEmail() != null ? sessionUser.getEmail() : "未设置" %></p>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>角色</h5>
+                            <p class="text-muted">
+                                <% if (userRoles != null) {
+                                    for (int i = 0; i < userRoles.size(); i++) {
+                                        %><span class="badge bg-primary"><%= userRoles.get(i).getRoleName() %></span><%
+                                        if (i < userRoles.size() - 1) { %> <% }
+                                    }
+                                } else { %>未分配<% } %>
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <% } else { %>
+                <!-- 未登录用户 -->
+                <div class="welcome-header">
+                    <h2>欢迎来到海报设计竞赛系统！</h2>
+                    <p class="mb-0">发现创意，展示才华，赢取荣誉</p>
+                </div>
+                <div class="card-body text-center">
+                    <p class="lead mb-4">请先登录或注册，开始你的创意之旅</p>
+                    <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg me-2">立即登录</a>
+                    <a href="${pageContext.request.contextPath}/register" class="btn btn-outline-primary btn-lg">注册账号</a>
+                </div>
+            <% } %>
         </div>
 
         <!-- 功能入口 -->

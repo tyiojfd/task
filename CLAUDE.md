@@ -15,7 +15,7 @@
 - **前端**：JSP + JavaScript + Bootstrap
 - **后端**：Servlet + JSP
 - **数据库**：MySQL 8.0
-- **服务器**：Apache Tomcat 10
+- **服务器**：Apache Tomcat 9.0（使用Java EE规范）
 - **架构模式**：MVC分层架构
 
 ### 系统角色
@@ -44,6 +44,30 @@
 - ✅ 工具类：DBUtil、PasswordUtil、EncodingFilter
 - ✅ 项目清理：删除系统示例文件（HelloServlet、index.jsp等）
 - **框架状态：** 100%完备，78个Java文件，可直接开始业务开发
+
+### 2026-07-05
+
+**已完成：模块1-用户认证模块（完成人：程建锋）**
+- ✅ Controller层：LoginServlet、RegisterServlet、ProfileServlet、IndexServlet完善
+- ✅ DAO层：UserDAOImpl、RoleDAOImpl、UserRoleDAOImpl实现（使用PreparedStatement防SQL注入）
+- ✅ Service层：UserServiceImpl完善（密码加密、登录验证、角色分配）
+- ✅ Filter层：AuthFilter权限过滤器（Session验证、公开资源白名单）
+- ✅ 前端页面：login.jsp、register.jsp、profile.jsp、index.jsp
+- ✅ 安全特性：密码加密存储、SQL注入防护、权限控制
+- **代码量：** 16个文件，+1109行，-48行
+- **提交ID：** c4d5313
+
+⚠️ **待优化项：**
+- 前端XSS防护：需将JSP中的`<%= %>`改为`<c:out>`标签
+- Git提交规范：需使用`feat: 功能描述`格式
+
+**已完成：Tomcat 9.0适配（完成人：洪振博）**
+- ✅ pom.xml：Servlet API依赖（jakarta → javax）
+- ✅ pom.xml：JSTL依赖（jakarta → javax）
+- ✅ web.xml：命名空间（Jakarta EE 6.0 → Java EE 4.0）
+- ✅ 批量修改：16个Java文件的import语句（48处 jakarta → javax）
+- **原因：** 团队统一使用Tomcat 9.0，需适配Java EE规范
+- **修改范围：** 14个Controller + 2个Filter
 
 ---
 
@@ -219,11 +243,11 @@ test: 添加作品提交测试用例
 > **独立开发阶段：** 每个人在自己的功能分支上独立开发完整模块
 
 **模块1 - 用户认证（队长）：**
-- [ ] 用户注册功能（RegisterServlet + register.jsp）
-- [ ] 用户登录功能（LoginServlet + login.jsp）
-- [ ] 权限验证过滤器（AuthFilter）
-- [ ] 个人信息管理（ProfileServlet + profile.jsp）
-- [ ] Session管理和退出登录
+- [x] 用户注册功能（RegisterServlet + register.jsp）
+- [x] 用户登录功能（LoginServlet + login.jsp）
+- [x] 权限验证过滤器（AuthFilter）
+- [x] 个人信息管理（ProfileServlet + profile.jsp）
+- [x] Session管理和退出登录
 
 **模块2 - 竞赛管理（副队长）：**
 - [ ] 竞赛列表查询（competition_list.jsp）

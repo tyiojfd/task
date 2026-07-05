@@ -17,15 +17,14 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 获取当前登录用户（可能为null）
         HttpSession session = request.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("user") : null;
 
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
+        // 将用户信息传递给JSP（让JSP根据登录状态显示不同内容）
+        request.setAttribute("currentUser", user);
 
-        // 根据用户角色跳转到对应页面
+        // 转发到首页（无论是否登录都可以访问）
         request.getRequestDispatcher("/jsp/index.jsp").forward(request, response);
     }
 }
