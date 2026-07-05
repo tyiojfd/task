@@ -104,10 +104,12 @@
         <!-- 功能入口 -->
         <div class="row">
             <div class="col-md-4 mb-3">
-                <div class="card feature-card p-4 text-center">
-                    <h5>查看竞赛</h5>
-                    <p class="text-muted">浏览当前所有竞赛活动</p>
-                </div>
+                <a href="${pageContext.request.contextPath}/competition?action=list" style="text-decoration: none; color: inherit;">
+                    <div class="card feature-card p-4 text-center">
+                        <h5>查看竞赛</h5>
+                        <p class="text-muted">浏览当前所有竞赛活动</p>
+                    </div>
+                </a>
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card feature-card p-4 text-center">

@@ -5,6 +5,7 @@ import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.model.Competition;
 import com.poster.service.CompetitionService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -18,53 +19,92 @@ public class CompetitionServiceImpl implements CompetitionService {
 
     @Override
     public boolean createCompetition(Competition competition) {
-        // TODO: 实现创建竞赛逻辑
-        // 1. 验证竞赛信息
-        // 2. 设置创建时间
-        // 3. 调用DAO插入数据库
-        return false;
+        // 验证必填字段
+        if (competition.getName() == null || competition.getName().trim().isEmpty()) {
+            return false;
+        }
+        if (competition.getYear() == null || competition.getSubmitDeadline() == null) {
+            return false;
+        }
+
+        // 设置默认值
+        if (competition.getStatus() == null) {
+            competition.setStatus(1); // 默认状态：报名中
+        }
+        if (competition.getMaxTeamSize() == null) {
+            competition.setMaxTeamSize(5); // 默认最大队伍人数
+        }
+        competition.setCreateTime(LocalDateTime.now());
+
+        // 调用DAO插入
+        return competitionDAO.insert(competition) > 0;
     }
 
     @Override
     public boolean updateCompetition(Competition competition) {
-        // TODO: 实现更新竞赛逻辑
-        return false;
+        // 验证必填字段
+        if (competition.getCompetitionId() == null) {
+            return false;
+        }
+        if (competition.getName() == null || competition.getName().trim().isEmpty()) {
+            return false;
+        }
+
+        // 调用DAO更新
+        return competitionDAO.update(competition) > 0;
     }
 
     @Override
     public boolean deleteCompetition(Integer competitionId) {
-        // TODO: 实现删除竞赛逻辑
-        // 需要检查是否有关联的队伍和作品
-        return false;
+        if (competitionId == null) {
+            return false;
+        }
+
+        // 调用DAO删除
+        return competitionDAO.deleteById(competitionId) > 0;
     }
 
     @Override
     public Competition getCompetitionById(Integer competitionId) {
-        // TODO: 实现根据ID查询竞赛
-        return null;
+        if (competitionId == null) {
+            return null;
+        }
+        return competitionDAO.findById(competitionId);
     }
 
     @Override
     public List<Competition> getAllCompetitions() {
-        // TODO: 实现查询所有竞赛
-        return null;
+        return competitionDAO.findAll();
     }
 
     @Override
     public List<Competition> getCompetitionsByYear(Integer year) {
-        // TODO: 实现根据年度查询竞赛
-        return null;
+        if (year == null) {
+            return null;
+        }
+        return competitionDAO.findByYear(year);
     }
 
     @Override
     public List<Competition> getCompetitionsByStatus(Integer status) {
-        // TODO: 实现根据状态查询竞赛
-        return null;
+        if (status == null) {
+            return null;
+        }
+        return competitionDAO.findByStatus(status);
     }
 
     @Override
     public boolean updateCompetitionStatus(Integer competitionId, Integer status) {
-        // TODO: 实现更新竞赛状态
-        return false;
+        if (competitionId == null || status == null) {
+            return false;
+        }
+
+        Competition competition = competitionDAO.findById(competitionId);
+        if (competition == null) {
+            return false;
+        }
+
+        competition.setStatus(status);
+        return competitionDAO.update(competition) > 0;
     }
 }

@@ -17,43 +17,131 @@ public class CategoryDAOImpl implements CategoryDAO {
 
     @Override
     public int insert(CompetitionCategory category) {
-        // TODO: 实现竞赛子类插入
         String sql = "INSERT INTO competition_category (competition_id, category_name, category_desc) VALUES (?, ?, ?)";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setInt(1, category.getCompetitionId());
+            pstmt.setString(2, category.getCategoryName());
+            pstmt.setString(3, category.getCategoryDesc());
+
+            int rows = pstmt.executeUpdate();
+
+            if (rows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        category.setCategoryId(rs.getInt(1));
+                    }
+                }
+            }
+
+            return rows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteById(Integer categoryId) {
-        // TODO: 实现根据ID删除竞赛子类
         String sql = "DELETE FROM competition_category WHERE category_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, categoryId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int update(CompetitionCategory category) {
-        // TODO: 实现竞赛子类更新
         String sql = "UPDATE competition_category SET category_name=?, category_desc=? WHERE category_id=?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, category.getCategoryName());
+            pstmt.setString(2, category.getCategoryDesc());
+            pstmt.setInt(3, category.getCategoryId());
+
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public CompetitionCategory findById(Integer categoryId) {
-        // TODO: 实现根据ID查询竞赛子类
         String sql = "SELECT * FROM competition_category WHERE category_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, categoryId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractCategoryFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public List<CompetitionCategory> findByCompetitionId(Integer competitionId) {
-        // TODO: 实现根据竞赛ID查询所有子类
         String sql = "SELECT * FROM competition_category WHERE competition_id = ?";
-        return new ArrayList<>();
+        List<CompetitionCategory> categories = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, competitionId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    categories.add(extractCategoryFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
     }
 
     @Override
     public List<CompetitionCategory> findAll() {
-        // TODO: 实现查询所有竞赛子类
         String sql = "SELECT * FROM competition_category";
-        return new ArrayList<>();
+        List<CompetitionCategory> categories = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                categories.add(extractCategoryFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
+    }
+
+    /**
+     * 从ResultSet中提取CompetitionCategory对象
+     */
+    private CompetitionCategory extractCategoryFromResultSet(ResultSet rs) throws SQLException {
+        CompetitionCategory category = new CompetitionCategory();
+        category.setCategoryId(rs.getInt("category_id"));
+        category.setCompetitionId(rs.getInt("competition_id"));
+        category.setCategoryName(rs.getString("category_name"));
+        category.setCategoryDesc(rs.getString("category_desc"));
+        return category;
     }
 }

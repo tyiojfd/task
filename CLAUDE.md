@@ -69,6 +69,17 @@
 - **原因：** 团队统一使用Tomcat 9.0，需适配Java EE规范
 - **修改范围：** 14个Controller + 2个Filter
 
+**已完成：模块2-竞赛管理模块（完成人：洪振博）**
+- ✅ DAO层：CompetitionDAOImpl、CategoryDAOImpl完整实现（8+6个方法，PreparedStatement防SQL注入）
+- ✅ Service层：CompetitionServiceImpl业务逻辑（8个方法，输入验证、默认值设置）
+- ✅ Controller层：CompetitionServlet请求处理（支持list/detail/add/edit/create/update/delete）
+- ✅ 前端页面：4个JSP页面（competition_list.jsp, competition_add.jsp, competition_edit.jsp, competition_detail.jsp）
+- ✅ 数据库：初始数据脚本（init_data.sql，包含角色和测试账号）
+- ✅ 核心功能：竞赛列表查询、竞赛发布、竞赛详情、竞赛编辑、竞赛删除
+- ✅ 安全特性：SQL注入防护、输入验证、状态管理
+- **代码量：** 8个文件，约1200行代码
+- **测试状态：** 已测试，功能正常
+
 ---
 
 ## 团队组织结构
@@ -250,11 +261,11 @@ test: 添加作品提交测试用例
 - [x] Session管理和退出登录
 
 **模块2 - 竞赛管理（副队长）：**
-- [ ] 竞赛列表查询（competition_list.jsp）
-- [ ] 竞赛发布功能（CompetitionServlet + competition_add.jsp）
-- [ ] 竞赛详情展示（competition_detail.jsp）
-- [ ] 竞赛修改功能（competition_edit.jsp）
-- [ ] 竞赛子类管理
+- [x] 竞赛列表查询（competition_list.jsp）
+- [x] 竞赛发布功能（CompetitionServlet + competition_add.jsp）
+- [x] 竞赛详情展示（competition_detail.jsp）
+- [x] 竞赛修改功能（competition_edit.jsp）
+- [x] 竞赛子类管理
 
 **模块3 - 队伍管理（队员A）：**
 - [ ] 创建队伍功能（TeamServlet + team_create.jsp）
