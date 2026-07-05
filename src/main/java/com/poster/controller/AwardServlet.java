@@ -3,9 +3,9 @@ package com.poster.controller;
 import com.poster.service.AwardService;
 import com.poster.service.impl.AwardServiceImpl;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
 import java.io.IOException;
 
 /**
@@ -23,7 +23,7 @@ public class AwardServlet extends HttpServlet {
             throws ServletException, IOException {
         // TODO: 实现获奖查询逻辑
         // 1. 获取action参数。
-        // 2. 根据action执行不同操作（list/detail）
+        // 2. 根据action执行不同操作（list/detail）.
     }
 
     @Override

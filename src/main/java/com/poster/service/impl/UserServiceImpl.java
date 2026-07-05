@@ -1,10 +1,17 @@
 package com.poster.service.impl;
 
+import com.poster.dao.RoleDAO;
 import com.poster.dao.UserDAO;
+import com.poster.dao.UserRoleDAO;
+import com.poster.dao.impl.RoleDAOImpl;
 import com.poster.dao.impl.UserDAOImpl;
+import com.poster.dao.impl.UserRoleDAOImpl;
+import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.service.UserService;
 import com.poster.util.PasswordUtil;
+
+import java.util.List;
 
 /**
  * 用户服务实现类
@@ -14,59 +21,113 @@ import com.poster.util.PasswordUtil;
 public class UserServiceImpl implements UserService {
 
     private UserDAO userDAO = new UserDAOImpl();
+    private RoleDAO roleDAO = new RoleDAOImpl();
+    private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
 
     @Override
     public boolean register(String username, String password, String realName, String email) {
-        // TODO: 实现用户注册逻辑
         // 1. 检查用户名是否已存在
-        // 2. 加密密码
-        // 3. 创建用户对象
-        // 4. 调用DAO插入数据库
-        // 5. 分配默认角色
+        if (userDAO.findByUsername(username) != null) {
+            return false; // 用户名已存在
+        }
+
+        // 2. 检查邮箱是否已存在
+        if (userDAO.findByEmail(email) != null) {
+            return false; // 邮箱已存在
+        }
+
+        // 3. 加密密码
+        String encryptedPassword = PasswordUtil.encrypt(password);
+
+        // 4. 创建用户对象
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(encryptedPassword);
+        user.setRealName(realName);
+        user.setEmail(email);
+        user.setStatus(1);
+
+        // 5. 插入数据库
+        int userId = userDAO.insert(user);
+        if (userId > 0) {
+            // 6. 分配默认角色（普通用户，role_id=3）
+            Role studentRole = roleDAO.findByName("学生");
+            if (studentRole != null) {
+                userRoleDAO.assignRole(userId, studentRole.getRoleId());
+            }
+            return true;
+        }
         return false;
     }
 
     @Override
     public User login(String username, String password) {
-        // TODO: 实现登录逻辑
         // 1. 根据用户名查询用户
+        User user = userDAO.findByUsername(username);
+        if (user == null) {
+            return null; // 用户不存在
+        }
+
         // 2. 验证密码
+        if (!PasswordUtil.verify(password, user.getPassword())) {
+            return null; // 密码错误
+        }
+
         // 3. 检查用户状态
-        // 4. 返回用户对象
-        return null;
+        if (user.getStatus() == null || user.getStatus() == 0) {
+            return null; // 用户已禁用
+        }
+
+        return user;
     }
 
     @Override
     public User getUserById(Integer userId) {
-        // TODO: 实现根据ID查询用户
-        return null;
+        return userDAO.findById(userId);
     }
 
     @Override
     public User getUserByUsername(String username) {
-        // TODO: 实现根据用户名查询用户
-        return null;
+        return userDAO.findByUsername(username);
     }
 
     @Override
     public boolean updateUser(User user) {
-        // TODO: 实现更新用户信息
-        return false;
+        return userDAO.update(user) > 0;
     }
 
     @Override
     public boolean changePassword(Integer userId, String oldPassword, String newPassword) {
-        // TODO: 实现修改密码
-        // 1. 查询用户
-        // 2. 验证旧密码
-        // 3. 加密新密码
-        // 4. 更新数据库
-        return false;
+        User user = userDAO.findById(userId);
+        if (user == null) {
+            return false;
+        }
+        // 验证旧密码
+        if (!PasswordUtil.verify(oldPassword, user.getPassword())) {
+            return false;
+        }
+        // 加密新密码并更新
+        user.setPassword(PasswordUtil.encrypt(newPassword));
+        return userDAO.update(user) > 0;
     }
 
     @Override
     public boolean updateUserStatus(Integer userId, Integer status) {
-        // TODO: 实现启用/禁用用户
-        return false;
+        User user = userDAO.findById(userId);
+        if (user == null) {
+            return false;
+        }
+        user.setStatus(status);
+        return userDAO.update(user) > 0;
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userDAO.findAll();
+    }
+
+    @Override
+    public List<Role> getUserRoles(Integer userId) {
+        return userRoleDAO.findRolesByUserId(userId);
     }
 }
