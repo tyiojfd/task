@@ -12,7 +12,7 @@ public class Invitation {
     private Integer teamId;
     private Integer inviterId;
     private Integer inviteeId;
-    private Integer status; // 0-待处理，1-已接受，2-已拒绝
+    private Integer status; // 0-待处理，1-已接受，2-已拒绝.
     private LocalDateTime inviteTime;
     private LocalDateTime responseTime;
 
