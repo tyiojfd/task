@@ -11,7 +11,7 @@ import java.sql.SQLException;
  */
 public class DBUtil {
     private static final String URL = "jdbc:mysql://143.110.133.32:3306/poster_competition?useSSL=false&serverTimezone=UTC&characterEncoding=utf8";
-    private static final String USER = "dev";//账号名
+    private static final String USER = "dev";//账号
     private static final String PASSWORD = "24136112";//密码
 
     static {
