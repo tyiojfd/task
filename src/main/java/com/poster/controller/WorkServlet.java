@@ -22,7 +22,7 @@ public class WorkServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // TODO: 实现作品查询逻辑
+        // TODO: 实现了作品查询逻辑
         // 1. 获取action参数
         // 2. 根据action执行不同操作（list/detail/myWorks）
     }
@@ -30,7 +30,7 @@ public class WorkServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // TODO: 实现作品提交/更新/删除逻辑
+        // TODO: 实现了作品提交/更新/删除逻辑
         // 1. 获取action参数
         // 2. 根据action执行不同操作（submit/update/delete/like/share）
     }

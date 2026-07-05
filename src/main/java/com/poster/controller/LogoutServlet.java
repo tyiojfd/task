@@ -18,7 +18,7 @@ public class LogoutServlet extends HttpServlet {
             throws ServletException, IOException {
         // TODO: 实现登出逻辑
         // 1. 销毁Session
-        // 2. 重定向到登录页
+        // 2. 重定向到登录页（回到登陆页面）
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
