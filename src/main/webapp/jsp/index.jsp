@@ -112,10 +112,12 @@
                 </a>
             </div>
             <div class="col-md-4 mb-3">
-                <div class="card feature-card p-4 text-center">
-                    <h5>队伍管理</h5>
-                    <p class="text-muted">创建队伍或管理我的队伍</p>
-                </div>
+                <a href="${pageContext.request.contextPath}/team?action=myTeams" style="text-decoration: none; color: inherit;">
+                    <div class="card feature-card p-4 text-center">
+                        <h5>队伍管理</h5>
+                        <p class="text-muted">创建队伍或管理我的队伍</p>
+                    </div>
+                </a>
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card feature-card p-4 text-center">

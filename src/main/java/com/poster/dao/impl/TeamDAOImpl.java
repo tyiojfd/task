@@ -10,71 +10,213 @@ import java.util.List;
 
 /**
  * 队伍DAO实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 杨祥博
+ * @date 2026-07-05
  */
 public class TeamDAOImpl implements TeamDAO {
 
     @Override
     public int insert(Team team) {
-        // TODO: 实现队伍插入
-        String sql = "INSERT INTO team (team_name, leader_id, competition_id, category_id, status) VALUES (?, ?, ?, ?, ?)";
-        return 0;
+        String sql = "INSERT INTO team (team_name, competition_id, category_id, leader_id, team_desc, status) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setString(1, team.getTeamName());
+            pstmt.setInt(2, team.getCompetitionId());
+            pstmt.setInt(3, team.getCategoryId());
+            pstmt.setInt(4, team.getLeaderId());
+            pstmt.setString(5, team.getTeamDesc());
+            pstmt.setInt(6, team.getStatus() != null ? team.getStatus() : 1);
+
+            int rows = pstmt.executeUpdate();
+
+            if (rows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        team.setTeamId(rs.getInt(1));
+                    }
+                }
+            }
+
+            return rows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteById(Integer teamId) {
-        // TODO: 实现根据ID删除队伍
         String sql = "DELETE FROM team WHERE team_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, teamId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int update(Team team) {
-        // TODO: 实现队伍更新
-        String sql = "UPDATE team SET team_name=?, status=? WHERE team_id=?";
-        return 0;
+        String sql = "UPDATE team SET team_name=?, competition_id=?, category_id=?, team_desc=?, status=? WHERE team_id=?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, team.getTeamName());
+            pstmt.setInt(2, team.getCompetitionId());
+            pstmt.setInt(3, team.getCategoryId());
+            pstmt.setString(4, team.getTeamDesc());
+            pstmt.setInt(5, team.getStatus());
+            pstmt.setInt(6, team.getTeamId());
+
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public Team findById(Integer teamId) {
-        // TODO: 实现根据ID查询队伍
         String sql = "SELECT * FROM team WHERE team_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, teamId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractTeamFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public List<Team> findAll() {
-        // TODO: 实现查询所有队伍
         String sql = "SELECT * FROM team ORDER BY create_time DESC";
-        return new ArrayList<>();
+        List<Team> teams = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                teams.add(extractTeamFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return teams;
     }
 
     @Override
     public List<Team> findByLeaderId(Integer leaderId) {
-        // TODO: 实现根据队长ID查询队伍
-        String sql = "SELECT * FROM team WHERE leader_id = ?";
-        return new ArrayList<>();
+        String sql = "SELECT * FROM team WHERE leader_id = ? ORDER BY create_time DESC";
+        List<Team> teams = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, leaderId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    teams.add(extractTeamFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return teams;
     }
 
     @Override
     public List<Team> findByCompetitionId(Integer competitionId) {
-        // TODO: 实现根据竞赛ID查询队伍
-        String sql = "SELECT * FROM team WHERE competition_id = ?";
-        return new ArrayList<>();
+        String sql = "SELECT * FROM team WHERE competition_id = ? ORDER BY create_time DESC";
+        List<Team> teams = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, competitionId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    teams.add(extractTeamFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return teams;
     }
 
     @Override
     public List<Team> findByStatus(Integer status) {
-        // TODO: 实现根据状态查询队伍
-        String sql = "SELECT * FROM team WHERE status = ?";
-        return new ArrayList<>();
+        String sql = "SELECT * FROM team WHERE status = ? ORDER BY create_time DESC";
+        List<Team> teams = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, status);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    teams.add(extractTeamFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return teams;
     }
 
     @Override
     public int count() {
-        // TODO: 实现统计队伍总数
         String sql = "SELECT COUNT(*) FROM team";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
+    }
+
+    /**
+     * 从ResultSet中提取Team对象
+     */
+    private Team extractTeamFromResultSet(ResultSet rs) throws SQLException {
+        Team team = new Team();
+        team.setTeamId(rs.getInt("team_id"));
+        team.setTeamName(rs.getString("team_name"));
+        team.setCompetitionId(rs.getInt("competition_id"));
+        team.setCategoryId(rs.getInt("category_id"));
+        team.setLeaderId(rs.getInt("leader_id"));
+        team.setTeamDesc(rs.getString("team_desc"));
+        team.setStatus(rs.getInt("status"));
+
+        Timestamp createTime = rs.getTimestamp("create_time");
+        if (createTime != null) {
+            team.setCreateTime(createTime.toLocalDateTime());
+        }
+
+        return team;
     }
 }

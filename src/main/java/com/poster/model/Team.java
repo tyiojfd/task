@@ -13,6 +13,7 @@ public class Team {
     private Integer leaderId;
     private Integer competitionId;
     private Integer categoryId;
+    private String teamDesc;
     private Integer status; // 1-组建中，2-已报名，0-已取消
     private LocalDateTime createTime;
 
@@ -60,6 +61,14 @@ public class Team {
 
     public Integer getStatus() {
         return status;
+    }
+
+    public String getTeamDesc() {
+        return teamDesc;
+    }
+
+    public void setTeamDesc(String teamDesc) {
+        this.teamDesc = teamDesc;
     }
 
     public void setStatus(Integer status) {
