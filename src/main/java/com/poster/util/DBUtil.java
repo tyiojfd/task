@@ -10,7 +10,7 @@ import java.sql.SQLException;
  * @date 2026-07-04
  */
 public class DBUtil {
-    private static final String URL = "jdbc:mysql://143.110.133.32:3306/poster_competition?useSSL=false&serverTimezone=UTC&characterEncoding=utf8";
+    private static final String URL = "jdbc:mysql://143.110.133.32:3306/poster_competition?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&connectTimeout=5000&socketTimeout=10000";
     private static final String USER = "dev";//账号
     private static final String PASSWORD = "24136112";//密码
 
