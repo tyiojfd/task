@@ -4,7 +4,7 @@ import javax.servlet.*;
 import java.io.IOException;
 
 /**
- * 字符编码过滤器
+ * 字符编码过滤器（通过web.xml注册，不使用注解避免双重注册）
  * @author 团队共建
  * @date 2026-07-04
  */
