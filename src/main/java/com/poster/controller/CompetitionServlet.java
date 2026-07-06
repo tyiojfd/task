@@ -1,6 +1,9 @@
 package com.poster.controller;
 
 import com.poster.model.Competition;
+import com.poster.model.CompetitionCategory;
+import com.poster.dao.CategoryDAO;
+import com.poster.dao.impl.CategoryDAOImpl;
 import com.poster.service.CompetitionService;
 import com.poster.service.impl.CompetitionServiceImpl;
 
@@ -19,6 +22,7 @@ import java.util.List;
 public class CompetitionServlet extends HttpServlet {
 
     private CompetitionService competitionService = new CompetitionServiceImpl();
+    private CategoryDAO categoryDAO = new CategoryDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -101,7 +105,9 @@ public class CompetitionServlet extends HttpServlet {
             try {
                 Integer id = Integer.parseInt(idStr);
                 Competition competition = competitionService.getCompetitionById(id);
+                List<CompetitionCategory> categories = categoryDAO.findByCompetitionId(id);
                 request.setAttribute("competition", competition);
+                request.setAttribute("categories", categories);
                 request.getRequestDispatcher("/jsp/competition_edit.jsp").forward(request, response);
             } catch (NumberFormatException e) {
                 response.sendRedirect(request.getContextPath() + "/competition?action=list");
@@ -129,6 +135,8 @@ public class CompetitionServlet extends HttpServlet {
             boolean success = competitionService.createCompetition(competition);
 
             if (success) {
+                // 保存竞赛子类
+                saveCategories(request, competition.getCompetitionId());
                 response.sendRedirect(request.getContextPath() + "/competition?action=list");
             } else {
                 request.setAttribute("error", "创建竞赛失败");
@@ -156,10 +164,23 @@ public class CompetitionServlet extends HttpServlet {
             boolean success = competitionService.updateCompetition(competition);
 
             if (success) {
+                // 处理删除的子类
+                String[] deleteIds = request.getParameterValues("deleteCategoryIds");
+                if (deleteIds != null) {
+                    for (String deleteId : deleteIds) {
+                        try {
+                            categoryDAO.deleteById(Integer.parseInt(deleteId));
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+                // 保存新增的子类
+                saveCategories(request, competition.getCompetitionId());
                 response.sendRedirect(request.getContextPath() + "/competition?action=detail&id=" + competition.getCompetitionId());
             } else {
                 request.setAttribute("error", "更新竞赛失败");
                 request.setAttribute("competition", competition);
+                List<CompetitionCategory> categories = categoryDAO.findByCompetitionId(competition.getCompetitionId());
+                request.setAttribute("categories", categories);
                 request.getRequestDispatcher("/jsp/competition_edit.jsp").forward(request, response);
             }
         } catch (Exception e) {
@@ -189,6 +210,29 @@ public class CompetitionServlet extends HttpServlet {
             }
         } else {
             response.sendRedirect(request.getContextPath() + "/competition?action=list");
+        }
+    }
+
+    /**
+     * 保存竞赛子类（从请求中提取并批量插入）
+     */
+    private void saveCategories(HttpServletRequest request, Integer competitionId) {
+        String[] names = request.getParameterValues("categoryName");
+        String[] descs = request.getParameterValues("categoryDesc");
+
+        if (names != null && competitionId != null) {
+            for (int i = 0; i < names.length; i++) {
+                String name = names[i].trim();
+                if (!name.isEmpty()) {
+                    CompetitionCategory cat = new CompetitionCategory();
+                    cat.setCompetitionId(competitionId);
+                    cat.setCategoryName(name);
+                    if (descs != null && i < descs.length && descs[i] != null) {
+                        cat.setCategoryDesc(descs[i].trim());
+                    }
+                    categoryDAO.insert(cat);
+                }
+            }
         }
     }
 
