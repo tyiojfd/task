@@ -41,6 +41,17 @@ SELECT user_id, 3 FROM user WHERE username = 'leader01';
 INSERT INTO user_role (user_id, role_id)
 SELECT user_id, 4 FROM user WHERE username = 'member01';
 
+-- 5. 插入竞赛数据
+INSERT INTO competition (year, name, theme, description, submit_deadline, max_team_size, status, creator_id) VALUES
+(2026, '全国大学生海报设计大赛', '绿色地球', '以"绿色地球"为主题，征集环保主题海报设计作品', '2026-12-31 23:59:59', 5, 1,
+ (SELECT user_id FROM user WHERE username = 'admin'));
+
+-- 6. 插入竞赛子类数据
+INSERT INTO competition_category (competition_id, category_name, category_desc) VALUES
+((SELECT competition_id FROM competition WHERE name = '全国大学生海报设计大赛'), '海报设计类', '传统海报设计，包括公益海报、商业海报等'),
+((SELECT competition_id FROM competition WHERE name = '全国大学生海报设计大赛'), '插画设计类', '原创插画设计，包括手绘插画、数字插画等'),
+((SELECT competition_id FROM competition WHERE name = '全国大学生海报设计大赛'), '数字艺术类', '数字媒体艺术，包括动态海报、交互设计等');
+
 -- =============================================
 -- 初始账号信息
 -- =============================================

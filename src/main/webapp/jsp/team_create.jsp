@@ -333,17 +333,16 @@
                                     <label for="categoryId" class="form-label"><i class="fas fa-layer-group"></i> 参赛子类 *</label>
                                     <select class="form-select" id="categoryId" name="categoryId" required>
                                         <option value="">选择参赛方向</option>
-                                        <% if (categories != null) {
+                                        <% if (categories != null && !categories.isEmpty()) {
                                             for (CompetitionCategory cat : categories) {
                                         %>
-                                            <option value="<%= cat.getCategoryId() %>">
+                                            <option value="<%= cat.getCategoryId() %>"
+                                                    data-comp-id="<%= cat.getCompetitionId() %>">
                                                 <%= cat.getCategoryName() %>
                                             </option>
                                         <%  }
                                         } else { %>
-                                            <option value="1">海报设计类</option>
-                                            <option value="2">插画设计类</option>
-                                            <option value="3">数字艺术类</option>
+                                            <option value="" disabled>暂无子类数据，请先联系管理员创建竞赛和子类</option>
                                         <% } %>
                                     </select>
                                 </div>
@@ -402,11 +401,44 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 竞赛卡片选择交互
+        // 竞赛卡片选择交互 + 子类过滤
         function selectCompetition(radio) {
             document.querySelectorAll('.comp-select-card').forEach(card => card.classList.remove('selected'));
             radio.closest('.comp-select-card').classList.add('selected');
+            filterCategories(radio.value);
         }
+
+        // 根据选中的竞赛过滤子类下拉框
+        function filterCategories(competitionId) {
+            var select = document.getElementById('categoryId');
+            var options = select.querySelectorAll('option');
+            var hasVisible = false;
+            options.forEach(function(opt) {
+                if (opt.value === '') return; // 跳过"选择参赛方向"
+                var compId = opt.getAttribute('data-comp-id');
+                if (compId === competitionId) {
+                    opt.style.display = '';
+                    if (!hasVisible) {
+                        hasVisible = true;
+                    }
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+            // 如果当前选中项被隐藏了，重置为默认
+            if (select.options[select.selectedIndex] &&
+                select.options[select.selectedIndex].style.display === 'none') {
+                select.value = '';
+            }
+        }
+
+        // 页面加载时，根据默认选中的竞赛过滤
+        (function() {
+            var checkedRadio = document.querySelector('input[name="competitionId"]:checked');
+            if (checkedRadio) {
+                filterCategories(checkedRadio.value);
+            }
+        })();
 
         // 字数统计
         const textarea = document.getElementById('teamDesc');

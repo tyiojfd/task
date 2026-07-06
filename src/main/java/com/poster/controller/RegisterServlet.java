@@ -41,6 +41,7 @@ public class RegisterServlet extends HttpServlet {
             request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
             return;
         }
+        username = username.trim();
 
         if (password == null || password.trim().isEmpty()) {
             request.setAttribute("error", "密码不能为空");
@@ -65,21 +66,33 @@ public class RegisterServlet extends HttpServlet {
             request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
             return;
         }
+        realName = realName.trim();
 
-        if (email == null || email.trim().isEmpty() || !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+        if (email == null || email.trim().isEmpty()) {
+            request.setAttribute("error", "邮箱不能为空");
+            request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
+            return;
+        }
+        email = email.trim();
+        if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
             request.setAttribute("error", "请输入有效的邮箱地址");
             request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
             return;
         }
 
         // 3. 调用Service注册用户
-        boolean success = userService.register(username.trim(), password, realName.trim(), email.trim());
-
-        if (success) {
-            // 注册成功，跳转到登录页
-            response.sendRedirect(request.getContextPath() + "/login?registered=success");
-        } else {
-            request.setAttribute("error", "用户名或邮箱已被注册");
+        try {
+            boolean success = userService.register(username, password, realName, email);
+            if (success) {
+                request.setAttribute("success", "注册成功，请登录");
+                request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+            } else {
+                request.setAttribute("error", "用户名或邮箱已被注册");
+                request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "注册失败，服务器内部错误");
             request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
         }
     }
