@@ -5,8 +5,8 @@ import java.util.List;
 
 /**
  * 作品DAO接口
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员B
+ * @date 2026-07-06
  */
 public interface WorkDAO {
 
@@ -54,4 +54,14 @@ public interface WorkDAO {
      * 统计作品总数
      */
     int count();
+
+    /**
+     * 根据队伍ID和竞赛ID查询作品
+     */
+    List<Work> findByTeamIdAndCompetitionId(Integer teamId, Integer competitionId);
+
+    /**
+     * 统计指定竞赛的作品数
+     */
+    int countByCompetitionId(Integer competitionId);
 }

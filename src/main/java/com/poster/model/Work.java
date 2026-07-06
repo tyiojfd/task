@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 
 /**
  * 作品实体类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员B
+ * @date 2026-07-06
  */
 public class Work {
     private Integer workId;
     private Integer teamId;
+    private Integer categoryId;
+    private String imagePath;
     private Integer competitionId;
     private String title;
     private String description;
@@ -33,6 +35,22 @@ public class Work {
 
     public void setTeamId(Integer teamId) {
         this.teamId = teamId;
+    }
+
+    public Integer getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public Integer getCompetitionId() {

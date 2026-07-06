@@ -10,57 +10,151 @@ import java.util.List;
 
 /**
  * 作品文件DAO实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员B
+ * @date 2026-07-06
  */
 public class WorkFileDAOImpl implements WorkFileDAO {
 
     @Override
     public int insert(WorkFile workFile) {
-        // TODO: 实现作品文件插入
-        String sql = "INSERT INTO work_file (work_id, file_name, file_path, file_size, file_type) VALUES (?, ?, ?, ?, ?)";
-        return 0;
+        String sql = "INSERT INTO work_file (work_id, file_name, file_path, file_type, file_size) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setInt(1, workFile.getWorkId());
+            pstmt.setString(2, workFile.getFileName());
+            pstmt.setString(3, workFile.getFilePath());
+            pstmt.setString(4, workFile.getFileType());
+            pstmt.setLong(5, workFile.getFileSize() != null ? workFile.getFileSize() : 0);
+
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        workFile.setFileId(rs.getInt(1));
+                    }
+                }
+            }
+            return rows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteById(Integer fileId) {
-        // TODO: 实现根据ID删除作品文件
         String sql = "DELETE FROM work_file WHERE file_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, fileId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteByWorkId(Integer workId) {
-        // TODO: 实现根据作品ID删除所有文件
         String sql = "DELETE FROM work_file WHERE work_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int update(WorkFile workFile) {
-        // TODO: 实现文件信息更新
-        String sql = "UPDATE work_file SET file_name=?, file_path=? WHERE file_id=?";
-        return 0;
+        String sql = "UPDATE work_file SET file_name=?, file_path=?, file_type=?, file_size=? WHERE file_id=?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, workFile.getFileName());
+            pstmt.setString(2, workFile.getFilePath());
+            pstmt.setString(3, workFile.getFileType());
+            pstmt.setLong(4, workFile.getFileSize() != null ? workFile.getFileSize() : 0);
+            pstmt.setInt(5, workFile.getFileId());
+
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public WorkFile findById(Integer fileId) {
-        // TODO: 实现根据ID查询文件
         String sql = "SELECT * FROM work_file WHERE file_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, fileId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractWorkFileFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public List<WorkFile> findByWorkId(Integer workId) {
-        // TODO: 实现根据作品ID查询所有文件
         String sql = "SELECT * FROM work_file WHERE work_id = ?";
-        return new ArrayList<>();
+        List<WorkFile> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(extractWorkFileFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override
     public List<WorkFile> findAll() {
-        // TODO: 实现查询所有文件
         String sql = "SELECT * FROM work_file ORDER BY upload_time DESC";
-        return new ArrayList<>();
+        List<WorkFile> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(extractWorkFileFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private WorkFile extractWorkFileFromResultSet(ResultSet rs) throws SQLException {
+        WorkFile wf = new WorkFile();
+        wf.setFileId(rs.getInt("file_id"));
+        wf.setWorkId(rs.getInt("work_id"));
+        wf.setFileName(rs.getString("file_name"));
+        wf.setFilePath(rs.getString("file_path"));
+        wf.setFileType(rs.getString("file_type"));
+        wf.setFileSize(rs.getLong("file_size"));
+        Timestamp uploadTime = rs.getTimestamp("upload_time");
+        if (uploadTime != null) {
+            wf.setUploadTime(uploadTime.toLocalDateTime());
+        }
+        return wf;
     }
 }

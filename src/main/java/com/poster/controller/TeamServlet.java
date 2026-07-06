@@ -15,6 +15,9 @@ import com.poster.service.TeamService;
 import com.poster.service.CompetitionService;
 import com.poster.service.impl.TeamServiceImpl;
 import com.poster.service.impl.CompetitionServiceImpl;
+import com.poster.service.WorkService;
+import com.poster.service.impl.WorkServiceImpl;
+import com.poster.model.Work;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -26,8 +29,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * 队伍Servlet
- * @author 杨祥博
+ * 闃熶紞Servlet
+ * @author 鏉ㄧゥ鍗?
  * @date 2026-07-05
  */
 @WebServlet("/team")
@@ -45,7 +48,7 @@ public class TeamServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("create".equals(action)) {
-            // 加载竞赛列表和子类列表供选择
+            // 鍔犺浇绔炶禌鍒楄〃鍜屽瓙绫诲垪琛ㄤ緵閫夋嫨
             List<Competition> competitions = competitionService.getAllCompetitions();
             List<CompetitionCategory> categories = categoryDAO.findAll();
             request.setAttribute("competitions", competitions);
@@ -81,7 +84,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 显示"我的队伍"列表（带竞赛名和成员数）
+     * 鏄剧ず"鎴戠殑闃熶紞"鍒楄〃锛堝甫绔炶禌鍚嶅拰鎴愬憳鏁帮級
      */
     private void listMyTeams(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -94,7 +97,7 @@ public class TeamServlet extends HttpServlet {
         User user = (User) session.getAttribute("user");
         List<Team> myTeams = teamService.getTeamsByLeaderId(user.getUserId());
 
-        // 为每个队伍加载竞赛名称和成员数量
+        // 涓烘瘡涓槦浼嶅姞杞界珵璧涘悕绉板拰鎴愬憳鏁伴噺
         Map<Integer, String> competitionNames = new HashMap<>();
         Map<Integer, Integer> memberCounts = new HashMap<>();
         Map<Integer, List<TeamMember>> teamMembers = new HashMap<>();
@@ -110,7 +113,7 @@ public class TeamServlet extends HttpServlet {
             teamMembers.put(team.getTeamId(), members);
         }
 
-        // 加载成员用户名映射
+        // 鍔犺浇鎴愬憳鐢ㄦ埛鍚嶆槧灏?
         Map<Integer, String> userNames = new HashMap<>();
         for (List<TeamMember> members : teamMembers.values()) {
             for (TeamMember member : members) {
@@ -132,7 +135,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 显示队伍详情（含成员、竞赛、子类信息）
+     * 鏄剧ず闃熶紞璇︽儏锛堝惈鎴愬憳銆佺珵璧涖€佸瓙绫讳俊鎭級
      */
     private void showTeamDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -151,22 +154,22 @@ public class TeamServlet extends HttpServlet {
                 return;
             }
 
-            // 加载竞赛名称
+            // 鍔犺浇绔炶禌鍚嶇О
             Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
-            String competitionName = competition != null ? competition.getName() : "未知竞赛";
+            String competitionName = competition != null ? competition.getName() : "鏈煡绔炶禌";
 
-            // 加载子类名称
+            // 鍔犺浇瀛愮被鍚嶇О
             CompetitionCategory category = categoryDAO.findById(team.getCategoryId());
-            String categoryName = category != null ? category.getCategoryName() : "未知子类";
+            String categoryName = category != null ? category.getCategoryName() : "鏈煡瀛愮被";
 
-            // 加载队长信息
+            // 鍔犺浇闃熼暱淇℃伅
             User leader = userDAO.findById(team.getLeaderId());
-            String leaderName = leader != null ? leader.getRealName() : "未知";
+            String leaderName = leader != null ? leader.getRealName() : "鏈煡";
 
-            // 加载队伍成员
+            // 鍔犺浇闃熶紞鎴愬憳
             List<TeamMember> members = teamMemberDAO.findByTeamId(teamId);
 
-            // 加载成员用户信息
+            // 鍔犺浇鎴愬憳鐢ㄦ埛淇℃伅
             Map<Integer, User> memberUsers = new HashMap<>();
             for (TeamMember member : members) {
                 User memberUser = userDAO.findById(member.getUserId());
@@ -189,7 +192,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 创建队伍
+     * 鍒涘缓闃熶紞
      */
     private void createTeam(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -216,7 +219,7 @@ public class TeamServlet extends HttpServlet {
                 request.getRequestDispatcher("/jsp/team_create.jsp").forward(request, response);
             }
         } catch (Exception e) {
-            request.setAttribute("error", "创建队伍时发生错误: " + e.getMessage());
+            request.setAttribute("error", "鍒涘缓闃熶紞鏃跺彂鐢熼敊璇? " + e.getMessage());
             List<Competition> competitions = competitionService.getAllCompetitions();
             List<CompetitionCategory> categories = categoryDAO.findAll();
             request.setAttribute("competitions", competitions);
@@ -226,7 +229,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 更新队伍信息
+     * 鏇存柊闃熶紞淇℃伅
      */
     private void updateTeam(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -248,18 +251,18 @@ public class TeamServlet extends HttpServlet {
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + team.getTeamId());
             } else {
-                request.setAttribute("error", "更新队伍信息失败");
+                request.setAttribute("error", "鏇存柊闃熶紞淇℃伅澶辫触");
                 request.setAttribute("team", team);
                 request.getRequestDispatcher("/jsp/team_detail.jsp").forward(request, response);
             }
         } catch (Exception e) {
-            request.setAttribute("error", "更新队伍时发生错误: " + e.getMessage());
+            request.setAttribute("error", "鏇存柊闃熶紞鏃跺彂鐢熼敊璇? " + e.getMessage());
             request.getRequestDispatcher("/jsp/team_detail.jsp").forward(request, response);
         }
     }
 
     /**
-     * 解散队伍
+     * 瑙ｆ暎闃熶紞
      */
     private void deleteTeam(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -291,7 +294,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 邀请队员
+     * 閭€璇烽槦鍛?
      */
     private void inviteMember(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -320,7 +323,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 移除队员
+     * 绉婚櫎闃熷憳
      */
     private void removeMember(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -349,7 +352,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     /**
-     * 从请求中提取Team对象
+     * 浠庤姹備腑鎻愬彇Team瀵硅薄
      */
     private Team extractTeamFromRequest(HttpServletRequest request) throws Exception {
         Team team = new Team();

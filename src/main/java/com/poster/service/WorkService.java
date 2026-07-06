@@ -5,8 +5,8 @@ import java.util.List;
 
 /**
  * 作品服务接口
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员B
+ * @date 2026-07-06
  */
 public interface WorkService {
 
@@ -41,6 +41,11 @@ public interface WorkService {
     List<Work> getWorksByCompetitionId(Integer competitionId);
 
     /**
+     * 根据用户ID查询作品（用户所在队伍的所有作品）
+     */
+    List<Work> getWorksByUserId(Integer userId);
+
+    /**
      * 作品点赞
      */
     boolean likeWork(Integer workId, Integer userId);
@@ -54,4 +59,14 @@ public interface WorkService {
      * 分享作品
      */
     boolean shareWork(Integer workId, Integer userId, String platform);
+
+    /**
+     * 获取作品点赞数
+     */
+    int getLikeCount(Integer workId);
+
+    /**
+     * 检查用户是否已点赞
+     */
+    boolean isWorkLikedByUser(Integer workId, Integer userId);
 }

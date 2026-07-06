@@ -10,57 +10,152 @@ import java.util.List;
 
 /**
  * 作品点赞DAO实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员B
+ * @date 2026-07-06
  */
 public class WorkLikeDAOImpl implements WorkLikeDAO {
 
     @Override
     public int insert(WorkLike workLike) {
-        // TODO: 实现点赞记录插入
         String sql = "INSERT INTO work_like (work_id, user_id) VALUES (?, ?)";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setInt(1, workLike.getWorkId());
+            pstmt.setInt(2, workLike.getUserId());
+
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        workLike.setId(rs.getInt(1));
+                    }
+                }
+            }
+            return rows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteById(Integer id) {
-        // TODO: 实现根据ID删除点赞记录
         String sql = "DELETE FROM work_like WHERE id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteByWorkIdAndUserId(Integer workId, Integer userId) {
-        // TODO: 实现取消点赞
         String sql = "DELETE FROM work_like WHERE work_id = ? AND user_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+            pstmt.setInt(2, userId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public List<WorkLike> findByWorkId(Integer workId) {
-        // TODO: 实现根据作品ID查询所有点赞
         String sql = "SELECT * FROM work_like WHERE work_id = ?";
-        return new ArrayList<>();
+        List<WorkLike> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    WorkLike wl = new WorkLike();
+                    wl.setId(rs.getInt("id"));
+                    wl.setWorkId(rs.getInt("work_id"));
+                    wl.setUserId(rs.getInt("user_id"));
+                    Timestamp likeTime = rs.getTimestamp("like_time");
+                    if (likeTime != null) {
+                        wl.setLikeTime(likeTime.toLocalDateTime());
+                    }
+                    list.add(wl);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override
     public List<WorkLike> findByUserId(Integer userId) {
-        // TODO: 实现根据用户ID查询所有点赞
         String sql = "SELECT * FROM work_like WHERE user_id = ?";
-        return new ArrayList<>();
+        List<WorkLike> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    WorkLike wl = new WorkLike();
+                    wl.setId(rs.getInt("id"));
+                    wl.setWorkId(rs.getInt("work_id"));
+                    wl.setUserId(rs.getInt("user_id"));
+                    Timestamp likeTime = rs.getTimestamp("like_time");
+                    if (likeTime != null) {
+                        wl.setLikeTime(likeTime.toLocalDateTime());
+                    }
+                    list.add(wl);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override
     public boolean isLiked(Integer workId, Integer userId) {
-        // TODO: 实现检查用户是否已点赞
         String sql = "SELECT COUNT(*) FROM work_like WHERE work_id = ? AND user_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+            pstmt.setInt(2, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
     public int countByWorkId(Integer workId) {
-        // TODO: 实现统计作品点赞数
         String sql = "SELECT COUNT(*) FROM work_like WHERE work_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 }
