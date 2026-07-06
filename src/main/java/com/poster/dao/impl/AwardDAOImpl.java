@@ -18,7 +18,7 @@ public class AwardDAOImpl implements AwardDAO {
     @Override
     public int insert(Award award) {
         // TODO: 实现获奖记录插入
-        String sql = "INSERT INTO award (competition_id, work_id, award_level) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO award (competition_id, work_id, award_level, final_score, issuer_id) VALUES (?, ?, ?, ?, ?)";
         return 0;
     }
 

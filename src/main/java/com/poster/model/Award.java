@@ -12,6 +12,8 @@ public class Award {
     private Integer competitionId;
     private Integer workId;
     private String awardLevel; // 一等奖、二等奖、三等奖
+    private Double finalScore;
+    private Integer issuerId;
     private LocalDateTime awardTime;
 
     public Award() {
@@ -47,6 +49,22 @@ public class Award {
 
     public void setAwardLevel(String awardLevel) {
         this.awardLevel = awardLevel;
+    }
+
+    public Double getFinalScore() {
+        return finalScore;
+    }
+
+    public void setFinalScore(Double finalScore) {
+        this.finalScore = finalScore;
+    }
+
+    public Integer getIssuerId() {
+        return issuerId;
+    }
+
+    public void setIssuerId(Integer issuerId) {
+        this.issuerId = issuerId;
     }
 
     public LocalDateTime getAwardTime() {

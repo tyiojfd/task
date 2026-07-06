@@ -96,6 +96,33 @@
 - **代码量：** 9个文件（4个Java + 3个JSP + 1个Model修改 + 1个首页修改），约1700行代码
 - **设计参考：** 赛氪/阿里云天池等竞赛平台UI风格，Bootstrap 5 + Font Awesome + CSS自定义变量
 
+### 2026-07-06
+
+**已完成：模块5-新闻发布功能（完成人：队员C）**
+- ✅ Model层：修正News、Score、Comment、Award、Certificate共5个实体类字段，与数据库schema完全对齐
+  - News: publisherId→authorId, 新增competitionId, 移除updateTime
+  - Score: score字段 Integer→Double（匹配DB DECIMAL(5,2)）
+  - Comment: content→commentText（匹配DB comment_text）
+  - Award: 新增finalScore、issuerId字段
+  - Certificate: 移除teamId, certificatePath→filePath
+- ✅ DAO层：NewsDAOImpl完整实现（8个方法：insert/deleteById/update/findById/findByStatus/findByPublisherId/findAll/count，使用PreparedStatement防SQL注入）
+- ✅ Service层：NewsServiceImpl完整实现（6个方法：publishNews/updateNews/deleteNews/getNewsById/getPublishedNews/getAllNews，含输入验证）
+- ✅ Controller层：NewsServlet完整实现
+  - GET: list（新闻列表）、detail（新闻详情）、publish（发布页）、edit（编辑页）、manage（管理页）
+  - POST: publish（发布）、update（更新）、delete（删除）
+  - Session登录集成，获取当前用户作为发布者
+- ✅ 前端页面：5个JSP页面
+  - news_list.jsp：渐变标题栏 + 新闻卡片列表 + hover动画 + 空状态插画
+  - news_detail.jsp：详情展示 + 关联竞赛信息 + 状态标签 + 管理操作入口
+  - news_add.jsp：发布表单（标题/关联竞赛ID/内容）
+  - news_edit.jsp：编辑表单 + 状态切换（已发布/已撤回）
+  - news_manage.jsp：管理表格（ID/标题/状态/竞赛ID/发布时间/操作按钮）+ 删除确认弹窗
+- ✅ 首页集成：index.jsp中"新闻公告"卡片添加跳转链接
+- ✅ 权限控制：AuthFilter添加/news路径为公开资源（新闻列表和详情无需登录即可查看）
+- ✅ 安全特性：SQL注入防护、输入验证、Session登录验证
+- **代码量：** 14个文件（5个Model修改 + 3个Java + 5个JSP + 1个Filter修改），+491行，-91行
+- **编译状态：** BUILD SUCCESS，83个Java源文件零错误
+
 ---
 
 ## 团队组织结构
@@ -302,11 +329,12 @@ test: 添加作品提交测试用例
 - [ ] 作品修改/删除功能
 
 **模块5 - 评分与获奖（队员C）：**
+- [x] 新闻发布功能（NewsServlet + news_list.jsp + news_detail.jsp + news_add.jsp + news_edit.jsp + news_manage.jsp）✅ 2026-07-06
+- [x] Model层字段修复（News/Score/Comment/Award/Certificate与数据库对齐）✅ 2026-07-06
 - [ ] 评委评分功能（ScoreServlet + score_input.jsp）
 - [ ] 评分记录查询（score_list.jsp）
 - [ ] 评语管理功能（comment功能）
 - [ ] 获奖设置功能（AwardServlet + award_manage.jsp）
-- [ ] 新闻发布功能（NewsServlet + news_list.jsp）
 
 **每日集成：** 每天晚上10点，队长负责合并所有分支到dev分支
 

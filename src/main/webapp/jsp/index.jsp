@@ -132,10 +132,12 @@
                 </div>
             </div>
             <div class="col-md-4 mb-3">
-                <div class="card feature-card p-4 text-center">
-                    <h5>新闻公告</h5>
-                    <p class="text-muted">查看最新竞赛动态和公告</p>
-                </div>
+                <a href="${pageContext.request.contextPath}/news?action=list" style="text-decoration: none; color: inherit;">
+                    <div class="card feature-card p-4 text-center">
+                        <h5>新闻公告</h5>
+                        <p class="text-muted">查看最新竞赛动态和公告</p>
+                    </div>
+                </a>
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card feature-card p-4 text-center" onclick="location.href='${pageContext.request.contextPath}/profile'">

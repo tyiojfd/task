@@ -5,12 +5,13 @@ import com.poster.dao.impl.NewsDAOImpl;
 import com.poster.model.News;
 import com.poster.service.NewsService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * 新闻服务实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员C
+ * @date 2026-07-06
  */
 public class NewsServiceImpl implements NewsService {
 
@@ -18,40 +19,65 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public boolean publishNews(News news) {
-        // TODO: 实现发布新闻逻辑
-        // 1. 设置发布时间
+        // 1. 输入验证
+        if (news.getTitle() == null || news.getTitle().trim().isEmpty()) {
+            return false;
+        }
+        if (news.getContent() == null || news.getContent().trim().isEmpty()) {
+            return false;
+        }
+        if (news.getAuthorId() == null) {
+            return false;
+        }
+
         // 2. 设置状态为已发布
+        news.setStatus(1);
+
         // 3. 调用DAO插入数据库
-        return false;
+        return newsDAO.insert(news) > 0;
     }
 
     @Override
     public boolean updateNews(News news) {
-        // TODO: 实现更新新闻逻辑
-        return false;
+        // 1. 输入验证
+        if (news.getNewsId() == null) {
+            return false;
+        }
+        if (news.getTitle() == null || news.getTitle().trim().isEmpty()) {
+            return false;
+        }
+        if (news.getContent() == null || news.getContent().trim().isEmpty()) {
+            return false;
+        }
+
+        // 2. 调用DAO更新数据库
+        return newsDAO.update(news) > 0;
     }
 
     @Override
     public boolean deleteNews(Integer newsId) {
-        // TODO: 实现删除新闻逻辑
-        return false;
+        if (newsId == null) {
+            return false;
+        }
+        return newsDAO.deleteById(newsId) > 0;
     }
 
     @Override
     public News getNewsById(Integer newsId) {
-        // TODO: 实现根据ID查询新闻
-        return null;
+        if (newsId == null) {
+            return null;
+        }
+        return newsDAO.findById(newsId);
     }
 
     @Override
     public List<News> getPublishedNews() {
-        // TODO: 实现查询已发布的新闻列表
-        return null;
+        // 查询状态为1（已发布）的新闻
+        return newsDAO.findByStatus(1);
     }
 
     @Override
     public List<News> getAllNews() {
-        // TODO: 实现查询所有新闻
-        return null;
+        return newsDAO.findAll();
     }
 }

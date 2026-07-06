@@ -11,7 +11,7 @@ public class Score {
     private Integer scoreId;
     private Integer workId;
     private Integer judgeId;
-    private Integer score;
+    private Double score;
     private LocalDateTime scoreTime;
 
     public Score() {}
@@ -40,11 +40,11 @@ public class Score {
         this.judgeId = judgeId;
     }
 
-    public Integer getScore() {
+    public Double getScore() {
         return score;
     }
 
-    public void setScore(Integer score) {
+    public void setScore(Double score) {
         this.score = score;
     }
 

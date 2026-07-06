@@ -10,64 +10,201 @@ import java.util.List;
 
 /**
  * 新闻公告DAO实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员C
+ * @date 2026-07-06
  */
 public class NewsDAOImpl implements NewsDAO {
 
     @Override
     public int insert(News news) {
-        // TODO: 实现新闻插入
-        String sql = "INSERT INTO news (title, content, publisher_id, status) VALUES (?, ?, ?, ?)";
-        return 0;
+        String sql = "INSERT INTO news (title, content, competition_id, author_id, status) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setString(1, news.getTitle());
+            pstmt.setString(2, news.getContent());
+            if (news.getCompetitionId() != null) {
+                pstmt.setInt(3, news.getCompetitionId());
+            } else {
+                pstmt.setNull(3, Types.INTEGER);
+            }
+            pstmt.setInt(4, news.getAuthorId());
+            pstmt.setInt(5, news.getStatus() != null ? news.getStatus() : 1);
+
+            int rows = pstmt.executeUpdate();
+
+            if (rows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        news.setNewsId(rs.getInt(1));
+                    }
+                }
+            }
+
+            return rows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteById(Integer newsId) {
-        // TODO: 实现根据ID删除新闻
         String sql = "DELETE FROM news WHERE news_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, newsId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int update(News news) {
-        // TODO: 实现更新新闻信息
-        String sql = "UPDATE news SET title=?, content=?, status=? WHERE news_id=?";
-        return 0;
+        String sql = "UPDATE news SET title=?, content=?, competition_id=?, status=? WHERE news_id=?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, news.getTitle());
+            pstmt.setString(2, news.getContent());
+            if (news.getCompetitionId() != null) {
+                pstmt.setInt(3, news.getCompetitionId());
+            } else {
+                pstmt.setNull(3, Types.INTEGER);
+            }
+            pstmt.setInt(4, news.getStatus());
+            pstmt.setInt(5, news.getNewsId());
+
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public News findById(Integer newsId) {
-        // TODO: 实现根据ID查询新闻
         String sql = "SELECT * FROM news WHERE news_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, newsId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractNewsFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public List<News> findByStatus(Integer status) {
-        // TODO: 实现根据状态查询新闻
         String sql = "SELECT * FROM news WHERE status = ? ORDER BY publish_time DESC";
-        return new ArrayList<>();
+        List<News> newsList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, status);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    newsList.add(extractNewsFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return newsList;
     }
 
     @Override
     public List<News> findByPublisherId(Integer publisherId) {
-        // TODO: 实现根据发布人查询新闻
-        String sql = "SELECT * FROM news WHERE publisher_id = ?";
-        return new ArrayList<>();
+        String sql = "SELECT * FROM news WHERE author_id = ? ORDER BY publish_time DESC";
+        List<News> newsList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, publisherId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    newsList.add(extractNewsFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return newsList;
     }
 
     @Override
     public List<News> findAll() {
-        // TODO: 实现查询所有新闻
         String sql = "SELECT * FROM news ORDER BY publish_time DESC";
-        return new ArrayList<>();
+        List<News> newsList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                newsList.add(extractNewsFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return newsList;
     }
 
     @Override
     public int count() {
-        // TODO: 实现统计新闻总数
         String sql = "SELECT COUNT(*) FROM news";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
+    }
+
+    /**
+     * 从ResultSet中提取News对象
+     */
+    private News extractNewsFromResultSet(ResultSet rs) throws SQLException {
+        News news = new News();
+        news.setNewsId(rs.getInt("news_id"));
+        news.setTitle(rs.getString("title"));
+        news.setContent(rs.getString("content"));
+
+        int competitionId = rs.getInt("competition_id");
+        if (!rs.wasNull()) {
+            news.setCompetitionId(competitionId);
+        }
+
+        news.setAuthorId(rs.getInt("author_id"));
+        news.setStatus(rs.getInt("status"));
+
+        Timestamp publishTime = rs.getTimestamp("publish_time");
+        if (publishTime != null) {
+            news.setPublishTime(publishTime.toLocalDateTime());
+        }
+
+        return news;
     }
 }

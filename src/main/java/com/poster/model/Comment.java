@@ -11,7 +11,7 @@ public class Comment {
     private Integer commentId;
     private Integer workId;
     private Integer judgeId;
-    private String content;
+    private String commentText;
     private LocalDateTime commentTime;
 
     public Comment() {}
@@ -40,12 +40,12 @@ public class Comment {
         this.judgeId = judgeId;
     }
 
-    public String getContent() {
-        return content;
+    public String getCommentText() {
+        return commentText;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
     }
 
     public LocalDateTime getCommentTime() {

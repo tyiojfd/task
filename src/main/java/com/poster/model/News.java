@@ -11,10 +11,10 @@ public class News {
     private Integer newsId;
     private String title;
     private String content;
-    private Integer publisherId;
-    private Integer status; // 1-已发布，0-草稿
+    private Integer competitionId;
+    private Integer authorId;
+    private Integer status; // 1-已发布，0-已撤回
     private LocalDateTime publishTime;
-    private LocalDateTime updateTime;
 
     public News() {}
 
@@ -42,12 +42,20 @@ public class News {
         this.content = content;
     }
 
-    public Integer getPublisherId() {
-        return publisherId;
+    public Integer getCompetitionId() {
+        return competitionId;
     }
 
-    public void setPublisherId(Integer publisherId) {
-        this.publisherId = publisherId;
+    public void setCompetitionId(Integer competitionId) {
+        this.competitionId = competitionId;
+    }
+
+    public Integer getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Integer authorId) {
+        this.authorId = authorId;
     }
 
     public Integer getStatus() {
@@ -64,13 +72,5 @@ public class News {
 
     public void setPublishTime(LocalDateTime publishTime) {
         this.publishTime = publishTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
     }
 }

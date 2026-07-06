@@ -74,6 +74,11 @@ public class AuthFilter implements Filter {
             return true;
         }
 
+        // 新闻公告公开（列表和详情不需要登录）
+        if (relativePath.startsWith("/news")) {
+            return true;
+        }
+
         return false;
     }
 

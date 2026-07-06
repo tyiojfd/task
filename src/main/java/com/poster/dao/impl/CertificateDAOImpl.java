@@ -18,7 +18,7 @@ public class CertificateDAOImpl implements CertificateDAO {
     @Override
     public int insert(Certificate certificate) {
         // TODO: 实现电子奖状插入
-        String sql = "INSERT INTO certificate (award_id, team_id, certificate_no, certificate_path) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO certificate (award_id, certificate_no, file_path) VALUES (?, ?, ?)";
         return 0;
     }
 
@@ -32,7 +32,7 @@ public class CertificateDAOImpl implements CertificateDAO {
     @Override
     public int update(Certificate certificate) {
         // TODO: 实现更新奖状信息
-        String sql = "UPDATE certificate SET certificate_path=? WHERE certificate_id=?";
+        String sql = "UPDATE certificate SET file_path=? WHERE certificate_id=?";
         return 0;
     }
 
@@ -52,8 +52,8 @@ public class CertificateDAOImpl implements CertificateDAO {
 
     @Override
     public List<Certificate> findByTeamId(Integer teamId) {
-        // TODO: 实现根据队伍ID查询奖状
-        String sql = "SELECT * FROM certificate WHERE team_id = ?";
+        // TODO: 实现根据队伍ID查询奖状（需通过award→work→team关联查询）
+        String sql = "SELECT c.* FROM certificate c JOIN award a ON c.award_id = a.award_id JOIN work w ON a.work_id = w.work_id WHERE w.team_id = ?";
         return new ArrayList<>();
     }
 

@@ -10,9 +10,8 @@ import java.time.LocalDateTime;
 public class Certificate {
     private Integer certificateId;
     private Integer awardId;
-    private Integer teamId;
     private String certificateNo;
-    private String certificatePath;
+    private String filePath;
     private LocalDateTime generateTime;
 
     public Certificate() {}
@@ -33,14 +32,6 @@ public class Certificate {
         this.awardId = awardId;
     }
 
-    public Integer getTeamId() {
-        return teamId;
-    }
-
-    public void setTeamId(Integer teamId) {
-        this.teamId = teamId;
-    }
-
     public String getCertificateNo() {
         return certificateNo;
     }
@@ -49,12 +40,12 @@ public class Certificate {
         this.certificateNo = certificateNo;
     }
 
-    public String getCertificatePath() {
-        return certificatePath;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setCertificatePath(String certificatePath) {
-        this.certificatePath = certificatePath;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public LocalDateTime getGenerateTime() {

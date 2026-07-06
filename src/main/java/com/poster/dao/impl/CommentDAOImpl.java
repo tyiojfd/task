@@ -18,7 +18,7 @@ public class CommentDAOImpl implements CommentDAO {
     @Override
     public int insert(Comment comment) {
         // TODO: 实现评语记录插入
-        String sql = "INSERT INTO comment (work_id, judge_id, content) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO comment (work_id, judge_id, comment_text) VALUES (?, ?, ?)";
         return 0;
     }
 
@@ -32,7 +32,7 @@ public class CommentDAOImpl implements CommentDAO {
     @Override
     public int update(Comment comment) {
         // TODO: 实现更新评语
-        String sql = "UPDATE comment SET content=? WHERE comment_id=?";
+        String sql = "UPDATE comment SET comment_text=? WHERE comment_id=?";
         return 0;
     }
 
