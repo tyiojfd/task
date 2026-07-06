@@ -46,6 +46,13 @@ public interface UserDAO {
     User findByEmail(String email);
 
     /**
+     * 根据真实姓名模糊搜索用户
+     * @param keyword 搜索关键字
+     * @return 匹配的用户列表（最多20条）
+     */
+    List<User> searchByRealName(String keyword);
+
+    /**
      * 统计用户总数
      */
     int count();

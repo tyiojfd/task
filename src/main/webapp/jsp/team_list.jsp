@@ -236,6 +236,7 @@
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home"></i> 首页</a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/competition?action=list"><i class="fas fa-trophy"></i> 竞赛列表</a></li>
                     <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/team?action=myTeams"><i class="fas fa-users"></i> 我的队伍</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/invitation"><i class="fas fa-envelope"></i> 邀请通知</a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user-circle"></i> 个人中心</a></li>
                     <li class="nav-item"><a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> 退出</a></li>
                 </ul>

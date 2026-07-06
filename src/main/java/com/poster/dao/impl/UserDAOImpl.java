@@ -135,6 +135,23 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public List<User> searchByRealName(String keyword) {
+        String sql = "SELECT * FROM user WHERE real_name LIKE ? LIMIT 20";
+        List<User> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + keyword + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(extractUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
     public int count() {
         String sql = "SELECT COUNT(*) FROM user";
         try (Connection conn = DBUtil.getConnection();

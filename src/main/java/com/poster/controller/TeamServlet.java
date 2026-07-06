@@ -78,6 +78,10 @@ public class TeamServlet extends HttpServlet {
             inviteMember(request, response);
         } else if ("remove".equals(action)) {
             removeMember(request, response);
+        } else if ("register".equals(action)) {
+            registerCompetition(request, response);
+        } else if ("searchUser".equals(action)) {
+            searchUserForInvite(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams");
         }
@@ -178,12 +182,18 @@ public class TeamServlet extends HttpServlet {
                 }
             }
 
+            // 加载竞赛和子类列表（供编辑弹窗使用）
+            List<Competition> competitions = competitionService.getAllCompetitions();
+            List<CompetitionCategory> categories = categoryDAO.findAll();
+
             request.setAttribute("team", team);
             request.setAttribute("competitionName", competitionName);
             request.setAttribute("categoryName", categoryName);
             request.setAttribute("leaderName", leaderName);
             request.setAttribute("members", members);
             request.setAttribute("memberUsers", memberUsers);
+            request.setAttribute("competitions", competitions);
+            request.setAttribute("categories", categories);
             request.getRequestDispatcher("/jsp/team_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -312,12 +322,28 @@ public class TeamServlet extends HttpServlet {
 
             boolean success = teamService.inviteMember(teamId, user.getUserId(), inviteeId);
 
+            // 支持AJAX请求返回JSON
+            if ("true".equals(request.getParameter("ajax"))) {
+                response.setContentType("application/json;charset=UTF-8");
+                if (success) {
+                    response.getWriter().write("{\"success\":true}");
+                } else {
+                    response.getWriter().write("{\"success\":false,\"message\":\"邀请失败，请检查是否已邀请过该用户或队伍已满\"}");
+                }
+                return;
+            }
+
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&msg=invite_success");
             } else {
                 response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&error=invite_failed");
             }
         } catch (Exception e) {
+            if ("true".equals(request.getParameter("ajax"))) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"系统错误\"}");
+                return;
+            }
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=invite_error");
         }
     }
@@ -349,6 +375,98 @@ public class TeamServlet extends HttpServlet {
         } catch (Exception e) {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=remove_error");
         }
+    }
+
+    /**
+     * 报名参赛
+     */
+    private void registerCompetition(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+
+        try {
+            Integer teamId = Integer.parseInt(request.getParameter("teamId"));
+            Team team = teamService.getTeamById(teamId);
+
+            if (team == null) {
+                response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=team_not_found");
+                return;
+            }
+
+            // 验证是否为队长
+            if (!team.getLeaderId().equals(user.getUserId())) {
+                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&error=not_leader");
+                return;
+            }
+
+            boolean success = teamService.registerCompetition(teamId, team.getCompetitionId(), team.getCategoryId());
+
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&msg=register_success");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&error=register_failed");
+            }
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=register_error");
+        }
+    }
+
+    /**
+     * 搜索用户（用于邀请队员弹窗）
+     */
+    private void searchUserForInvite(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("[]");
+            return;
+        }
+
+        String keyword = request.getParameter("keyword");
+        response.setContentType("application/json;charset=UTF-8");
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            response.getWriter().write("[]");
+            return;
+        }
+
+        List<User> users = userDAO.searchByRealName(keyword.trim());
+        User currentUser = (User) session.getAttribute("user");
+
+        // 手动构建JSON数组
+        StringBuilder json = new StringBuilder("[");
+        boolean first = true;
+        for (User u : users) {
+            // 排除当前用户自己
+            if (u.getUserId().equals(currentUser.getUserId())) {
+                continue;
+            }
+            if (!first) json.append(",");
+            json.append("{");
+            json.append("\"userId\":").append(u.getUserId()).append(",");
+            json.append("\"realName\":\"").append(escapeJson(u.getRealName())).append("\",");
+            json.append("\"username\":\"").append(escapeJson(u.getUsername())).append("\"");
+            json.append("}");
+            first = false;
+        }
+        json.append("]");
+
+        response.getWriter().write(json.toString());
+    }
+
+    /**
+     * JSON字符串转义
+     */
+    private String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     /**
