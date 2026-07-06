@@ -1,8 +1,12 @@
 package com.poster.controller;
 
 import com.poster.model.Competition;
+import com.poster.model.User;
+import com.poster.model.Team;
 import com.poster.service.CompetitionService;
+import com.poster.service.TeamService;
 import com.poster.service.impl.CompetitionServiceImpl;
+import com.poster.service.impl.TeamServiceImpl;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -19,6 +23,7 @@ import java.util.List;
 public class CompetitionServlet extends HttpServlet {
 
     private CompetitionService competitionService = new CompetitionServiceImpl();
+    private TeamService teamService = new TeamServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -79,9 +84,30 @@ public class CompetitionServlet extends HttpServlet {
         String idStr = request.getParameter("id");
         if (idStr != null) {
             try {
-                Integer id = Integer.parseInt(idStr);
-                Competition competition = competitionService.getCompetitionById(id);
+                Integer competitionId = Integer.parseInt(idStr);
+                Competition competition = competitionService.getCompetitionById(competitionId);
+
+                // 检查用户是否已参加该竞赛
+                HttpSession session = request.getSession(false);
+                User user = (session != null) ? (User) session.getAttribute("user") : null;
+                boolean hasJoined = false;
+                Team userTeam = null;
+
+                if (user != null) {
+                    // 查询用户在该竞赛中的队伍
+                    List<Team> teams = teamService.getTeamsByLeaderId(user.getUserId());
+                    for (Team team : teams) {
+                        if (team.getCompetitionId().equals(competitionId)) {
+                            hasJoined = true;
+                            userTeam = team;
+                            break;
+                        }
+                    }
+                }
+
                 request.setAttribute("competition", competition);
+                request.setAttribute("hasJoined", hasJoined);
+                request.setAttribute("userTeam", userTeam);
                 request.getRequestDispatcher("/jsp/competition_detail.jsp").forward(request, response);
             } catch (NumberFormatException e) {
                 response.sendRedirect(request.getContextPath() + "/competition?action=list");

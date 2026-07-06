@@ -1,8 +1,30 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.Competition" %>
+<%@ page import="com.poster.model.Team" %>
+<%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     Competition competition = (Competition) request.getAttribute("competition");
+    Boolean hasJoined = (Boolean) request.getAttribute("hasJoined");
+    Team userTeam = (Team) request.getAttribute("userTeam");
+    User sessionUser = (User) session.getAttribute("user");
+    if (hasJoined == null) hasJoined = false;
+
+    // 检查用户是否为管理员
+    boolean isAdmin = false;
+    if (sessionUser != null) {
+        List<Role> userRoles = (List<Role>) session.getAttribute("userRoles");
+        if (userRoles != null) {
+            for (Role role : userRoles) {
+                if ("管理员".equals(role.getRoleName())) {
+                    isAdmin = true;
+                    break;
+                }
+            }
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -77,10 +99,32 @@
                         <span><%= competition.getCreateTime() != null ? competition.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未知" %></span>
                     </div>
 
+                    <!-- 参赛状态区域 -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <% if (sessionUser == null) { %>
+                            <p class="mb-2">请先登录后参加竞赛</p>
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">立即登录</a>
+                        <% } else if (hasJoined) { %>
+                            <h5 class="text-success">✓ 您已参加此竞赛</h5>
+                            <p class="mb-2">队伍：<%= userTeam != null ? userTeam.getTeamName() : "未知" %></p>
+                            <a href="${pageContext.request.contextPath}/team?action=detail&id=<%= userTeam != null ? userTeam.getTeamId() : "" %>"
+                               class="btn btn-primary me-2">查看队伍</a>
+                            <a href="${pageContext.request.contextPath}/work?action=list" class="btn btn-success">管理作品</a>
+                        <% } else { %>
+                            <h5>参加此竞赛</h5>
+                            <p class="text-muted mb-3">参加竞赛需要创建或加入队伍</p>
+                            <a href="${pageContext.request.contextPath}/team?action=create&competitionId=<%= competition.getCompetitionId() %>"
+                               class="btn btn-primary me-2">创建队伍</a>
+                            <a href="${pageContext.request.contextPath}/team?action=list" class="btn btn-outline-primary">加入队伍</a>
+                        <% } %>
+                    </div>
+
                     <div class="mt-4 d-flex gap-2">
                         <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-secondary">返回列表</a>
-                        <a href="${pageContext.request.contextPath}/competition?action=edit&id=<%= competition.getCompetitionId() %>" class="btn btn-primary">编辑竞赛</a>
-                        <button type="button" class="btn btn-danger" onclick="deleteCompetition(<%= competition.getCompetitionId() %>)">删除竞赛</button>
+                        <% if (isAdmin) { %>
+                            <a href="${pageContext.request.contextPath}/competition?action=edit&id=<%= competition.getCompetitionId() %>" class="btn btn-primary">编辑竞赛</a>
+                            <button type="button" class="btn btn-danger" onclick="deleteCompetition(<%= competition.getCompetitionId() %>)">删除竞赛</button>
+                        <% } %>
                     </div>
                 </div>
             </div>

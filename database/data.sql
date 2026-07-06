@@ -49,6 +49,7 @@ SELECT user_id, 4 FROM user WHERE username = 'member01';
 --   密码：admin123
 --
 -- 评委账号：
+
 --   用户名：judge01
 --   密码：123456
 --
