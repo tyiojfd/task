@@ -1,4 +1,4 @@
-# 大学生海报设计竞赛系统
+﻿# 大学生海报设计竞赛系统
 
 > Web课程设计项目 - 5人团队协作文档  
 > 项目启动时间：2026年7月4日  
@@ -164,6 +164,29 @@
 - **修改文件：** 1个JSP文件
 - **代码变更：** +18行，-3行
 - **问题修复：** 解决普通用户可见竞赛管理按钮的权限漏洞
+
+**已完成：模块4-作品管理模块-完整功能（完成人：田继青）**
+- ✅ Model层：Work、WorkFile、WorkLike、WorkShare四个实体类字段确认（与数据库schema对齐）
+- ✅ DAO层：WorkDAOImpl完整实现（8个方法：insert/deleteById/update/findById/findAll/findByTeamId/findByCompetitionId/findByStatus/count/findByTeamIdAndCompetitionId/countByCompetitionId，使用PreparedStatement防SQL注入）
+- ✅ DAO层：WorkFileDAOImpl完整实现（6个方法：insert/deleteById/deleteByWorkId/update/findById/findByWorkId/findAll）
+- ✅ DAO层：WorkLikeDAOImpl完整实现（7个方法：insert/deleteById/deleteByWorkIdAndUserId/findByWorkId/findByUserId/isLiked/countByWorkId）
+- ✅ DAO层：WorkShareDAOImpl完整实现（5个方法：insert/deleteById/findByWorkId/findByUserId/countByWorkId/findAll）
+- ✅ Service层：WorkServiceImpl完整实现（11个方法：submitWork/updateWork/deleteWork/getWorkById/getWorksByTeamId/getWorksByCompetitionId/getWorksByUserId/likeWork/unlikeWork/shareWork/getLikeCount/isWorkLikedByUser，含输入验证和业务校验）
+- ✅ Controller层：WorkServlet完整实现
+  - GET: myWorks（我的作品列表）、add（提交页）、edit（编辑页）、detail（详情页）、delete（删除）
+  - POST: submit（提交）、update（更新）、delete（删除）、like（点赞）、unlike（取消点赞）
+  - Session登录集成，队长权限校验（仅队长可删改），截止日期后禁用删除
+- ✅ Controller层：FileUploadServlet（通用JSON接口上传图片，校验文件类型/大小/扩展名）
+- ✅ 工具类：FileUploadUtil（文件类型校验JPG/PNG、大小限制10MB、唯一文件名生成、按竞赛目录分组存储、文件删除）
+- ✅ 前端页面：3个JSP页面
+  - submission_add.jsp：双模合一（新建/编辑共用），图片拖拽上传+预览、缩略图占位、字数实时统计（500字上限）、截止日期提示、表单前端校验
+  - submission_list.jsp：统计概览栏（总作品数/已提交/草稿）+ 封面卡片网格（缩略图/标题/队伍/竞赛/时间/状态标签）+ 图片预览弹窗（Bootstrap Modal）+ 空状态引导（创建队伍/提交作品）
+  - submission_detail.jsp：左右分栏布局（大图展示+信息面板）、队伍/竞赛/提交时间/更新时间信息、大图新窗口打开
+- ✅ 首页集成：index.jsp导航栏添加“我的作品”链接
+- ✅ 核心功能：作品提交、作品修改、作品删除（含截止日期后禁用）、作品详情查看、作品列表查看、作品图片上传、作品点赞/取消点赞、作品分享记录
+- ✅ 安全特性：PreparedStatement防SQL注入、文件类型/大小/扩展名三重校验、队长权限校验、截止日期后禁用删除、Session登录验证
+- **代码量：** 12个文件（4个DAO实现 + 1个Service接口 + 1个Service实现 + 2个Controller + 1个工具类 + 3个JSP），约1500行代码
+- **编译状态：** 编译通过
 
 ---
 
@@ -364,11 +387,11 @@ test: 添加作品提交测试用例
 - [ ] 队伍报名竞赛（后端已实现，前端按钮待启用）
 
 **模块4 - 作品管理（队员B）：**
-- [ ] 作品提交功能（WorkServlet + work_submit.jsp）
-- [ ] 文件上传功能（FileUploadServlet）
-- [ ] 作品列表展示（work_list.jsp）
-- [ ] 作品详情页面（work_detail.jsp）
-- [ ] 作品修改/删除功能
+- [x] 作品提交功能（WorkServlet + submission_add.jsp）✅ 2026-07-06
+- [x] 文件上传功能（FileUploadServlet + FileUploadUtil）✅ 2026-07-06
+- [x] 作品列表展示（submission_list.jsp）✅ 2026-07-06
+- [x] 作品详情页面（submission_detail.jsp）✅ 2026-07-06
+- [x] 作品修改/删除功能 ✅ 2026-07-06
 
 **模块5 - 评分与获奖（队员C）：**
 - [x] 新闻发布功能（NewsServlet + news_list.jsp + news_detail.jsp + news_add.jsp + news_edit.jsp + news_manage.jsp）✅ 2026-07-06
@@ -405,11 +428,11 @@ test: 添加作品提交测试用例
 - [x] 队伍统计（我的队伍、我参与的队伍）
 
 **模块4 - 作品管理（队员B）：**
-- [ ] 作品点赞功能（work_like表）
-- [ ] 作品分享功能（work_share表）
+- [x] 作品点赞功能（work_like表）✅ 2026-07-06
+- [x] 作品分享功能（work_share表）✅ 2026-07-06
 - [ ] 作品搜索和筛选
 - [ ] 作品统计（浏览量、点赞数）
-- [ ] 图片预览和下载
+- [x] 图片预览和下载 ✅ 2026-07-06
 
 **模块5 - 评分与获奖（队员C）：**
 - [ ] 电子奖状生成功能（CertificateServlet）
@@ -712,6 +735,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月6日  
-**更新人：** 程建锋  
-**版本：** v1.2
+**最后更新时间：** 2026年7月6日
+**更新人：** 田继青
+**版本：** v1.3
