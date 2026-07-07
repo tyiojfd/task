@@ -76,6 +76,20 @@ public class InvitationServiceImpl implements InvitationService {
             }
         }
 
+        // 8. 检查是否已在同竞赛其他队伍中
+        List<TeamMember> myMemberships = teamMemberDAO.findByUserId(userId);
+        if (myMemberships != null) {
+            for (TeamMember membership : myMemberships) {
+                Team joinedTeam = teamDAO.findById(membership.getTeamId());
+                if (joinedTeam != null && joinedTeam.getCompetitionId() != null
+                        && joinedTeam.getCompetitionId().equals(team.getCompetitionId())
+                        && !joinedTeam.getTeamId().equals(team.getTeamId())
+                        && joinedTeam.getStatus() != null && joinedTeam.getStatus() != 0) {
+                    return false;
+                }
+            }
+        }
+
         // 8. 添加到队伍成员
         TeamMember newMember = new TeamMember();
         newMember.setTeamId(invitation.getTeamId());

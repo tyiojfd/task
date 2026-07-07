@@ -1,14 +1,17 @@
 package com.poster.filter;
 
+import com.poster.model.Role;
 import com.poster.model.User;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 /**
- * 登录权限验证过滤器（需在web.xml中配置，确保在EncodingFilter之后执行）
+ * 登录与角色权限验证过滤器（需在web.xml中配置，确保在EncodingFilter之后执行）
  * @author 团队共建
  * @date 2026-07-04
  */
@@ -26,9 +29,10 @@ public class AuthFilter implements Filter {
 
         String path = req.getRequestURI();
         String contextPath = req.getContextPath();
+        String relativePath = path.substring(contextPath.length());
 
         // 公开资源，不需要登录
-        if (isPublicResource(path, contextPath)) {
+        if (isPublicResource(relativePath)) {
             chain.doFilter(request, response);
             return;
         }
@@ -38,47 +42,99 @@ public class AuthFilter implements Filter {
         User user = (session != null) ? (User) session.getAttribute("user") : null;
 
         if (user == null) {
-            // 未登录，跳转到登录页
             resp.sendRedirect(contextPath + "/login");
-        } else {
-            chain.doFilter(request, response);
+            return;
         }
+
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+
+        if (!hasPermission(relativePath, req.getParameter("action"), roles)) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "无权限访问该功能");
+            return;
+        }
+
+        chain.doFilter(request, response);
     }
 
     /**
      * 判断是否为公开资源（不需要登录即可访问）
      */
-    private boolean isPublicResource(String path, String contextPath) {
-        // 去除上下文路径
-        String relativePath = path.substring(contextPath.length());
-
-        // 静态资源
+    private boolean isPublicResource(String relativePath) {
         if (relativePath.startsWith("/css/") || relativePath.startsWith("/js/")
                 || relativePath.startsWith("/images/") || relativePath.startsWith("/uploads/")) {
             return true;
         }
 
-        // 公开页面和接口
         if (relativePath.startsWith("/login") || relativePath.startsWith("/register")
                 || relativePath.startsWith("/logout")) {
             return true;
         }
 
-        // 公开API
         if (relativePath.startsWith("/api/public/")) {
             return true;
         }
 
-        // 首页公开
         if (relativePath.equals("/") || relativePath.equals("/index") || relativePath.equals("")) {
             return true;
         }
 
-        // 新闻公告公开（列表和详情不需要登录）
+        // 新闻公开仅限列表和详情
+        return relativePath.equals("/news") || relativePath.startsWith("/news?action=list")
+                || relativePath.startsWith("/news?action=detail");
+    }
+
+    /**
+     * 基于路径和action做最小RBAC校验
+     */
+    private boolean hasPermission(String relativePath, String action, List<Role> roles) {
+        boolean isAdmin = hasRole(roles, "管理员");
+        boolean isJudge = hasRole(roles, "评委");
+        boolean isParticipant = !isAdmin && !isJudge;
+
+        if (relativePath.startsWith("/competition")) {
+            if (action == null || "list".equals(action) || "detail".equals(action)) {
+                return true;
+            }
+            return isAdmin;
+        }
+
         if (relativePath.startsWith("/news")) {
+            if (action == null || "list".equals(action) || "detail".equals(action)) {
+                return true;
+            }
+            return isAdmin;
+        }
+
+        if (relativePath.startsWith("/score")) {
+            return isJudge;
+        }
+
+        if (relativePath.startsWith("/award")) {
+            return isAdmin;
+        }
+
+        if (relativePath.startsWith("/team") || relativePath.startsWith("/invitation")
+                || relativePath.startsWith("/work")) {
+            return isParticipant;
+        }
+
+        if (relativePath.startsWith("/profile")) {
             return true;
         }
 
+        return true;
+    }
+
+    private boolean hasRole(List<Role> roles, String roleName) {
+        if (roles == null) {
+            return false;
+        }
+        for (Role role : roles) {
+            if (roleName.equals(role.getRoleName())) {
+                return true;
+            }
+        }
         return false;
     }
 

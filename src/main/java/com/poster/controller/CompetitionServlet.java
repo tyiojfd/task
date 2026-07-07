@@ -98,15 +98,9 @@ public class CompetitionServlet extends HttpServlet {
                 Team userTeam = null;
 
                 if (user != null) {
-                    // 查询用户在该竞赛中的队伍
-                    List<Team> teams = teamService.getTeamsByLeaderId(user.getUserId());
-                    for (Team team : teams) {
-                        if (team.getCompetitionId().equals(competitionId)) {
-                            hasJoined = true;
-                            userTeam = team;
-                            break;
-                        }
-                    }
+                    // 查询用户在该竞赛中的队伍（无论是队长还是队员）
+                    userTeam = teamService.getUserTeamInCompetition(user.getUserId(), competitionId);
+                    hasJoined = (userTeam != null);
                 }
 
                 request.setAttribute("competition", competition);

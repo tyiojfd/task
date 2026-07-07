@@ -12,19 +12,23 @@
     User sessionUser = (User) session.getAttribute("user");
     if (hasJoined == null) hasJoined = false;
 
-    // 检查用户是否为管理员
+    // 检查用户角色
     boolean isAdmin = false;
+    boolean isJudge = false;
     if (sessionUser != null) {
-        List<Role> userRoles = (List<Role>) session.getAttribute("userRoles");
+        List<Role> userRoles = (List<Role>) session.getAttribute("roles");
         if (userRoles != null) {
             for (Role role : userRoles) {
                 if ("管理员".equals(role.getRoleName())) {
                     isAdmin = true;
-                    break;
+                }
+                if ("评委".equals(role.getRoleName())) {
+                    isJudge = true;
                 }
             }
         }
     }
+    boolean canParticipate = sessionUser != null && !isAdmin && !isJudge;
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -104,18 +108,21 @@
                         <% if (sessionUser == null) { %>
                             <p class="mb-2">请先登录后参加竞赛</p>
                             <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">立即登录</a>
+                        <% } else if (!canParticipate) { %>
+                            <h5 class="text-secondary">当前角色无需参赛</h5>
+                            <p class="text-muted mb-0">管理员用于系统管理，评委用于评分，不参与创建或加入参赛队伍。</p>
                         <% } else if (hasJoined) { %>
                             <h5 class="text-success">✓ 您已参加此竞赛</h5>
                             <p class="mb-2">队伍：<%= userTeam != null ? userTeam.getTeamName() : "未知" %></p>
                             <a href="${pageContext.request.contextPath}/team?action=detail&id=<%= userTeam != null ? userTeam.getTeamId() : "" %>"
                                class="btn btn-primary me-2">查看队伍</a>
-                            <a href="${pageContext.request.contextPath}/work?action=list" class="btn btn-success">管理作品</a>
+                            <a href="${pageContext.request.contextPath}/work?action=myWorks" class="btn btn-success">查看作品</a>
                         <% } else { %>
                             <h5>参加此竞赛</h5>
                             <p class="text-muted mb-3">参加竞赛需要创建或加入队伍</p>
                             <a href="${pageContext.request.contextPath}/team?action=create&competitionId=<%= competition.getCompetitionId() %>"
                                class="btn btn-primary me-2">创建队伍</a>
-                            <a href="${pageContext.request.contextPath}/team?action=list" class="btn btn-outline-primary">加入队伍</a>
+                            <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-outline-primary">返回竞赛列表后选择参赛</a>
                         <% } %>
                     </div>
 

@@ -63,6 +63,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String username, String password) {
+        return login(username, password, null);
+    }
+
+    @Override
+    public User login(String username, String password, String expectedRole) {
         // 1. 根据用户名查询用户
         User user = userDAO.findByUsername(username);
         if (user == null) {
@@ -77,6 +82,23 @@ public class UserServiceImpl implements UserService {
         // 3. 检查用户状态
         if (user.getStatus() == null || user.getStatus() == 0) {
             return null; // 用户已禁用
+        }
+
+        // 4. 如指定登录角色，则校验用户是否拥有该角色
+        if (expectedRole != null && !expectedRole.trim().isEmpty()) {
+            List<Role> roles = userRoleDAO.findRolesByUserId(user.getUserId());
+            boolean matched = false;
+            if (roles != null) {
+                for (Role role : roles) {
+                    if (expectedRole.equals(role.getRoleName())) {
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+            if (!matched) {
+                return null;
+            }
         }
 
         return user;

@@ -95,10 +95,14 @@ public class WorkServlet extends HttpServlet {
 
         List<TeamMember> memberships = teamMemberDAO.findByUserId(user.getUserId());
         List<Team> myTeams = new ArrayList<>();
+        List<Integer> leaderTeamIds = new ArrayList<>();
         for (TeamMember m : memberships) {
             Team t = teamDAO.findById(m.getTeamId());
-            if (t != null && t.getStatus() == 1) {
+            if (t != null && t.getStatus() != null && t.getStatus() != 0) {
                 myTeams.add(t);
+                if (t.getLeaderId() != null && t.getLeaderId().equals(user.getUserId()) && t.getStatus() == 2) {
+                    leaderTeamIds.add(t.getTeamId());
+                }
             }
         }
 
@@ -128,6 +132,7 @@ public class WorkServlet extends HttpServlet {
 
         request.setAttribute("works", works);
         request.setAttribute("myTeams", myTeams);
+        request.setAttribute("leaderTeamIds", leaderTeamIds);
         request.setAttribute("teamNameMap", teamNameMap);
         request.setAttribute("competitionNameMap", competitionNameMap);
         request.getRequestDispatcher("/jsp/submission_list.jsp").forward(request, response);
@@ -231,6 +236,9 @@ public class WorkServlet extends HttpServlet {
      */
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+
         String idStr = request.getParameter("id");
         if (idStr == null || idStr.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
@@ -246,6 +254,11 @@ public class WorkServlet extends HttpServlet {
             }
 
             Team team = teamService.getTeamById(work.getTeamId());
+            if (team == null || !teamService.isUserMemberOfTeam(user.getUserId(), team.getTeamId())) {
+                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
+                return;
+            }
+
             Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
 
             request.setAttribute("work", work);
@@ -268,33 +281,37 @@ public class WorkServlet extends HttpServlet {
 
         try {
             String teamIdStr = request.getParameter("teamId");
-            String competitionIdStr = request.getParameter("competitionId");
             String categoryIdStr = request.getParameter("categoryId");
             String title = request.getParameter("title");
             String description = request.getParameter("description");
 
-            if (teamIdStr == null || competitionIdStr == null || title == null || title.trim().isEmpty()) {
+            if (teamIdStr == null || title == null || title.trim().isEmpty()) {
                 request.setAttribute("error", "请填写必要信息");
                 showAddForm(request, response);
                 return;
             }
 
             Integer teamId = Integer.parseInt(teamIdStr);
-            Integer competitionId = Integer.parseInt(competitionIdStr);
+
+            Team team = teamService.getTeamById(teamId);
+            if (team == null || !team.getLeaderId().equals(user.getUserId())) {
+                request.setAttribute("error", "只有队长可以提交作品");
+                showAddForm(request, response);
+                return;
+            }
+            if (team.getStatus() == null || team.getStatus() != 2) {
+                request.setAttribute("error", "队伍报名参赛后才能提交作品");
+                showAddForm(request, response);
+                return;
+            }
+
+            Integer competitionId = team.getCompetitionId();
 
             // 校验截止日期
             Competition competition = competitionService.getCompetitionById(competitionId);
             if (competition != null && competition.getSubmitDeadline() != null
                     && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
                 request.setAttribute("error", "提交已截止，无法提交作品");
-                showAddForm(request, response);
-                return;
-            }
-
-            // 验证队长身份
-            Team team = teamService.getTeamById(teamId);
-            if (team == null || !team.getLeaderId().equals(user.getUserId())) {
-                request.setAttribute("error", "只有队长可以提交作品");
                 showAddForm(request, response);
                 return;
             }

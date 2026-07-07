@@ -1,5 +1,6 @@
 ﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
 <%@ page import="com.poster.model.Work" %>
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.Competition" %>
@@ -11,6 +12,16 @@
     if (sessionUser == null) {
         response.sendRedirect(request.getContextPath() + "/login");
         return;
+    }
+    @SuppressWarnings("unchecked")
+    List<Role> userRoles = (List<Role>) session.getAttribute("roles");
+    boolean isAdmin = false;
+    boolean isJudge = false;
+    if (userRoles != null) {
+        for (Role role : userRoles) {
+            if ("管理员".equals(role.getRoleName())) isAdmin = true;
+            if ("评委".equals(role.getRoleName())) isJudge = true;
+        }
     }
     Team team = (Team) request.getAttribute("team");
     Competition competition = (Competition) request.getAttribute("competition");
@@ -201,13 +212,36 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home me-1"></i>首页</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home me-1"></i>竞赛大厅</a>
                     </li>
+                    <% if (!isAdmin && !isJudge) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams"><i class="fas fa-users me-1"></i>我的队伍</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/work?action=myWorks"><i class="fas fa-image me-1"></i>作品管理</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/invitation"><i class="fas fa-envelope me-1"></i>邀请通知</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="${pageContext.request.contextPath}/work?action=myWorks"><i class="fas fa-image me-1"></i>我的作品</a>
+                    </li>
+                    <% } %>
+                    <% if (isJudge) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/score?action=list"><i class="fas fa-star-half-alt me-1"></i>评分管理</a>
+                    </li>
+                    <% } %>
+                    <% if (isAdmin) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
+                        </ul>
+                    </li>
+                    <% } %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/news?action=list"><i class="fas fa-bullhorn me-1"></i>新闻公告</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user me-1"></i>个人中心</a>
@@ -333,6 +367,12 @@
                             </div>
                         </div>
 
+                        <% if (team != null && team.getStatus() != null && team.getStatus() != 2) { %>
+                            <div class="deadline-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                当前队伍尚未完成报名参赛，只有报名后的队伍才能正式提交作品。
+                            </div>
+                        <% } %>
                         <% if (competition != null && competition.getSubmitDeadline() != null) { %>
                             <div class="deadline-warning">
                                 <i class="fas fa-clock"></i>

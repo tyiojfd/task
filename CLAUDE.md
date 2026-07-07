@@ -223,9 +223,23 @@
 - ✅ 前端页面：team_list.jsp成员头像叠层优先显示真实照片，TeamServlet.listMyTeams传userAvatars数据
 - ✅ 头像逻辑：全系统统一（有avatar路径→显示img，无→首字母渐变圆底），头像文件存储到/uploads/avatars/
 - ✅ 注册角色修复：UserServiceImpl.register()中findByName("学生")→findByName("队员")，解决新用户注册后无角色分配的bug
-- ⚠️ 数据库迁移：需执行 ALTER TABLE user ADD COLUMN avatar VARCHAR(500) DEFAULT NULL COMMENT '头像文件路径'; 否则注册功能报错
+- ✅ 数据库迁移：全新数据库已在 `database/schema.sql` 中包含 `user.avatar`；旧数据库升级可执行 `database/migrations/V3__user_avatar.sql`
 - **代码量：** 10个文件（1个Model + 1个DAO + 1个Service接口 + 1个Service实现 + 2个Controller + 2个JSP + 1个SQL + 1个列表页更新）
 - **编译状态：** BUILD SUCCESS
+
+**已完成：数据库脚本对齐与杨祥博模块检查（完成人：洪振博/Claude 协助）**
+- ✅ 检查范围：核对杨祥博最近 Git 提交涉及的队伍管理、邀请处理、报名参赛、用户搜索、头像展示相关代码与数据库结构
+- ✅ 队伍模块一致性：`team` 表字段与 `Team`/`TeamDAOImpl` 对齐（team_id、team_name、competition_id、category_id、leader_id、team_desc、status、create_time）
+- ✅ 队伍成员一致性：`team_member.is_leader` 与 `TeamMember.role` 映射关系已确认（is_leader=1 → role=1 队长；is_leader=0 → role=2 队员）
+- ✅ 邀请模块一致性：`invitation` 表字段与 `Invitation`/`InvitationDAOImpl`/`InvitationServlet` 对齐（team_id、inviter_id、invitee_id、status、invite_time、response_time）
+- ✅ 用户头像一致性：`schema.sql` 已包含 `user.avatar VARCHAR(500)`，`User`、`UserDAOImpl`、`RegisterServlet`、`ProfileServlet`、`team_list.jsp`、`team_detail.jsp` 均按 avatar 路径读写/展示
+- ✅ 作品模块数据库对齐：以当前 `WorkDAOImpl` 为基准，`work` 表包含 competition_id、category_id、work_title、work_desc、image_path、file_path（兼容旧版）、file_size、version、status、submit_time、update_time
+- ✅ 文件表数据库对齐：`work_file` 表补充 `file_size BIGINT DEFAULT 0`，匹配 `WorkFileDAOImpl.insert/update/extractWorkFileFromResultSet`
+- ✅ 初始化脚本安全化：`database/data.sql` 改为可重复执行的幂等脚本，避免重复运行时报 `Duplicate entry 'admin'`
+- ✅ 兼容初始化脚本：`database/init_data.sql` 不再清空 user/role，改为与 data.sql 一致的安全幂等初始化逻辑，避免外键数据不一致
+- ✅ 旧库迁移脚本：`database/migrations/V2__work_module.sql` 用于旧版 work/work_file 表升级；`database/migrations/V3__user_avatar.sql` 用于旧库补充用户头像字段
+- ✅ Navicat 推荐执行顺序：全新数据库执行 `schema.sql` → `data.sql`；旧数据库升级执行 `V2__work_module.sql`、`V3__user_avatar.sql` 后再执行 `data.sql`
+- ⚠️ 验证说明：当前环境 `JAVA_HOME` 未配置，Maven wrapper 构建无法启动；已完成 SQL 字段静态核对和 `git diff --check` 格式检查
 
 ### 2026-07-07
 
@@ -292,6 +306,18 @@
 - ✅ 安全修复：competition_list.jsp「发布竞赛」按钮和空状态「立即发布」链接新增管理员权限检查，解决普通用户可见管理功能的安全漏洞
 - **代码量：** 8个JSP页面修改，每个页面约+50行（角色判断+完整导航栏），约+400行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
+
+**洪振博待做（当前收尾项）**
+- [ ] 继续统一新闻模块剩余页面导航栏（`news_add.jsp`、`news_edit.jsp`、`news_detail.jsp`），确保管理员进入新闻模块任意页面时导航一致，不再出现入口缩水
+- [ ] 重新部署 / 重启 `task_war_exploded`，验证最新 JSP 和 Servlet 改动已生效，避免浏览器仍读取旧部署内容
+- [ ] 浏览器实测三类登录入口：`/login`、`/login?role=judge`、`/login?role=admin`，确认普通用户、评委、管理员三个独立登录页均按预期显示
+- [ ] 浏览器实测管理员导航栏：首页、竞赛列表、新闻管理、新闻发布、新闻编辑、新闻详情等页面应统一显示“竞赛大厅 / 管理中心 / 新闻公告 / 个人中心 / 退出”，且不显示“我的队伍 / 邀请通知 / 我的作品”
+- [ ] 浏览器实测评委导航栏：首页、评分页等页面应统一显示“竞赛大厅 / 评分管理 / 新闻公告 / 个人中心 / 退出”，且不显示参赛入口
+- [ ] 浏览器实测普通参赛用户导航栏：首页、个人中心、我的队伍、邀请通知、我的作品、作品提交页等页面应统一显示“我的队伍 / 邀请通知 / 我的作品”
+- [ ] 验证普通参赛用户（队员）进入竞赛详情页时，如已加入该竞赛队伍，应显示“已参加此竞赛 / 查看队伍 / 查看作品”，不再误判成“未参加”
+- [ ] 验证对象级权限：非本队成员不能直接访问他队 `/team?action=detail&id=...`；非本队成员不能访问他队作品详情；普通队员不能调用队长专属操作（编辑队伍、邀请成员、报名参赛、提交/修改/删除作品）
+- [ ] 验证同竞赛重复入队限制：已在某竞赛队伍中的用户再次接受同竞赛其他队伍邀请时应失败
+- [ ] 检查并清理 `LoginServlet.java`、`AuthFilter.java`、`TeamServlet.java`、`WorkServlet.java`、`CompetitionServlet.java`、`InvitationServiceImpl.java` 等本轮修改后的编译问题与提示文案，必要时补充用户友好错误反馈
 
 ---
 

@@ -8,15 +8,17 @@
     @SuppressWarnings("unchecked")
     List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
 
-    // 管理员权限检查
+    // 角色权限检查
     User sessionUser = (User) session.getAttribute("user");
     boolean isAdmin = false;
+    boolean isJudge = false;
     if (sessionUser != null) {
         @SuppressWarnings("unchecked")
         List<Role> roles = (List<Role>) session.getAttribute("roles");
         if (roles != null) {
             for (Role r : roles) {
-                if ("管理员".equals(r.getRoleName())) { isAdmin = true; break; }
+                if ("管理员".equals(r.getRoleName())) isAdmin = true;
+                if ("评委".equals(r.getRoleName())) isJudge = true;
             }
         }
     }
@@ -54,8 +56,13 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">竞赛大厅</a></li>
                     <% if (sessionUser != null) { %>
+                        <% if (!isAdmin && !isJudge) { %>
                         <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
                         <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
+                        <% } %>
+                        <% if (isJudge) { %>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
+                        <% } %>
                         <% if (isAdmin) { %>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
