@@ -223,7 +223,7 @@
 - ✅ 前端页面：team_list.jsp成员头像叠层优先显示真实照片，TeamServlet.listMyTeams传userAvatars数据
 - ✅ 头像逻辑：全系统统一（有avatar路径→显示img，无→首字母渐变圆底），头像文件存储到/uploads/avatars/
 - ✅ 注册角色修复：UserServiceImpl.register()中findByName("学生")→findByName("队员")，解决新用户注册后无角色分配的bug
-- ✅ 数据库迁移：全新数据库已在 `database/schema.sql` 中包含 `user.avatar`；旧数据库升级可执行 `database/migrations/V3__user_avatar.sql`
+- ⚠️ 数据库迁移：需执行 ALTER TABLE user ADD COLUMN avatar VARCHAR(500) DEFAULT NULL COMMENT '头像文件路径'; 否则注册功能报错
 - **代码量：** 10个文件（1个Model + 1个DAO + 1个Service接口 + 1个Service实现 + 2个Controller + 2个JSP + 1个SQL + 1个列表页更新）
 - **编译状态：** BUILD SUCCESS
 
@@ -240,6 +240,18 @@
 - ✅ 旧库迁移脚本：`database/migrations/V2__work_module.sql` 用于旧版 work/work_file 表升级；`database/migrations/V3__user_avatar.sql` 用于旧库补充用户头像字段
 - ✅ Navicat 推荐执行顺序：全新数据库执行 `schema.sql` → `data.sql`；旧数据库升级执行 `V2__work_module.sql`、`V3__user_avatar.sql` 后再执行 `data.sql`
 - ⚠️ 验证说明：当前环境 `JAVA_HOME` 未配置，Maven wrapper 构建无法启动；已完成 SQL 字段静态核对和 `git diff --check` 格式检查
+
+**已完成：注册登录问题修复（完成人：杨祥博）**
+- ✅ 问题定位：Jetty 9.4.58对@MultipartConfig的multipart/form-data请求处理不兼容，导致RegisterServlet中request.getParameter()返回null
+- ✅ 修复方案：RegisterServlet去掉@MultipartConfig注解，回到普通Form提交（头像通过个人中心ProfileServlet上传）
+- ✅ register.jsp：去掉enctype="multipart/form-data"和头像上传区，避免Jetty multipart兼容性问题
+- ✅ 角色分配修复：UserServiceImpl.register()中findByName("学生")→findByName("队员")，数据库角色表只有「队员」无「学生」
+- ✅ 模糊搜索增强：UserDAOImpl.searchByRealName()从只搜real_name改为同时搜real_name和username（LIKE %keyword% OR username LIKE %keyword%）
+- ⚠️ 数据库迁移：必须执行 ALTER TABLE user ADD COLUMN avatar VARCHAR(500) DEFAULT NULL; 否则UserDAOImpl.insert()中avatar列不存在导致INSERT失败→注册失败
+- ✅ 我的队伍修复：TeamServlet.listMyTeams()增加查询用户作为队员加入的队伍（teamMemberDAO.findByUserId），队伍卡片显示角色标签（队长/队员）
+- ✅ 统计卡片更新：team_list.jsp统计改为4栏（全部/我创建的/我加入的/队员总数）
+- ✅ 下一步引导：team_detail.jsp右侧"下一步做什么"根据队伍状态动态显示（组建中→报名→提交作品→等待评分）
+- **编译状态：** BUILD SUCCESS
 
 ### 2026-07-07
 
