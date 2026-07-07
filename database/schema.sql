@@ -38,9 +38,8 @@ CREATE TABLE user (
 DROP TABLE IF EXISTS role;
 CREATE TABLE role (
     role_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '角色ID',
-    role_name VARCHAR(50) NOT NULL COMMENT '角色名称',
-    role_desc VARCHAR(200) DEFAULT NULL COMMENT '角色描述',
-    INDEX idx_role_name (role_name)
+    role_name VARCHAR(50) NOT NULL UNIQUE COMMENT '角色名称',
+    role_desc VARCHAR(200) DEFAULT NULL COMMENT '角色描述'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色信息表';
 
 -- 3. 用户角色关联表
@@ -153,6 +152,7 @@ CREATE TABLE invitation (
 -- ========================================
 
 -- 9. 作品信息表
+DROP TABLE IF EXISTS work;
 CREATE TABLE work (
     work_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '作品ID',
     team_id INT NOT NULL COMMENT '队伍ID',
@@ -161,8 +161,9 @@ CREATE TABLE work (
     work_title VARCHAR(200) NOT NULL COMMENT '作品标题',
     work_desc TEXT DEFAULT NULL COMMENT '作品描述',
     image_path VARCHAR(500) DEFAULT NULL COMMENT '海报图片路径',
-    file_size INT DEFAULT NULL COMMENT '文件大小（字节）',
-    version INT DEFAULT 1 COMMENT '版本号',
+    file_path VARCHAR(500) DEFAULT NULL COMMENT '文件路径（兼容旧版字段，作品主图使用image_path）',
+    file_size INT DEFAULT NULL COMMENT '文件大小（字节，兼容旧版字段）',
+    version INT DEFAULT 1 COMMENT '版本号（兼容旧版字段）',
     status TINYINT DEFAULT 1 COMMENT '状态：1-草稿，2-已提交，3-已评分',
     submit_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
     update_time DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -183,6 +184,7 @@ CREATE TABLE work_file (
     file_name VARCHAR(200) NOT NULL COMMENT '文件名',
     file_path VARCHAR(500) NOT NULL COMMENT '存储路径',
     file_type VARCHAR(50) DEFAULT NULL COMMENT '文件类型',
+    file_size BIGINT DEFAULT 0 COMMENT '文件大小（字节）',
     upload_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
     FOREIGN KEY (work_id) REFERENCES work(work_id) ON DELETE CASCADE,
     INDEX idx_work_id (work_id)
