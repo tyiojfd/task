@@ -1,4 +1,4 @@
--- ========================================
+﻿-- ========================================
 -- 大学生海报设计竞赛系统 - 完整数据库脚本
 -- 创建时间：2026-07-04
 -- 数据库版本：MySQL 8.0
@@ -153,23 +153,28 @@ CREATE TABLE invitation (
 -- ========================================
 
 -- 9. 作品信息表
-DROP TABLE IF EXISTS work;
 CREATE TABLE work (
     work_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '作品ID',
     team_id INT NOT NULL COMMENT '队伍ID',
+    competition_id INT NOT NULL COMMENT '竞赛ID',
+    category_id INT DEFAULT NULL COMMENT '子类ID',
     work_title VARCHAR(200) NOT NULL COMMENT '作品标题',
     work_desc TEXT DEFAULT NULL COMMENT '作品描述',
-    file_path VARCHAR(500) NOT NULL COMMENT '文件路径',
+    image_path VARCHAR(500) DEFAULT NULL COMMENT '海报图片路径',
     file_size INT DEFAULT NULL COMMENT '文件大小（字节）',
     version INT DEFAULT 1 COMMENT '版本号',
-    status TINYINT DEFAULT 1 COMMENT '状态：1-已提交，2-已修改，0-已删除',
+    status TINYINT DEFAULT 1 COMMENT '状态：1-草稿，2-已提交，3-已评分',
     submit_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
+    update_time DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (team_id) REFERENCES team(team_id) ON DELETE CASCADE,
+    FOREIGN KEY (competition_id) REFERENCES competition(competition_id),
+    FOREIGN KEY (category_id) REFERENCES competition_category(category_id),
     INDEX idx_team_id (team_id),
+    INDEX idx_competition_id (competition_id),
+    INDEX idx_category_id (category_id),
     INDEX idx_status (status),
     INDEX idx_submit_time (submit_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='作品信息表';
-
 -- 10. 作品文件表
 DROP TABLE IF EXISTS work_file;
 CREATE TABLE work_file (
