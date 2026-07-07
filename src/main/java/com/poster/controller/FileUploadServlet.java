@@ -3,8 +3,9 @@ package com.poster.controller;
 import com.poster.util.FileUploadUtil;
 
 import javax.servlet.*;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import com.google.gson.JsonObject;
@@ -13,6 +14,7 @@ import com.google.gson.JsonObject;
  * 文件上传Servlet（通用图片上传接口）
  * @author 队员B
  * @date 2026-07-06
+ *
  */
 @WebServlet("/upload")
 @MultipartConfig(
