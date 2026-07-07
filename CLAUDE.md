@@ -210,6 +210,22 @@
 - **代码量：** 11个文件（3个新建 + 6个修改 + 2个SQL补充），约1800行代码
 - **编译状态：** BUILD SUCCESS，85个Java源文件零错误
 
+### 2026-07-07
+
+**已完成：模块5-评委评分功能（完成人：队员C）**
+- ✅ DAO层：ScoreDAOImpl完整实现（8个方法：insert/deleteById/update/findById/findByWorkId/findByJudgeId/getAverageScoreByWorkId/findAll，使用PreparedStatement防SQL注入）
+- ✅ Service层：ScoreServiceImpl完整实现（6个方法：addScore/updateScore/getScoresByWorkId/getScoresByJudgeId/getAverageScore/hasScored，含评分范围验证0-100、重复评分检查）
+- ✅ Controller层：ScoreServlet完整实现
+  - GET: list（评分工作台展示待评作品）、input（指定作品评分输入）、myScores（我的评分记录）、workScores（作品评分详情）
+  - POST: submit（提交评分）、update（更新评分）
+  - Session登录集成，评委权限校验，重复评分防重（UNIQUE约束+Service层双重检查）
+- ✅ 前端页面：2个JSP页面
+  - score_input.jsp：统计概览栏（待评作品数/已评数/未评数）+ 作品卡片列表（已评/未评状态标签 + 点击进入评分）+ 评分表单（滑块+数字输入双模式、实时分数显示、已评分提示与修改入口）+ 空状态引导
+  - score_list.jsp：双视图合一 —「我的评分记录」视图（作品名/队伍/评分/时间/操作）+「作品评分详情」视图（平均分圆形徽章/最高分/最低分统计卡片 + 评分列表）
+- ✅ 安全特性：PreparedStatement防SQL注入、评分范围验证（0-100）、重复评分防重、Session登录验证
+- **代码量：** 5个文件（1个DAO实现修改 + 1个Service实现修改 + 1个Controller修改 + 2个JSP新建），约650行代码
+- **编译状态：** BUILD SUCCESS，86个Java源文件零错误
+
 ---
 
 ## 团队组织结构
@@ -418,8 +434,8 @@ test: 添加作品提交测试用例
 **模块5 - 评分与获奖（队员C）：**
 - [x] 新闻发布功能（NewsServlet + news_list.jsp + news_detail.jsp + news_add.jsp + news_edit.jsp + news_manage.jsp）✅ 2026-07-06
 - [x] Model层字段修复（News/Score/Comment/Award/Certificate与数据库对齐）✅ 2026-07-06
-- [ ] 评委评分功能（ScoreServlet + score_input.jsp）
-- [ ] 评分记录查询（score_list.jsp）
+- [x] 评委评分功能（ScoreServlet + score_input.jsp）✅ 2026-07-07
+- [x] 评分记录查询（score_list.jsp）✅ 2026-07-07
 - [ ] 评语管理功能（comment功能）
 - [ ] 获奖设置功能（AwardServlet + award_manage.jsp）
 
@@ -759,5 +775,5 @@ poster-competition-system/
 ---
 
 **最后更新时间：** 2026年7月7日
-**更新人：** 杨祥博
-**版本：** v1.4
+**更新人：** 队员C
+**版本：** v1.5

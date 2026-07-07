@@ -10,64 +10,185 @@ import java.util.List;
 
 /**
  * 评分记录DAO实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员C
+ * @date 2026-07-07
  */
 public class ScoreDAOImpl implements ScoreDAO {
 
     @Override
     public int insert(Score score) {
-        // TODO: 实现评分记录插入
         String sql = "INSERT INTO score (work_id, judge_id, score) VALUES (?, ?, ?)";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setInt(1, score.getWorkId());
+            pstmt.setInt(2, score.getJudgeId());
+            pstmt.setDouble(3, score.getScore());
+
+            int rows = pstmt.executeUpdate();
+
+            if (rows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        score.setScoreId(rs.getInt(1));
+                    }
+                }
+            }
+
+            return rows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteById(Integer scoreId) {
-        // TODO: 实现根据ID删除评分记录
         String sql = "DELETE FROM score WHERE score_id = ?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, scoreId);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int update(Score score) {
-        // TODO: 实现更新评分
         String sql = "UPDATE score SET score=? WHERE score_id=?";
-        return 0;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setDouble(1, score.getScore());
+            pstmt.setInt(2, score.getScoreId());
+
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public Score findById(Integer scoreId) {
-        // TODO: 实现根据ID查询评分记录
         String sql = "SELECT * FROM score WHERE score_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, scoreId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractScoreFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public List<Score> findByWorkId(Integer workId) {
-        // TODO: 实现根据作品ID查询所有评分
-        String sql = "SELECT * FROM score WHERE work_id = ?";
-        return new ArrayList<>();
+        String sql = "SELECT * FROM score WHERE work_id = ? ORDER BY score_time DESC";
+        List<Score> scoreList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    scoreList.add(extractScoreFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return scoreList;
     }
 
     @Override
     public List<Score> findByJudgeId(Integer judgeId) {
-        // TODO: 实现根据评委ID查询所有评分
-        String sql = "SELECT * FROM score WHERE judge_id = ?";
-        return new ArrayList<>();
+        String sql = "SELECT * FROM score WHERE judge_id = ? ORDER BY score_time DESC";
+        List<Score> scoreList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, judgeId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    scoreList.add(extractScoreFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return scoreList;
     }
 
     @Override
     public Double getAverageScoreByWorkId(Integer workId) {
-        // TODO: 实现查询作品的平均分
         String sql = "SELECT AVG(score) FROM score WHERE work_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, workId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    double avg = rs.getDouble(1);
+                    return rs.wasNull() ? 0.0 : avg;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0.0;
     }
 
     @Override
     public List<Score> findAll() {
-        // TODO: 实现查询所有评分记录
         String sql = "SELECT * FROM score ORDER BY score_time DESC";
-        return new ArrayList<>();
+        List<Score> scoreList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                scoreList.add(extractScoreFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return scoreList;
+    }
+
+    /**
+     * 从ResultSet中提取Score对象
+     */
+    private Score extractScoreFromResultSet(ResultSet rs) throws SQLException {
+        Score score = new Score();
+        score.setScoreId(rs.getInt("score_id"));
+        score.setWorkId(rs.getInt("work_id"));
+        score.setJudgeId(rs.getInt("judge_id"));
+        score.setScore(rs.getDouble("score"));
+
+        Timestamp scoreTime = rs.getTimestamp("score_time");
+        if (scoreTime != null) {
+            score.setScoreTime(scoreTime.toLocalDateTime());
+        }
+
+        return score;
     }
 }
