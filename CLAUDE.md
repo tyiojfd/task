@@ -227,6 +227,18 @@
 - **代码量：** 10个文件（1个Model + 1个DAO + 1个Service接口 + 1个Service实现 + 2个Controller + 2个JSP + 1个SQL + 1个列表页更新）
 - **编译状态：** BUILD SUCCESS
 
+**已完成：注册登录问题修复（完成人：杨祥博）**
+- ✅ 问题定位：Jetty 9.4.58对@MultipartConfig的multipart/form-data请求处理不兼容，导致RegisterServlet中request.getParameter()返回null
+- ✅ 修复方案：RegisterServlet去掉@MultipartConfig注解，回到普通Form提交（头像通过个人中心ProfileServlet上传）
+- ✅ register.jsp：去掉enctype="multipart/form-data"和头像上传区，避免Jetty multipart兼容性问题
+- ✅ 角色分配修复：UserServiceImpl.register()中findByName("学生")→findByName("队员")，数据库角色表只有「队员」无「学生」
+- ✅ 模糊搜索增强：UserDAOImpl.searchByRealName()从只搜real_name改为同时搜real_name和username（LIKE %keyword% OR username LIKE %keyword%）
+- ⚠️ 数据库迁移：必须执行 ALTER TABLE user ADD COLUMN avatar VARCHAR(500) DEFAULT NULL; 否则UserDAOImpl.insert()中avatar列不存在导致INSERT失败→注册失败
+- ✅ 我的队伍修复：TeamServlet.listMyTeams()增加查询用户作为队员加入的队伍（teamMemberDAO.findByUserId），队伍卡片显示角色标签（队长/队员）
+- ✅ 统计卡片更新：team_list.jsp统计改为4栏（全部/我创建的/我加入的/队员总数）
+- ✅ 下一步引导：team_detail.jsp右侧"下一步做什么"根据队伍状态动态显示（组建中→报名→提交作品→等待评分）
+- **编译状态：** BUILD SUCCESS
+
 ### 2026-07-07
 
 **已完成：模块5-评委评分功能（完成人：队员C）**
