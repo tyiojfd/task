@@ -27,6 +27,7 @@ CREATE TABLE user (
     real_name VARCHAR(50) NOT NULL COMMENT '真实姓名',
     email VARCHAR(100) NOT NULL COMMENT '邮箱',
     phone VARCHAR(20) DEFAULT NULL COMMENT '手机号',
+    avatar VARCHAR(500) DEFAULT NULL COMMENT '头像文件路径',
     status TINYINT DEFAULT 1 COMMENT '状态：1-正常，0-禁用',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     INDEX idx_username (username),

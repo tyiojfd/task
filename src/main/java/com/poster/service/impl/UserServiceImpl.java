@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
     private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
 
     @Override
-    public boolean register(String username, String password, String realName, String email) {
+    public boolean register(String username, String password, String realName, String email, String avatar) {
         // 1. 检查用户名是否已存在
         if (userDAO.findByUsername(username) != null) {
             return false; // 用户名已存在
@@ -45,15 +45,16 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encryptedPassword);
         user.setRealName(realName);
         user.setEmail(email);
+        user.setAvatar(avatar);
         user.setStatus(1);
 
         // 5. 插入数据库
         int userId = userDAO.insert(user);
         if (userId > 0) {
-            // 6. 分配默认角色（普通用户，role_id=3）
-            Role studentRole = roleDAO.findByName("学生");
-            if (studentRole != null) {
-                userRoleDAO.assignRole(userId, studentRole.getRoleId());
+            // 6. 分配默认角色（队员，role_name='队员'）
+            Role defaultRole = roleDAO.findByName("队员");
+            if (defaultRole != null) {
+                userRoleDAO.assignRole(userId, defaultRole.getRoleId());
             }
             return true;
         }

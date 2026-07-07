@@ -210,6 +210,23 @@
 - **代码量：** 11个文件（3个新建 + 6个修改 + 2个SQL补充），约1800行代码
 - **编译状态：** BUILD SUCCESS，85个Java源文件零错误
 
+**已完成：用户头像功能（完成人：杨祥博）**
+- ✅ 数据库：user表新增avatar VARCHAR(500)字段（schema.sql）
+- ✅ Model层：User.java新增avatar属性+getter/setter
+- ✅ DAO层：UserDAOImpl的insert/update/extractUser全部加上avatar处理
+- ✅ Service层：UserService.register()签名增加avatar参数，UserServiceImpl.register()写入avatar字段
+- ✅ Controller层：RegisterServlet加@MultipartConfig注解（maxFileSize=10MB），处理可选头像上传（校验JPG/PNG、≤2MB），存储到uploads/avatars/
+- ✅ Controller层：ProfileServlet加@MultipartConfig注解，新增uploadAvatar action（校验→保存→更新用户→删旧文件）
+- ✅ 前端页面：register.jsp新增头像上传区（相机图标→选择文件→实时预览），form加enctype="multipart/form-data"
+- ✅ 前端页面：profile.jsp显示真实头像或首字母回退+右下角相机按钮换头像+Font Awesome引入
+- ✅ 前端页面：team_detail.jsp成员头像优先显示真实照片（mu.getAvatar()），无头像回退首字母
+- ✅ 前端页面：team_list.jsp成员头像叠层优先显示真实照片，TeamServlet.listMyTeams传userAvatars数据
+- ✅ 头像逻辑：全系统统一（有avatar路径→显示img，无→首字母渐变圆底），头像文件存储到/uploads/avatars/
+- ✅ 注册角色修复：UserServiceImpl.register()中findByName("学生")→findByName("队员")，解决新用户注册后无角色分配的bug
+- ⚠️ 数据库迁移：需执行 ALTER TABLE user ADD COLUMN avatar VARCHAR(500) DEFAULT NULL COMMENT '头像文件路径'; 否则注册功能报错
+- **代码量：** 10个文件（1个Model + 1个DAO + 1个Service接口 + 1个Service实现 + 2个Controller + 2个JSP + 1个SQL + 1个列表页更新）
+- **编译状态：** BUILD SUCCESS
+
 ### 2026-07-07
 
 **已完成：模块5-评委评分功能（完成人：队员C）**
@@ -827,3 +844,4 @@ poster-competition-system/
 **最后更新时间：** 2026年7月7日
 **更新人：** 队员C
 **版本：** v1.8
+**版本：** v1.6

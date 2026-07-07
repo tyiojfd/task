@@ -35,6 +35,8 @@
     @SuppressWarnings("unchecked")
     Map<Integer, String> userNames = (Map<Integer, String>) request.getAttribute("userNames");
     @SuppressWarnings("unchecked")
+    Map<Integer, String> userAvatars = (Map<Integer, String>) request.getAttribute("userAvatars");
+    @SuppressWarnings("unchecked")
     Map<Integer, Integer> myTeamRoles = (Map<Integer, Integer>) request.getAttribute("myTeamRoles");
 
     // 统计数据
@@ -416,7 +418,13 @@
                                                 String initial = name != null && !name.isEmpty() ? name.substring(0, 1) : "?";
                                                 String[] avatarColors = {"#6C5CE7", "#FD79A8", "#00CEC9", "#F39C12"};
                                         %>
-                                            <span class="member-avatar-sm" style="background:<%= avatarColors[shown % 4] %>" title="<%= name %>"><%= initial %></span>
+                                            <% String ava = userAvatars != null ? userAvatars.get(m.getUserId()) : null; %>
+                                            <% if (ava != null && !ava.isEmpty()) { %>
+                                                <img src="<%= request.getContextPath() + ava %>"
+                                                     class="member-avatar-sm" style="object-fit:cover;" title="<%= name %>">
+                                            <% } else { %>
+                                                <span class="member-avatar-sm" style="background:<%= avatarColors[shown % 4] %>" title="<%= name %>"><%= initial %></span>
+                                            <% } %>
                                         <%      shown++;
                                             }
                                             if (memberCount > 4) {

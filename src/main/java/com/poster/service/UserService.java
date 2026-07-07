@@ -14,7 +14,7 @@ public interface UserService {
     /**
      * 用户注册
      */
-    boolean register(String username, String password, String realName, String email);
+    boolean register(String username, String password, String realName, String email, String avatar);
 
     /**
      * 用户登录

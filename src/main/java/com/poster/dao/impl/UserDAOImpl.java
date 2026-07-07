@@ -17,7 +17,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public int insert(User user) {
-        String sql = "INSERT INTO user (username, password, real_name, email, phone, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO user (username, password, real_name, email, phone, avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
@@ -25,7 +25,8 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(3, user.getRealName());
             ps.setString(4, user.getEmail());
             ps.setString(5, user.getPhone());
-            ps.setInt(6, user.getStatus() != null ? user.getStatus() : 1);
+            ps.setString(6, user.getAvatar());
+            ps.setInt(7, user.getStatus() != null ? user.getStatus() : 1);
             int rows = ps.executeUpdate();
             if (rows > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
@@ -54,15 +55,16 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public int update(User user) {
-        String sql = "UPDATE user SET username=?, real_name=?, email=?, phone=?, status=? WHERE user_id=?";
+        String sql = "UPDATE user SET username=?, real_name=?, email=?, phone=?, avatar=?, status=? WHERE user_id=?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getRealName());
             ps.setString(3, user.getEmail());
             ps.setString(4, user.getPhone());
-            ps.setInt(5, user.getStatus());
-            ps.setInt(6, user.getUserId());
+            ps.setString(5, user.getAvatar());
+            ps.setInt(6, user.getStatus());
+            ps.setInt(7, user.getUserId());
             return ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -177,6 +179,7 @@ public class UserDAOImpl implements UserDAO {
         user.setRealName(rs.getString("real_name"));
         user.setEmail(rs.getString("email"));
         user.setPhone(rs.getString("phone"));
+        user.setAvatar(rs.getString("avatar"));
         user.setStatus(rs.getInt("status"));
         user.setCreateTime(rs.getTimestamp("create_time").toLocalDateTime());
         return user;

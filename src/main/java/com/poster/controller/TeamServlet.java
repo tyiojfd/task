@@ -148,12 +148,14 @@ public class TeamServlet extends HttpServlet {
 
         // 鍔犺浇鎴愬憳鐢ㄦ埛鍚嶆槧灏?
         Map<Integer, String> userNames = new HashMap<>();
+        Map<Integer, String> userAvatars = new HashMap<>();
         for (List<TeamMember> members : teamMembers.values()) {
             for (TeamMember member : members) {
                 if (!userNames.containsKey(member.getUserId())) {
                     User memberUser = userDAO.findById(member.getUserId());
                     if (memberUser != null) {
                         userNames.put(memberUser.getUserId(), memberUser.getRealName());
+                        userAvatars.put(memberUser.getUserId(), memberUser.getAvatar());
                     }
                 }
             }
@@ -164,6 +166,7 @@ public class TeamServlet extends HttpServlet {
         request.setAttribute("memberCounts", memberCounts);
         request.setAttribute("teamMembers", teamMembers);
         request.setAttribute("userNames", userNames);
+        request.setAttribute("userAvatars", userAvatars);
         request.setAttribute("myTeamRoles", myTeamRoles);
         request.getRequestDispatcher("/jsp/team_list.jsp").forward(request, response);
     }

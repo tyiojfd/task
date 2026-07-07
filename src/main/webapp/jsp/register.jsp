@@ -479,7 +479,22 @@
                 </div>
             <% } %>
 
-            <form action="${pageContext.request.contextPath}/register" method="post" id="regForm">
+            <form action="${pageContext.request.contextPath}/register" method="post" enctype="multipart/form-data" id="regForm">
+                <!-- 头像上传 -->
+                <div class="field-group" style="text-align:center;">
+                    <label for="avatarInput" style="cursor:pointer;">
+                        <div id="avatarPreview" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg, #6C5CE7, #FD79A8);
+                                    display:inline-flex;align-items:center;justify-content:center;
+                                    font-size:2.2rem;font-weight:700;color:white;
+                                    box-shadow:0 4px 16px rgba(108,92,231,0.25); transition:all 0.3s;">
+                            <i class="bi bi-camera"></i>
+                        </div>
+                        <div style="font-size:12px;color:#888;margin-top:6px;">点击上传头像（可选）</div>
+                    </label>
+                    <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/png"
+                           style="display:none;" onchange="previewAvatar(this)">
+                </div>
+
                 <div class="field-group">
                     <div class="field-label"><span class="required-dot"></span> 用户名</div>
                     <div class="field-input-wrap">
@@ -534,6 +549,21 @@
     </div>
 
     <script>
+    // 头像预览
+    function previewAvatar(input) {
+        var preview = document.getElementById('avatarPreview');
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = '';
+                preview.style.backgroundImage = 'url(' + e.target.result + ')';
+                preview.style.backgroundSize = 'cover';
+                preview.style.backgroundPosition = 'center';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     (function() {
         var pw = document.getElementById('password');
         var cpw = document.getElementById('confirmPassword');

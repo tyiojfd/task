@@ -14,6 +14,7 @@ public class User {
     private String realName;
     private String email;
     private String phone;
+    private String avatar; // 头像文件路径
     private Integer status; // 1-正常，0-禁用
     private LocalDateTime createTime;
 
@@ -67,6 +68,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public Integer getStatus() {

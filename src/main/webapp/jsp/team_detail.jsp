@@ -449,9 +449,14 @@
                                             <i class="fas fa-crown" style="color:#F39C12;" title="队长"></i>
                                         </span>
                                     <% } %>
-                                    <div class="member-grid-avatar" style="background:<%= color %>; position:relative;">
-                                        <%= initial %>
-                                    </div>
+                                    <% if (mu != null && mu.getAvatar() != null && !mu.getAvatar().isEmpty()) { %>
+                                        <img src="<%= request.getContextPath() + mu.getAvatar() %>"
+                                             style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto 0.8rem;display:block;">
+                                    <% } else { %>
+                                        <div class="member-grid-avatar" style="background:<%= color %>; position:relative;">
+                                            <%= initial %>
+                                        </div>
+                                    <% } %>
                                     <h6 class="mb-0"><%= name %></h6>
                                     <span class="badge <%= isTeamLeader ? "bg-warning text-dark" : "bg-light text-muted" %> mt-1">
                                         <%= isTeamLeader ? "👑 队长" : "队员" %>
@@ -524,21 +529,38 @@
 
                 <div class="info-card">
                     <h6 class="mb-3"><i class="fas fa-lightbulb me-2" style="color:#F39C12;"></i>下一步做什么？</h6>
+                    <%
+                        // 动态计算每步状态
+                        boolean step1Done = memberCount >= 5 || (team.getStatus() != null && team.getStatus() >= 2);
+                        boolean step2Done = team.getStatus() != null && team.getStatus() == 2;
+                        boolean step1Active = !step1Done && !step2Done;
+                        boolean step2Active = (memberCount >= 1 || step1Done) && !step2Done && team.getStatus() == 1;
+                        String step1Style = step1Done || step2Done ? "background:#00B894;" : "background:var(--primary);";
+                        String step2Style = step2Done ? "background:#00B894;" : (step2Active ? "background:var(--primary);" : "background:#B2BEC3;");
+                        String step3Style = step2Done ? "background:var(--primary);" : "background:#B2BEC3;";
+                        String step4Style = "background:#B2BEC3;";
+                        String step1TextStyle = (step1Done || step2Done) ? "" : "text-muted";
+                        String step2TextStyle = step2Done ? "" : (step2Active ? "" : "text-muted");
+                    %>
                     <div class="d-flex flex-column gap-2">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge rounded-pill" style="background:var(--primary);">1</span>
-                            <small>邀请队员加入队伍</small>
+                            <span class="badge rounded-pill" style="<%= step1Style %>"><% if (step1Done || step2Done) { %>✓<% } else { %>1<% } %></span>
+                            <small class="<%= step1Done || step2Done ? "" : (step1Active ? "fw-bold" : "text-muted") %>">
+                                <%= step1Done || step2Done ? "<s>邀请队员加入队伍</s>" : "邀请队员加入队伍" %>
+                            </small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge rounded-pill" style="background:#B2BEC3;">2</span>
-                            <small class="text-muted">完成队伍组建</small>
+                            <span class="badge rounded-pill" style="<%= step2Style %>"><% if (step2Done) { %>✓<% } else { %>2<% } %></span>
+                            <small class="<%= step2Done ? "" : (step2Active ? "fw-bold" : "text-muted") %>">
+                                <%= step2Done ? "已完成报名参赛" : "报名参赛" %>
+                            </small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge rounded-pill" style="background:#B2BEC3;">3</span>
-                            <small class="text-muted">提交参赛作品</small>
+                            <span class="badge rounded-pill" style="<%= step3Style %>">3</span>
+                            <small class="<%= step2Done ? "fw-bold" : "text-muted" %>">提交参赛作品</small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge rounded-pill" style="background:#B2BEC3;">4</span>
+                            <span class="badge rounded-pill" style="<%= step4Style %>">4</span>
                             <small class="text-muted">等待评委评分</small>
                         </div>
                     </div>

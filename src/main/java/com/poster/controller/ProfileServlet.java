@@ -7,7 +7,12 @@ import com.poster.service.impl.UserServiceImpl;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 /**
  * 个人中心Servlet
@@ -15,6 +20,11 @@ import java.io.IOException;
  * @date 2026-07-04
  */
 @WebServlet("/profile")
+@MultipartConfig(
+    maxFileSize = 2097152,      // 2MB
+    maxRequestSize = 5242880,   // 5MB
+    fileSizeThreshold = 1048576 // 1MB
+)
 public class ProfileServlet extends HttpServlet {
 
     private UserService userService = new UserServiceImpl();
@@ -52,7 +62,6 @@ public class ProfileServlet extends HttpServlet {
         User freshUser = userService.getUserById(sessionUser.getUserId());
 
         if ("updateProfile".equals(action)) {
-            // 更新个人信息
             String realName = request.getParameter("realName");
             String email = request.getParameter("email");
             String phone = request.getParameter("phone");
@@ -74,7 +83,6 @@ public class ProfileServlet extends HttpServlet {
                 }
             }
         } else if ("changePassword".equals(action)) {
-            // 修改密码
             String oldPassword = request.getParameter("oldPassword");
             String newPassword = request.getParameter("newPassword");
             String confirmNewPassword = request.getParameter("confirmNewPassword");
@@ -90,8 +98,61 @@ public class ProfileServlet extends HttpServlet {
             } else {
                 request.setAttribute("error", "当前密码错误");
             }
+        } else if ("uploadAvatar".equals(action)) {
+            try {
+                Part avatarPart = request.getPart("avatar");
+                if (avatarPart == null || avatarPart.getSize() == 0) {
+                    request.setAttribute("error", "请选择头像文件");
+                } else {
+                    String contentType = avatarPart.getContentType();
+                    if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+                        request.setAttribute("error", "头像仅支持 JPG/PNG 格式");
+                    } else if (avatarPart.getSize() > 2 * 1024 * 1024) {
+                        request.setAttribute("error", "头像文件不能超过2MB");
+                    } else {
+                        String avatarPath = saveAvatar(avatarPart, request);
+                        // 删除旧头像
+                        if (freshUser.getAvatar() != null && !freshUser.getAvatar().isEmpty()) {
+                            String oldPath = getServletContext().getRealPath(freshUser.getAvatar());
+                            try { new File(oldPath).delete(); } catch (Exception ignored) {}
+                        }
+                        freshUser.setAvatar(avatarPath);
+                        if (userService.updateUser(freshUser)) {
+                            session.setAttribute("user", freshUser);
+                            request.setAttribute("success", "头像更新成功");
+                        } else {
+                            request.setAttribute("error", "头像更新失败");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error", "上传失败：" + e.getMessage());
+            }
         }
 
         request.getRequestDispatcher("/jsp/profile.jsp").forward(request, response);
+    }
+
+    /**
+     * 保存头像文件
+     */
+    private String saveAvatar(Part avatarPart, HttpServletRequest request) throws IOException {
+        String uploadDir = getServletContext().getRealPath("/uploads/avatars");
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        String originalName = avatarPart.getSubmittedFileName();
+        String ext = "";
+        if (originalName != null && originalName.contains(".")) {
+            ext = originalName.substring(originalName.lastIndexOf("."));
+        }
+        String fileName = "avatar_" + UUID.randomUUID().toString().substring(0, 8) + ext;
+        Path filePath = uploadPath.resolve(fileName);
+        avatarPart.write(filePath.toString());
+
+        return "/uploads/avatars/" + fileName;
     }
 }

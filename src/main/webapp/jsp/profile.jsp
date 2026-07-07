@@ -27,6 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人中心 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background: #f5f5f5; }
         .navbar-brand { font-weight: bold; }
@@ -99,8 +100,26 @@
                         <h5 class="mb-0">个人信息</h5>
                     </div>
                     <div class="card-body text-center">
-                        <div class="mb-3">
-                            <img src="https://via.placeholder.com/100" class="rounded-circle" alt="头像">
+                        <div class="mb-3 position-relative d-inline-block">
+                            <% if (sessionUser.getAvatar() != null && !sessionUser.getAvatar().isEmpty()) { %>
+                                <img src="<%= request.getContextPath() + sessionUser.getAvatar() %>"
+                                     style="width:100px;height:100px;border-radius:50%;object-fit:cover;
+                                            box-shadow:0 4px 16px rgba(108,92,231,0.3);" alt="头像">
+                            <% } else { %>
+                                <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg, #6C5CE7, #FD79A8);
+                                            display:inline-flex;align-items:center;justify-content:center;
+                                            font-size:2.5rem;font-weight:700;color:white;
+                                            box-shadow:0 4px 16px rgba(108,92,231,0.3);">
+                                    <%= sessionUser.getRealName() != null && !sessionUser.getRealName().isEmpty() ? sessionUser.getRealName().substring(0,1) : "?" %>
+                                </div>
+                            <% } %>
+                            <label for="avatarUpload" style="position:absolute;bottom:0;right:0;width:30px;height:30px;
+                                        background:var(--primary-color, #6C5CE7);border-radius:50%;cursor:pointer;
+                                        display:flex;align-items:center;justify-content:center;color:white;
+                                        font-size:0.8rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);"
+                                   title="更换头像">
+                                <i class="fas fa-camera"></i>
+                            </label>
                         </div>
                         <h5><%= sessionUser.getRealName() %></h5>
                         <p class="text-muted">@<%= sessionUser.getUsername() %></p>
@@ -109,6 +128,13 @@
                                 <%= sessionUser.getStatus() == 1 ? "正常" : "已禁用" %>
                             </span>
                         </p>
+                        <!-- 隐藏的头像上传表单 -->
+                        <form id="avatarForm" action="${pageContext.request.contextPath}/profile" method="post"
+                              enctype="multipart/form-data" style="display:none;">
+                            <input type="hidden" name="action" value="uploadAvatar">
+                            <input type="file" name="avatar" id="avatarUpload" accept="image/jpeg,image/png"
+                                   onchange="document.getElementById('avatarForm').submit()">
+                        </form>
                     </div>
                 </div>
             </div>
