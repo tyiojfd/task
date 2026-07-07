@@ -21,9 +21,13 @@
     Map<Integer, List<TeamMember>> teamMembers = (Map<Integer, List<TeamMember>>) request.getAttribute("teamMembers");
     @SuppressWarnings("unchecked")
     Map<Integer, String> userNames = (Map<Integer, String>) request.getAttribute("userNames");
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> myTeamRoles = (Map<Integer, Integer>) request.getAttribute("myTeamRoles");
 
     // 统计数据
     int totalTeams = myTeams != null ? myTeams.size() : 0;
+    int createdTeams = 0;
+    int joinedTeams = 0;
     int activeTeams = 0;
     int totalMembers = 0;
     if (myTeams != null) {
@@ -31,6 +35,9 @@
             if (t.getStatus() != null && t.getStatus() != 0) activeTeams++;
             Integer count = memberCounts != null ? memberCounts.get(t.getTeamId()) : null;
             if (count != null) totalMembers += count;
+            Integer role = myTeamRoles != null ? myTeamRoles.get(t.getTeamId()) : null;
+            if (role != null && role == 1) createdTeams++;
+            else joinedTeams++;
         }
     }
 %>
@@ -271,31 +278,42 @@
 
         <!-- ═══════════ 统计概览 ═══════════ -->
         <div class="row stats-row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #EDE9FE; color: var(--primary);">
                         <i class="fas fa-flag"></i>
                     </div>
                     <div>
                         <div class="stat-value"><%= totalTeams %></div>
-                        <div class="stat-label">创建队伍</div>
+                        <div class="stat-label">全部队伍</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: #E8F8F5; color: #00CEC9;">
-                        <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-crown"></i>
                     </div>
                     <div>
-                        <div class="stat-value"><%= activeTeams %></div>
-                        <div class="stat-label">活跃队伍</div>
+                        <div class="stat-value"><%= createdTeams %></div>
+                        <div class="stat-label">我创建的</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card">
-                    <div class="stat-icon" style="background: #FEF3E2; color: #F39C12;">
+                    <div class="stat-icon" style="background: #FFF3E0; color: #F39C12;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value"><%= joinedTeams %></div>
+                        <div class="stat-label">我加入的</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #FCE4EC; color: #FD79A8;">
                         <i class="fas fa-user-friends"></i>
                     </div>
                     <div>
@@ -330,6 +348,8 @@
                         int memberCount = memberCounts != null ? memberCounts.getOrDefault(team.getTeamId(), 0) : 0;
                         String statusText = team.getStatus() == 1 ? "组建中" : team.getStatus() == 2 ? "已报名" : "已取消";
                         String statusClass = team.getStatus() == 1 ? "warning" : team.getStatus() == 2 ? "success" : "secondary";
+                        Integer myRole = myTeamRoles != null ? myTeamRoles.get(team.getTeamId()) : null;
+                        boolean isMyTeam = myRole != null && myRole == 1;
                         List<TeamMember> members = teamMembers != null ? teamMembers.get(team.getTeamId()) : null;
                 %>
                     <div class="col-lg-4 col-md-6 team-item" data-name="<%= team.getTeamName().toLowerCase() %> <%= compName.toLowerCase() %>">
@@ -341,7 +361,14 @@
                                 </div>
                             </div>
                             <div class="team-card-body">
-                                <h5><%= team.getTeamName() %></h5>
+                                <h5>
+                                    <%= team.getTeamName() %>
+                                    <% if (isMyTeam) { %>
+                                        <span class="badge rounded-pill" style="background:var(--primary); font-size:0.65rem;">队长</span>
+                                    <% } else { %>
+                                        <span class="badge rounded-pill" style="background:#00CEC9; font-size:0.65rem;">队员</span>
+                                    <% } %>
+                                </h5>
                                 <p class="text-muted small mb-2">
                                     <i class="fas fa-trophy me-1" style="color:<%= colors[0] %>"></i><%= compName %>
                                 </p>

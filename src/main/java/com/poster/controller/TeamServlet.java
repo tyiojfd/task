@@ -99,12 +99,39 @@ public class TeamServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
+
+        // 获取我创建的队伍（我是队长）
         List<Team> myTeams = teamService.getTeamsByLeaderId(user.getUserId());
+
+        // 获取我作为队员加入的队伍（通过邀请接受后加入的）
+        List<TeamMember> myMemberships = teamMemberDAO.findByUserId(user.getUserId());
+        if (myMemberships != null) {
+            for (TeamMember tm : myMemberships) {
+                // 只处理队员角色（队长已在上面获取）
+                if (tm.getRole() != null && tm.getRole() == 2) {
+                    Team joinedTeam = teamService.getTeamById(tm.getTeamId());
+                    if (joinedTeam != null && joinedTeam.getStatus() != null && joinedTeam.getStatus() != 0) {
+                        // 避免重复（如果用户同时是该队的队长和队员记录）
+                        boolean alreadyInList = false;
+                        for (Team t : myTeams) {
+                            if (t.getTeamId().equals(joinedTeam.getTeamId())) {
+                                alreadyInList = true;
+                                break;
+                            }
+                        }
+                        if (!alreadyInList) {
+                            myTeams.add(joinedTeam);
+                        }
+                    }
+                }
+            }
+        }
 
         // 涓烘瘡涓槦浼嶅姞杞界珵璧涘悕绉板拰鎴愬憳鏁伴噺
         Map<Integer, String> competitionNames = new HashMap<>();
         Map<Integer, Integer> memberCounts = new HashMap<>();
         Map<Integer, List<TeamMember>> teamMembers = new HashMap<>();
+        Map<Integer, Integer> myTeamRoles = new HashMap<>(); // 1=队长, 2=队员
 
         for (Team team : myTeams) {
             Competition comp = competitionService.getCompetitionById(team.getCompetitionId());
@@ -115,6 +142,8 @@ public class TeamServlet extends HttpServlet {
             memberCounts.put(team.getTeamId(), count);
             List<TeamMember> members = teamMemberDAO.findByTeamId(team.getTeamId());
             teamMembers.put(team.getTeamId(), members);
+            // 判断当前用户在该队伍中的角色
+            myTeamRoles.put(team.getTeamId(), team.getLeaderId().equals(user.getUserId()) ? 1 : 2);
         }
 
         // 鍔犺浇鎴愬憳鐢ㄦ埛鍚嶆槧灏?
@@ -135,6 +164,7 @@ public class TeamServlet extends HttpServlet {
         request.setAttribute("memberCounts", memberCounts);
         request.setAttribute("teamMembers", teamMembers);
         request.setAttribute("userNames", userNames);
+        request.setAttribute("myTeamRoles", myTeamRoles);
         request.getRequestDispatcher("/jsp/team_list.jsp").forward(request, response);
     }
 
