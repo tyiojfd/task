@@ -213,18 +213,82 @@
 ### 2026-07-07
 
 **已完成：模块5-评委评分功能（完成人：队员C）**
-- ✅ DAO层：ScoreDAOImpl完整实现（8个方法：insert/deleteById/update/findById/findByWorkId/findByJudgeId/getAverageScoreByWorkId/findAll，使用PreparedStatement防SQL注入）
-- ✅ Service层：ScoreServiceImpl完整实现（6个方法：addScore/updateScore/getScoresByWorkId/getScoresByJudgeId/getAverageScore/hasScored，含评分范围验证0-100、重复评分检查）
-- ✅ Controller层：ScoreServlet完整实现
-  - GET: list（评分工作台展示待评作品）、input（指定作品评分输入）、myScores（我的评分记录）、workScores（作品评分详情）
-  - POST: submit（提交评分）、update（更新评分）
-  - Session登录集成，评委权限校验，重复评分防重（UNIQUE约束+Service层双重检查）
-- ✅ 前端页面：2个JSP页面
-  - score_input.jsp：统计概览栏（待评作品数/已评数/未评数）+ 作品卡片列表（已评/未评状态标签 + 点击进入评分）+ 评分表单（滑块+数字输入双模式、实时分数显示、已评分提示与修改入口）+ 空状态引导
-  - score_list.jsp：双视图合一 —「我的评分记录」视图（作品名/队伍/评分/时间/操作）+「作品评分详情」视图（平均分圆形徽章/最高分/最低分统计卡片 + 评分列表）
-- ✅ 安全特性：PreparedStatement防SQL注入、评分范围验证（0-100）、重复评分防重、Session登录验证
-- **代码量：** 5个文件（1个DAO实现修改 + 1个Service实现修改 + 1个Controller修改 + 2个JSP新建），约650行代码
+- ✅ 背景：ScoreDAOImpl、ScoreServiceImpl、ScoreServlet 三个核心类仅有TODO骨架（15个空方法），无法支持评委评分业务流程
+- ✅ DAO层：ScoreDAOImpl 从空壳补全为完整 JDBC 实现（共8个方法，使用 PreparedStatement 防 SQL 注入）
+  - insert(Score)：INSERT INTO score，返回自增主键 score_id
+  - deleteById(Integer)：DELETE FROM score WHERE score_id = ?
+  - update(Score)：UPDATE score SET score=? WHERE score_id=?
+  - findById(Integer)：SELECT * FROM score WHERE score_id = ?，含 ResultSet→Score 映射
+  - findByWorkId(Integer)：SELECT * FROM score WHERE work_id = ? ORDER BY score_time DESC，返回某作品所有评分
+  - findByJudgeId(Integer)：SELECT * FROM score WHERE judge_id = ? ORDER BY score_time DESC，返回评委所有评分
+  - getAverageScoreByWorkId(Integer)：SELECT AVG(score) FROM score WHERE work_id = ?，返回作品平均分（无记录时返回0.0）
+  - findAll()：SELECT * FROM score ORDER BY score_time DESC，全量查询
+  - 新增私有辅助方法 extractScoreFromResultSet()：Timestamp→LocalDateTime 转换、null 安全处理
+- ✅ Service层：ScoreServiceImpl 从空壳补全为完整业务逻辑（共6个方法）
+  - addScore(Score)：三重校验 — ①评分范围 0-100 ②workId/judgeId 非空 ③hasScored() 防重检查 → 调用 DAO 插入
+  - updateScore(Score)：校验评分范围+scoreId非空 → 调用 DAO 更新
+  - getScoresByWorkId(Integer)：null 安全 → 委托 DAO
+  - getScoresByJudgeId(Integer)：null 安全 → 委托 DAO
+  - getAverageScore(Integer)：null 安全 → 委托 DAO
+  - hasScored(Integer workId, Integer judgeId)：遍历 findByWorkId() 结果，逐一匹配 judgeId（利用 DB UNIQUE(work_id, judge_id) 约束做双层防重）
+- ✅ Controller层：ScoreServlet 从空壳补全为完整请求处理（共6个私有方法 + doGet/doPost 路由）
+  - doGet 路由：action=list（评分工作台）、input（指定作品评分）、myScores（我的评分记录）、workScores（作品评分详情）
+  - doPost 路由：action=submit（提交评分）、update（更新评分），request.setCharacterEncoding("UTF-8") 防乱码
+  - showScoringWorkspace()：获取全部已提交作品（status=2）+ 当前评委已有评分 → 前端区分「已评/未评」
+  - showScoreInput()：加载目标作品+队伍信息+当前评委已有评分 → 支持「新评分」与「修改评分」双模式
+  - showMyScores()：从 Session 获取当前用户 → 查询该评委所有评分 → 注入 workDAO+teamService 供前端展示作品名和队伍名
+  - showWorkScores()：查询作品所有评分 + 平均分 + 作品/队伍信息
+  - submitScore()：用户身份校验 → 参数解析 → new Score() → scoreService.addScore() → 成功跳转/失败回显错误
+  - updateScore()：用户身份校验 → scoreId+score 参数解析 → scoreService.updateScore()
+  - 引入 WorkDAO + TeamService 依赖，实现评分工作台展示作品名称、队伍信息、提交时间
+- ✅ 前端页面：新建2个JSP页面（score_input.jsp, score_list.jsp，均采用 Bootstrap 5 + Font Awesome 6.4.0 + 自定义CSS变量配色方案）
+  - score_input.jsp（评分工作台，约200行）：
+    - 统计概览栏：待评作品总数 / 我已评分 / 尚未评分 三列彩色卡片
+    - 作品卡片列表（双栏网格）：每张卡片显示作品标题、队伍ID、提交时间、描述摘要，左侧色条区分「已评(绿)/未评(粉)」，点击进入评分
+    - 评分表单区（左右分栏）：左侧作品信息面板（名称/描述/队伍/时间/图片预览点击放大），右侧评分操作面板
+    - 滑块+数字输入双模式：range 滑块（渐变色：红→黄→绿）+ 同步数字输入框，实时大字体显示当前分值
+    - 已评分状态：info 提示框显示上次评分分值和时间 + 表单自动切换为更新模式
+    - 空状态引导：无待评作品时显示 inbox 图标 + 提示文字
+  - score_list.jsp（评分记录，约220行）：
+    - 双视图合一：「我的评分记录」视图 + 「作品评分详情」视图，根据 Servlet 传入数据自动切换
+    - 我的评分记录：表格展示（序号/作品名称/所属队伍/我的评分/评分时间/操作按钮），评分用三色徽章（≥80绿/≥60黄/<60红），操作栏含「修改评分」「查看所有评分」两个按钮
+    - 作品评分详情：渐变横幅（作品名+队伍名+提交时间）+ 平均分圆形白色徽章 + 统计卡片行（已评人数/最高分/最低分）+ 评分列表表格
+    - 空状态引导：无评分记录时显示大图标 + 「去评分」CTA按钮
+- ✅ 安全特性：PreparedStatement 防 SQL 注入、评分范围 0-100 输入验证、双重防重（DB UNIQUE 约束 + Service 层检查）、Session 登录验证、参数 NumberFormatException 容错
+- **代码量：** 5个文件（3个Java从空壳补全 + 2个JSP新建），原空壳约80行 → 改后约730行，净增约650行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
+
+**已完成：全局导航栏统一改造 —「统一度量衡」（完成人：队员C）**
+- ✅ 问题背景：项目多人协作，每人各自手写导航栏，导致全站22个JSP页面出现严重碎片化：
+  - 品牌名4种变体：「🎨 海报竞赛系统」「海报竞赛系统」「<i> fas fa-palette</i> 海报竞赛系统」「<i> fas fa-palette</i> 海报设计竞赛」
+  - 主题样式3种：`navbar-dark bg-dark` / `navbar-dark`(无bg) / `navbar-dark sticky-top`
+  - 链接集合5种：index版(含角色判断/10个链接) / team版(6链接/无角色) / competition版(1链接) / submission版(5链接) / score版(非标准结构)
+  - 用户体验灾难：①「我的队伍」导航栏与首页不统一，普通用户可点击竞赛列表→发布竞赛按钮（无权限校验）②「个人中心」导航栏只有2个链接无法跳转 ③部分页面无导航栏（竞赛新增/编辑页只有品牌名）④无汉堡菜单移动端无法使用
+- ✅ 核心交付：创建统一导航栏组件 `navbar.jsp`（约100行），全站22个JSP页面全部替换为 `<%@ include file="navbar.jsp" %>` 三行引入
+- ✅ 组件设计要点：
+  - 品牌标识统一：`<i class="fas fa-palette me-2"></i>海报竞赛系统` + `navbar-dark bg-dark sticky-top`，全站一致
+  - 完整角色感知：从 Session 读取 roles，判断「管理员」「评委」角色 → 管理员显示「管理中心」下拉菜单（竞赛管理/获奖管理/新闻管理）、评委显示「评分管理」入口，普通用户不可见管理功能
+  - 登录态差异化：未登录 → 首页+竞赛列表+新闻公告+登录+注册（5个链接）；已登录 → 首页+竞赛列表+我的队伍+我的作品+邀请通知+新闻公告+用户下拉菜单 + 条件性显示评委/管理员入口
+  - 激活高亮机制：父页面 `request.setAttribute("activePage", "xxx")` → navbar.jsp 通过 `"xxx".equals(_navActive) ? " active" : ""` 动态设置 Bootstrap active 样式
+  - 移动端响应式：`navbar-toggler` 汉堡按钮 + `collapse navbar-collapse`（原 team_*、competition_*、news_* 等多组页面均缺失此功能）
+  - 变量命名隔离：内部变量全部使用 `_nav` 前缀（`_navUser`、`_navAdmin`、`_navJudge`、`_navLoggedIn`、`_navActive`），避开 JSP 静态 include（`<%@ include %>` = 编译期代码拼接，共享父页面作用域）的变量冲突陷阱
+  - 自包含 Font Awesome 6.4.0 CDN：解决原 competition_*、profile.jsp 等页面缺少图标库的问题
+- ✅ 关键Bug修复：
+  - 角色名匹配纠正：navbar.jsp 原稿误用英文 `"admin"`/`"judge"`，修正为中文 `"管理员"`/`"评委"`（数据库 role_name 字段值，与 index.jsp 原有逻辑一致）
+  - competition_list.jsp 权限漏洞修复：第48行「发布竞赛」按钮和第80行「立即发布」链接无任何角色校验 → 新增 `isAdmin` 判断逻辑（引入 User/Role import + 遍历 session roles），包装按钮为 `<% if (isAdmin) { %>...<% } %>`
+  - 原 competition_detail.jsp 使用错误的 session attribute 名 `"userRoles"`（LoginServlet 实际存储为 `"roles"`），navbar.jsp 统一使用正确的 `"roles"`
+- ✅ 批量改造清单（22个文件逐一替换）：
+  - 首页：index.jsp（移除62行内联navbar → 3行include，保留 isAdmin/isJudge 变量供页面Body使用）
+  - 竞赛模块4页：competition_list.jsp（+权限修复）、competition_detail.jsp、competition_add.jsp（原有0个链接→完整导航）、competition_edit.jsp（同上）
+  - 队伍模块4页：team_list.jsp、team_detail.jsp、team_create.jsp（原缺少「邀请通知」→ now补齐）、invitation_list.jsp
+  - 作品模块3页：submission_list.jsp、submission_add.jsp、submission_detail.jsp（原有0个链接→完整导航）
+  - 评分模块2页：score_input.jsp（非标准按钮结构→统一导航）、score_list.jsp（同上）
+  - 新闻模块5页：news_list.jsp、news_detail.jsp、news_add.jsp、news_edit.jsp（原有0个退出/用户链接→ now补齐）、news_manage.jsp
+  - 认证页面2页：login.jsp（新增导航栏，原无导航）、register.jsp（同上）
+  - 个人中心：profile.jsp（原有2个链接→完整导航）
+- ✅ 验证方法：`grep -rl "<nav class=\"navbar" src/main/webapp/jsp/ | grep -v navbar.jsp | wc -l` → 结果0，全站仅 navbar.jsp 自身包含 `<nav` 标签；Maven compile → BUILD SUCCESS，86个Java源文件零错误
+- **代码量：** 1个新建组件（navbar.jsp 约100行）+ 22个JSP页面修改，约100行新增，约500行旧navbar代码删除（净减约400行冗余代码）
+- **架构收益：** 彻底解决多人协作导致的UI碎片化问题；新增页面只需3行即可获得完整、一致、角色感知的导航栏；角色权限控制集中管理，无需每个页面重复实现；为后续维护提供单一真实来源（Single Source of Truth）
 
 ---
 
@@ -776,4 +840,4 @@ poster-competition-system/
 
 **最后更新时间：** 2026年7月7日
 **更新人：** 队员C
-**版本：** v1.5
+**版本：** v1.7

@@ -232,24 +232,9 @@
     </style>
 </head>
 <body>
-    <!-- ═══════════ 导航栏 ═══════════ -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
-                <i class="fas fa-palette"></i> 海报竞赛系统
-            </a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home"></i> 首页</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/competition?action=list"><i class="fas fa-trophy"></i> 竞赛列表</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/team?action=myTeams"><i class="fas fa-users"></i> 我的队伍</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/invitation"><i class="fas fa-envelope"></i> 邀请通知</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user-circle"></i> 个人中心</a></li>
-                    <li class="nav-item"><a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> 退出</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <!-- 导航栏 -->
+    <% request.setAttribute("activePage", "myTeams"); %>
+    <%@ include file="navbar.jsp" %>
 
     <div class="container">
         <!-- ═══════════ 页面标题 ═══════════ -->

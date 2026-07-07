@@ -46,11 +46,9 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index"><i class="fas fa-palette"></i>海报竞赛系统</a>
-        </div>
-    </nav>
+    <!-- 导航栏 -->
+    <% request.setAttribute("activePage", "myWorks"); %>
+    <%@ include file="navbar.jsp" %>
     <div class="container mt-4">
         <a href="${pageContext.request.contextPath}/work?action=myWorks" class="back-link mb-3 d-inline-block">
             <i class="fas fa-arrow-left me-1"></i>返回作品列表

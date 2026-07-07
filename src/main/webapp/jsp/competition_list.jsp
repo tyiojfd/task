@@ -1,10 +1,28 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.Competition" %>
+<%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     @SuppressWarnings("unchecked")
     List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
+
+    // 管理员权限检查
+    User sessionUser = (User) session.getAttribute("user");
+    boolean isAdmin = false;
+    if (sessionUser != null) {
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles != null) {
+            for (Role r : roles) {
+                if ("管理员".equals(r.getRoleName())) {
+                    isAdmin = true;
+                    break;
+                }
+            }
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -29,25 +47,17 @@
 </head>
 <body>
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">海报竞赛系统</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/index">首页</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <% request.setAttribute("activePage", "competitionList"); %>
+    <%@ include file="navbar.jsp" %>
 
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>竞赛列表</h2>
+            <% if (isAdmin) { %>
             <a href="${pageContext.request.contextPath}/competition?action=add" class="btn btn-primary">
                 发布竞赛
             </a>
+            <% } %>
         </div>
 
         <% if (competitions != null && !competitions.isEmpty()) { %>
@@ -77,7 +87,7 @@
             </div>
         <% } else { %>
             <div class="alert alert-info text-center">
-                暂无竞赛信息，<a href="${pageContext.request.contextPath}/competition?action=add">立即发布</a>
+                暂无竞赛信息<% if (isAdmin) { %>，<a href="${pageContext.request.contextPath}/competition?action=add">立即发布</a><% } %>
             </div>
         <% } %>
     </div>

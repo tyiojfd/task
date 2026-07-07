@@ -39,18 +39,9 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">海报竞赛系统</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/competition?action=list">竞赛列表</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <!-- 导航栏 -->
+    <% request.setAttribute("activePage", "competitionList"); %>
+    <%@ include file="navbar.jsp" %>
 
     <div class="container mt-4">
         <% if (competition != null) { %>

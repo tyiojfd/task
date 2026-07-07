@@ -159,21 +159,9 @@
 <body>
 
 <!-- 导航栏 -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
-            <i class="fas fa-palette"></i> 海报设计竞赛
-        </a>
-        <div class="ms-auto">
-            <span class="navbar-text me-3">
-                <i class="fas fa-user-circle me-1"></i><%= sessionUser.getUsername() %>
-            </span>
-            <a href="${pageContext.request.contextPath}/index" class="btn btn-outline-light btn-sm">
-                <i class="fas fa-home me-1"></i>返回首页
-            </a>
-        </div>
-    </div>
-</nav>
+<!-- 导航栏 -->
+<% request.setAttribute("activePage", "scoreManage"); %>
+<%@ include file="navbar.jsp" %>
 
 <div class="container">
 

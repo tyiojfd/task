@@ -23,24 +23,8 @@
 </head>
 <body>
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">海报竞赛系统</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/profile">个人中心</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/logout">退出登录</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <% request.setAttribute("activePage", "profile"); %>
+    <%@ include file="navbar.jsp" %>
 
     <div class="container mt-4">
         <%-- 提示信息 --%>
