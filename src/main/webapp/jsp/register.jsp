@@ -425,10 +425,6 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <% request.setAttribute("activePage", ""); %>
-    <%@ include file="navbar.jsp" %>
-
     <!-- 动态背景 -->
     <div class="bg-animated">
         <div class="bg-orb"></div>

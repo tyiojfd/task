@@ -239,9 +239,35 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <% request.setAttribute("activePage", "myWorks"); %>
-    <%@ include file="navbar.jsp" %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
+                <i class="fas fa-palette"></i>海报竞赛系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home me-1"></i>首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams"><i class="fas fa-users me-1"></i>我的队伍</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="${pageContext.request.contextPath}/work?action=myWorks"><i class="fas fa-image me-1"></i>作品管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user me-1"></i>个人中心</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt me-1"></i>退出</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <div class="container">
         <div class="page-header">

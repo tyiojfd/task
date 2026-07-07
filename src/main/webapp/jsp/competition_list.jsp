@@ -16,10 +16,7 @@
         List<Role> roles = (List<Role>) session.getAttribute("roles");
         if (roles != null) {
             for (Role r : roles) {
-                if ("管理员".equals(r.getRoleName())) {
-                    isAdmin = true;
-                    break;
-                }
+                if ("管理员".equals(r.getRoleName())) { isAdmin = true; break; }
             }
         }
     }
@@ -47,8 +44,46 @@
 </head>
 <body>
     <!-- 导航栏 -->
-    <% request.setAttribute("activePage", "competitionList"); %>
-    <%@ include file="navbar.jsp" %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/index">🎨 海报竞赛系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">竞赛大厅</a></li>
+                    <% if (sessionUser != null) { %>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
+                        <% if (isAdmin) { %>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
+                                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
+                                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
+                            </ul>
+                        </li>
+                        <% } %>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><%= sessionUser.getRealName() %></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">退出登录</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/login">登录</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-primary text-white ms-2" href="${pageContext.request.contextPath}/register">注册</a></li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -87,7 +122,7 @@
             </div>
         <% } else { %>
             <div class="alert alert-info text-center">
-                暂无竞赛信息<% if (isAdmin) { %>，<a href="${pageContext.request.contextPath}/competition?action=add">立即发布</a><% } %>
+                暂无竞赛信息，<a href="${pageContext.request.contextPath}/competition?action=add">立即发布</a>
             </div>
         <% } %>
     </div>

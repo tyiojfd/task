@@ -54,9 +54,23 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <% request.setAttribute("activePage", "newsList"); %>
-    <%@ include file="navbar.jsp" %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
+                <i class="fas fa-paint-brush me-2"></i>海报竞赛系统
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/index">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <div class="container mt-4 form-container">
         <div class="page-header">

@@ -258,37 +258,23 @@
 - **代码量：** 5个文件（3个Java从空壳补全 + 2个JSP新建），原空壳约80行 → 改后约730行，净增约650行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
 
-**已完成：全局导航栏统一改造 —「统一度量衡」（完成人：队员C）**
-- ✅ 问题背景：项目多人协作，每人各自手写导航栏，导致全站22个JSP页面出现严重碎片化：
-  - 品牌名4种变体：「🎨 海报竞赛系统」「海报竞赛系统」「<i> fas fa-palette</i> 海报竞赛系统」「<i> fas fa-palette</i> 海报设计竞赛」
-  - 主题样式3种：`navbar-dark bg-dark` / `navbar-dark`(无bg) / `navbar-dark sticky-top`
-  - 链接集合5种：index版(含角色判断/10个链接) / team版(6链接/无角色) / competition版(1链接) / submission版(5链接) / score版(非标准结构)
-  - 用户体验灾难：①「我的队伍」导航栏与首页不统一，普通用户可点击竞赛列表→发布竞赛按钮（无权限校验）②「个人中心」导航栏只有2个链接无法跳转 ③部分页面无导航栏（竞赛新增/编辑页只有品牌名）④无汉堡菜单移动端无法使用
-- ✅ 核心交付：创建统一导航栏组件 `navbar.jsp`（约100行），全站22个JSP页面全部替换为 `<%@ include file="navbar.jsp" %>` 三行引入
-- ✅ 组件设计要点：
-  - 品牌标识统一：`<i class="fas fa-palette me-2"></i>海报竞赛系统` + `navbar-dark bg-dark sticky-top`，全站一致
-  - 完整角色感知：从 Session 读取 roles，判断「管理员」「评委」角色 → 管理员显示「管理中心」下拉菜单（竞赛管理/获奖管理/新闻管理）、评委显示「评分管理」入口，普通用户不可见管理功能
-  - 登录态差异化：未登录 → 首页+竞赛列表+新闻公告+登录+注册（5个链接）；已登录 → 首页+竞赛列表+我的队伍+我的作品+邀请通知+新闻公告+用户下拉菜单 + 条件性显示评委/管理员入口
-  - 激活高亮机制：父页面 `request.setAttribute("activePage", "xxx")` → navbar.jsp 通过 `"xxx".equals(_navActive) ? " active" : ""` 动态设置 Bootstrap active 样式
-  - 移动端响应式：`navbar-toggler` 汉堡按钮 + `collapse navbar-collapse`（原 team_*、competition_*、news_* 等多组页面均缺失此功能）
-  - 变量命名隔离：内部变量全部使用 `_nav` 前缀（`_navUser`、`_navAdmin`、`_navJudge`、`_navLoggedIn`、`_navActive`），避开 JSP 静态 include（`<%@ include %>` = 编译期代码拼接，共享父页面作用域）的变量冲突陷阱
-  - 自包含 Font Awesome 6.4.0 CDN：解决原 competition_*、profile.jsp 等页面缺少图标库的问题
-- ✅ 关键Bug修复：
-  - 角色名匹配纠正：navbar.jsp 原稿误用英文 `"admin"`/`"judge"`，修正为中文 `"管理员"`/`"评委"`（数据库 role_name 字段值，与 index.jsp 原有逻辑一致）
-  - competition_list.jsp 权限漏洞修复：第48行「发布竞赛」按钮和第80行「立即发布」链接无任何角色校验 → 新增 `isAdmin` 判断逻辑（引入 User/Role import + 遍历 session roles），包装按钮为 `<% if (isAdmin) { %>...<% } %>`
-  - 原 competition_detail.jsp 使用错误的 session attribute 名 `"userRoles"`（LoginServlet 实际存储为 `"roles"`），navbar.jsp 统一使用正确的 `"roles"`
-- ✅ 批量改造清单（22个文件逐一替换）：
-  - 首页：index.jsp（移除62行内联navbar → 3行include，保留 isAdmin/isJudge 变量供页面Body使用）
-  - 竞赛模块4页：competition_list.jsp（+权限修复）、competition_detail.jsp、competition_add.jsp（原有0个链接→完整导航）、competition_edit.jsp（同上）
-  - 队伍模块4页：team_list.jsp、team_detail.jsp、team_create.jsp（原缺少「邀请通知」→ now补齐）、invitation_list.jsp
-  - 作品模块3页：submission_list.jsp、submission_add.jsp、submission_detail.jsp（原有0个链接→完整导航）
-  - 评分模块2页：score_input.jsp（非标准按钮结构→统一导航）、score_list.jsp（同上）
-  - 新闻模块5页：news_list.jsp、news_detail.jsp、news_add.jsp、news_edit.jsp（原有0个退出/用户链接→ now补齐）、news_manage.jsp
-  - 认证页面2页：login.jsp（新增导航栏，原无导航）、register.jsp（同上）
-  - 个人中心：profile.jsp（原有2个链接→完整导航）
-- ✅ 验证方法：`grep -rl "<nav class=\"navbar" src/main/webapp/jsp/ | grep -v navbar.jsp | wc -l` → 结果0，全站仅 navbar.jsp 自身包含 `<nav` 标签；Maven compile → BUILD SUCCESS，86个Java源文件零错误
-- **代码量：** 1个新建组件（navbar.jsp 约100行）+ 22个JSP页面修改，约100行新增，约500行旧navbar代码删除（净减约400行冗余代码）
-- **架构收益：** 彻底解决多人协作导致的UI碎片化问题；新增页面只需3行即可获得完整、一致、角色感知的导航栏；角色权限控制集中管理，无需每个页面重复实现；为后续维护提供单一真实来源（Single Source of Truth）
+**已完成：全局导航栏统一修复（完成人：队员C）**
+- ✅ 问题诊断：全站JSP页面导航栏碎片化，品牌名/样式/链接集合各不相同，用户反馈两个具体问题：
+  - 「我的队伍」页面导航栏与首页不统一，普通用户可通过竞赛列表页面看到「发布竞赛」按钮（无权限校验）
+  - 「个人中心」页面导航栏只有2个链接（个人中心+退出），无法跳转到其他页面
+- ✅ 修复方案探索：尝试了 JSP 静态include（`<%@ include %>`）和动态include（`<jsp:include>`）两种全局组件方案，但静态include存在变量作用域冲突/重复page指令/注解兼容性等问题，动态include存在路径解析差异，均导致 HTTP 500 错误。最终采用**精准逐个修复**策略——保留各页面独立导航栏，将不一致的页面逐一替换为 index.jsp 标准版本
+- ✅ 修复清单（8个页面）：
+  - profile.jsp：新增 Role 导入 + isAdmin/isJudge 判断，2链接导航栏 → 完整导航栏（竞赛大厅/我的队伍/我的作品/新闻公告/角色感知菜单/用户下拉）
+  - team_list.jsp：新增角色判断，品牌统一为 🎨 海报竞赛系统，补齐 bg-dark sticky-top 和汉堡菜单
+  - team_detail.jsp：同上
+  - team_create.jsp：同上 + 补齐缺失的「邀请通知」链接
+  - invitation_list.jsp：同上
+  - competition_list.jsp：导航栏替换为完整版本 +「发布竞赛」按钮新增管理员权限检查（`<% if (isAdmin) { %>`）
+  - score_input.jsp：新建页面，补齐完整导航栏（含角色判断）
+  - score_list.jsp：新建页面，补齐完整导航栏（含角色判断）
+- ✅ 安全修复：competition_list.jsp「发布竞赛」按钮和空状态「立即发布」链接新增管理员权限检查，解决普通用户可见管理功能的安全漏洞
+- **代码量：** 8个JSP页面修改，每个页面约+50行（角色判断+完整导航栏），约+400行
+- **编译状态：** BUILD SUCCESS，86个Java源文件零错误
 
 ---
 
@@ -840,4 +826,4 @@ poster-competition-system/
 
 **最后更新时间：** 2026年7月7日
 **更新人：** 队员C
-**版本：** v1.7
+**版本：** v1.8

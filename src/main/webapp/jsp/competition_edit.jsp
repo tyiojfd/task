@@ -18,9 +18,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- 导航栏 -->
-    <% request.setAttribute("activePage", "competitionList"); %>
-    <%@ include file="navbar.jsp" %>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">海报竞赛系统</a>
+        </div>
+    </nav>
 
     <div class="container mt-4">
         <div class="row justify-content-center">

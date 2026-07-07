@@ -16,10 +16,6 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <% request.setAttribute("activePage", ""); %>
-    <%@ include file="navbar.jsp" %>
-
     <div class="container">
         <div class="card login-card">
             <div class="login-header">
