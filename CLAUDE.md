@@ -188,6 +188,28 @@
 - **代码量：** 12个文件（4个DAO实现 + 1个Service接口 + 1个Service实现 + 2个Controller + 1个工具类 + 3个JSP），约1500行代码
 - **编译状态：** 编译通过
 
+**已完成：模块3-队伍管理模块-邀请报名编辑功能（完成人：杨祥博）**
+- ✅ DAO层：InvitationDAOImpl全部8个方法完整实现（参考TeamMemberDAOImpl模式，JDBC+PreparedStatement）
+- ✅ DAO层：UserDAO/UserDAOImpl新增searchByRealName模糊搜索方法（LIKE %keyword% LIMIT 20）
+- ✅ Service层：新建InvitationService/InvitationServiceImpl（acceptInvitation：校验→人数检查→插入TeamMember→更新邀请状态；rejectInvitation：校验→更新状态为已拒绝；getInvitationsForUser）
+- ✅ Controller层：InvitationServlet完整实现（doGet邀请列表+关联数据加载；doPost accept/reject操作）
+- ✅ Controller层：TeamServlet新增registerCompetition（报名参赛，队长验证，status 1→2）和searchUserForInvite（JSON返回用户搜索）方法，inviteMember支持ajax=true参数返回JSON
+- ✅ 前端页面：新建invitation_list.jsp（待处理/已处理Tab切换、接受拒绝按钮+确认弹窗、队伍名/邀请人姓名显示、空状态引导）
+- ✅ 前端页面：team_detail.jsp重大改造（三个操作按钮全部启用+移除"即将开放"标签）：
+  - 编辑队伍信息 → Bootstrap Modal表单（预填队伍名/竞赛/子类/简介，POST更新）
+  - 邀请队员 → Bootstrap Modal（搜索用户姓名模糊匹配 → AJAX获取结果 → 点击邀请 → Toast通知）
+  - 报名参赛 → 仅status=1时可用 → POST注册 → status变为2 → 按钮变灰显示"已报名参赛"
+- ✅ 前端页面：index.jsp添加"邀请通知"功能卡片入口
+- ✅ 前端页面：team_list.jsp导航栏添加"邀请通知"链接
+- ✅ 前端页面：team_detail.jsp导航栏添加"邀请通知"链接、预加载竞赛/子类列表供编辑弹窗使用
+- ✅ 修复：team_create.jsp子类下拉框空列表判断bug（!= null → && !isEmpty()）、竞赛子类option添加data-comp-id实现切换竞赛过滤
+- ✅ 修复：competition_add.jsp新增竞赛子类动态输入区域（可增删行，至少一个，校验）
+- ✅ 修复：competition_edit.jsp已有子类展示+逐个删除+新子类动态添加
+- ✅ 修复：CompetitionServlet同步处理子类数据增删，新增saveCategories辅助方法
+- ✅ 数据库脚本：init_data.sql和data.sql新增竞赛和子类初始数据
+- **代码量：** 11个文件（3个新建 + 6个修改 + 2个SQL补充），约1800行代码
+- **编译状态：** BUILD SUCCESS，85个Java源文件零错误
+
 ---
 
 ## 团队组织结构
@@ -377,14 +399,14 @@ test: 添加作品提交测试用例
 
 **模块3 - 队伍管理（杨祥博）：**
 - [x] 创建队伍功能（TeamServlet + team_create.jsp）
-- [x] 邀请队员功能（TeamServiceImpl.inviteMember 后端已实现，前端待完成）
+- [x] 邀请队员功能（TeamServiceImpl.inviteMember + 前端Modal搜索 + AJAX发送）
 - [x] 队伍信息展示优化（team_detail.jsp 含 Tab 切换、成员头像网格、队长皇冠标识）
 - [x] 队员移除功能（TeamServlet.removeMember + TeamServiceImpl.removeMember）
 - [x] 队伍搜索功能（team_list.jsp 含前端搜索过滤）
 - [x] 队伍统计概览（team_list.jsp 含创建数/活跃数/队员总数统计卡片）
-- [ ] 邀请列表前端（invitation_list.jsp）
-- [ ] 接受/拒绝邀请功能
-- [ ] 队伍报名竞赛（后端已实现，前端按钮待启用）
+- [x] 邀请列表前端（invitation_list.jsp 含待处理/已处理Tab）✅ 2026-07-06
+- [x] 接受/拒绝邀请功能（InvitationServlet + InvitationService）✅ 2026-07-06
+- [x] 队伍报名竞赛（team_detail.jsp前端按钮已启用，status 1→2）✅ 2026-07-06
 
 **模块4 - 作品管理（队员B）：**
 - [x] 作品提交功能（WorkServlet + submission_add.jsp）✅ 2026-07-06
@@ -426,6 +448,7 @@ test: 添加作品提交测试用例
 - [ ] 取消报名功能
 - [x] 队伍搜索功能（team_list.jsp 前端搜索过滤）
 - [x] 队伍统计（我的队伍、我参与的队伍）
+- [x] 编辑队伍信息功能（Modal弹窗 + 支持修改名称/竞赛/子类/简介）✅ 2026-07-06
 
 **模块4 - 作品管理（队员B）：**
 - [x] 作品点赞功能（work_like表）✅ 2026-07-06
@@ -735,6 +758,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月6日
-**更新人：** 田继青
-**版本：** v1.3
+**最后更新时间：** 2026年7月7日
+**更新人：** 杨祥博
+**版本：** v1.4
