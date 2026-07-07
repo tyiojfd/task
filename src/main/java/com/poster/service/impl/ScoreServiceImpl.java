@@ -11,8 +11,8 @@ import java.util.List;
 
 /**
  * 评分服务实现类
- * @author 团队共建
- * @date 2026-07-04
+ * @author 队员C
+ * @date 2026-07-07
  */
 public class ScoreServiceImpl implements ScoreService {
 
@@ -21,40 +21,77 @@ public class ScoreServiceImpl implements ScoreService {
 
     @Override
     public boolean addScore(Score score) {
-        // TODO: 实现评分逻辑
         // 1. 验证评分范围（0-100）
-        // 2. 检查是否已评分
-        // 3. 调用DAO插入数据库
-        return false;
+        if (score.getScore() == null || score.getScore() < 0 || score.getScore() > 100) {
+            return false;
+        }
+
+        // 2. 验证必要字段
+        if (score.getWorkId() == null || score.getJudgeId() == null) {
+            return false;
+        }
+
+        // 3. 检查是否已评分（一个评委对一个作品只能评一次）
+        if (hasScored(score.getWorkId(), score.getJudgeId())) {
+            return false;
+        }
+
+        // 4. 调用DAO插入数据库
+        return scoreDAO.insert(score) > 0;
     }
 
     @Override
     public boolean updateScore(Score score) {
-        // TODO: 实现更新评分逻辑
-        return false;
+        // 1. 验证评分范围（0-100）
+        if (score.getScore() == null || score.getScore() < 0 || score.getScore() > 100) {
+            return false;
+        }
+
+        // 2. 验证必要字段
+        if (score.getScoreId() == null) {
+            return false;
+        }
+
+        // 3. 调用DAO更新数据库
+        return scoreDAO.update(score) > 0;
     }
 
     @Override
     public List<Score> getScoresByWorkId(Integer workId) {
-        // TODO: 实现根据作品ID查询所有评分
-        return null;
+        if (workId == null) {
+            return null;
+        }
+        return scoreDAO.findByWorkId(workId);
     }
 
     @Override
     public List<Score> getScoresByJudgeId(Integer judgeId) {
-        // TODO: 实现根据评委ID查询所有评分
-        return null;
+        if (judgeId == null) {
+            return null;
+        }
+        return scoreDAO.findByJudgeId(judgeId);
     }
 
     @Override
     public Double getAverageScore(Integer workId) {
-        // TODO: 实现获取作品平均分
-        return null;
+        if (workId == null) {
+            return null;
+        }
+        return scoreDAO.getAverageScoreByWorkId(workId);
     }
 
     @Override
     public boolean hasScored(Integer workId, Integer judgeId) {
-        // TODO: 实现检查评委是否已评分
+        if (workId == null || judgeId == null) {
+            return false;
+        }
+        // 查询该作品的所有评分，检查是否有当前评委的评分记录
+        List<Score> scores = scoreDAO.findByWorkId(workId);
+        for (Score s : scores) {
+            if (s.getJudgeId().equals(judgeId)) {
+                return true;
+            }
+        }
         return false;
     }
 }
