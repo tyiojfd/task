@@ -58,6 +58,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/users"><i class="fas fa-users me-1"></i>用户管理</a></li>
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
@@ -66,7 +67,7 @@
                     <% } %>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown"><%= sessionUser.getRealName() %></a>
+                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown"><c:out value="${sessionScope.user.realName}"/></a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
                             <li><hr class="dropdown-divider"></li>
@@ -80,20 +81,8 @@
 
     <div class="container mt-4">
         <%-- 提示信息 --%>
-        <% String successMsg = (String) request.getAttribute("success"); %>
-        <% if (successMsg != null) { %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <%= successMsg %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <% } %>
-        <% String errorMsg = (String) request.getAttribute("error"); %>
-        <% if (errorMsg != null) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <%= errorMsg %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <% } %>
+        <c:if test="${not empty success}"><div class="alert alert-success alert-dismissible fade show">${success}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></c:if>
+        <c:if test="${not empty error}"><div class="alert alert-danger alert-dismissible fade show">${error}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></c:if>
 
         <div class="row">
             <!-- 个人信息卡片 -->
@@ -154,22 +143,22 @@
                             <input type="hidden" name="action" value="updateProfile">
                             <div class="mb-3">
                                 <label class="form-label">用户名</label>
-                                <input type="text" class="form-control" value="<%= sessionUser.getUsername() %>" disabled>
+                                <input type="text" class="form-control" value='<c:out value="${sessionScope.user.username}"/>' disabled>
                             </div>
                             <div class="mb-3">
                                 <label for="realName" class="form-label">真实姓名</label>
                                 <input type="text" class="form-control" id="realName" name="realName"
-                                       value="<%= sessionUser.getRealName() %>" required>
+                                       value='<c:out value="${sessionScope.user.realName}"/>' required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">邮箱</label>
                                 <input type="email" class="form-control" id="email" name="email"
-                                       value="<%= sessionUser.getEmail() != null ? sessionUser.getEmail() : "" %>" required>
+                                       value='<c:out value="${sessionScope.user.email}" default=""/>' required>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label">手机号</label>
                                 <input type="text" class="form-control" id="phone" name="phone"
-                                       value="<%= sessionUser.getPhone() != null ? sessionUser.getPhone() : "" %>">
+                                       value='<c:out value="${sessionScope.user.phone}" default=""/>'>
                             </div>
                             <button type="submit" class="btn btn-primary">保存修改</button>
                         </form>
