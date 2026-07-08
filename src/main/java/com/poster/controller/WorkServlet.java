@@ -342,9 +342,26 @@ public class WorkServlet extends HttpServlet {
             // 处理文件上传
             Part filePart = request.getPart("imageFile");
             String imagePath = null;
+            byte[] imageData = null;
+            String imageContentType = null;
+
             if (filePart != null && filePart.getSize() > 0) {
                 String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
                 imagePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath, competitionId, teamId);
+
+                // 读取图片二进制数据保存到数据库
+                imageContentType = filePart.getContentType();
+                try (java.io.InputStream inputStream = filePart.getInputStream();
+                     java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    imageData = outputStream.toByteArray();
+                } catch (java.io.IOException e) {
+                    e.printStackTrace();
+                }
             } else {
                 request.setAttribute("error", "请上传海报图片");
                 showAddForm(request, response);
@@ -360,6 +377,8 @@ public class WorkServlet extends HttpServlet {
             work.setTitle(title.trim());
             work.setDescription(description != null ? description.trim() : null);
             work.setImagePath(imagePath);
+            work.setImageData(imageData);
+            work.setImageContentType(imageContentType);
 
             boolean success = workService.submitWork(work);
 
@@ -411,6 +430,9 @@ public class WorkServlet extends HttpServlet {
 
             Part filePart = request.getPart("imageFile");
             String imagePath = existingWork.getImagePath();
+            byte[] imageData = existingWork.getImageData();
+            String imageContentType = existingWork.getImageContentType();
+
             if (filePart != null && filePart.getSize() > 0) {
                 String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
                 if (existingWork.getImagePath() != null) {
@@ -418,6 +440,20 @@ public class WorkServlet extends HttpServlet {
                 }
                 imagePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath,
                         existingWork.getCompetitionId(), existingWork.getTeamId());
+
+                // 读取新图片二进制数据
+                imageContentType = filePart.getContentType();
+                try (java.io.InputStream inputStream = filePart.getInputStream();
+                     java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    imageData = outputStream.toByteArray();
+                } catch (java.io.IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             existingWork.setTitle(title.trim());
@@ -426,6 +462,8 @@ public class WorkServlet extends HttpServlet {
                 existingWork.setCategoryId(Integer.parseInt(categoryIdStr));
             }
             existingWork.setImagePath(imagePath);
+            existingWork.setImageData(imageData);
+            existingWork.setImageContentType(imageContentType);
 
             boolean success = workService.updateWork(existingWork);
             if (success) {

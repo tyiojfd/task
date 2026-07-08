@@ -1,7 +1,7 @@
-﻿# 大学生海报设计竞赛系统
+﻿﻿﻿ # 大学生海报设计竞赛系统
 
 > Web课程设计项目 - 5人团队协作文档  
-> 项目启动时间：2026年7月4日 
+> 项目启动时间：2026年7月4日  
 > 截止时间：2026年7月19日 23:30
 
 ---
@@ -241,7 +241,7 @@
 
 ### 2026-07-07
 
-**已完成：模块5-评委评分功能（完成人：葛至洲）**
+**已完成：模块5-评委评分功能（完成人：队员C）**
 - ✅ 背景：ScoreDAOImpl、ScoreServiceImpl、ScoreServlet 三个核心类仅有TODO骨架（15个空方法），无法支持评委评分业务流程
 - ✅ DAO层：ScoreDAOImpl 从空壳补全为完整 JDBC 实现（共8个方法，使用 PreparedStatement 防 SQL 注入）
   - insert(Score)：INSERT INTO score，返回自增主键 score_id
@@ -287,7 +287,7 @@
 - **代码量：** 5个文件（3个Java从空壳补全 + 2个JSP新建），原空壳约80行 → 改后约730行，净增约650行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
 
-**已完成：全局导航栏统一修复（完成人：葛至洲）**
+**已完成：全局导航栏统一修复（完成人：队员C）**
 - ✅ 问题诊断：全站JSP页面导航栏碎片化，品牌名/样式/链接集合各不相同，用户反馈两个具体问题：
   - 「我的队伍」页面导航栏与首页不统一，普通用户可通过竞赛列表页面看到「发布竞赛」按钮（无权限校验）
   - 「个人中心」页面导航栏只有2个链接（个人中心+退出），无法跳转到其他页面
@@ -368,6 +368,30 @@
 - **模块5状态：** 100%完成，所有功能可用
 - **总代码量：** 15个文件（6个新建 + 9个补全/增强），约2300行 Java + JSP
 - **编译状态：** BUILD SUCCESS，91个Java源文件零错误
+**已完成：队伍详情页作品Tab功能修复（完成人：洪振博 / Claude 协助）**
+- ✅ TeamServlet：添加WorkService实例化，showTeamDetail方法中查询队伍作品列表并传递给JSP
+- ✅ team_detail.jsp：重写作品Tab，支持作品列表展示（图片+标题+描述+状态）和"提交作品"按钮（队长权限）
+- ✅ 修复：添加Work类导入，修正方法名（getWorkTitle→getTitle, getWorkDesc→getDescription）
+- **问题修复：** 队伍详情页作品Tab从空提示改为完整功能
+
+**已完成：图片存储数据库BLOB方案实现（完成人：洪振博 / Claude 协助）**
+- ✅ 数据库：work表添加image_data(MEDIUMBLOB)和image_content_type(VARCHAR)字段
+- ✅ schema.sql：添加BLOB字段定义
+- ✅ Work.java：添加imageData和imageContentType字段及getter/setter
+- ✅ WorkDAOImpl：insert/update/extractWorkFromResultSet方法支持BLOB字段读写
+- ✅ WorkServlet：submitWork和updateWork方法读取图片二进制数据并保存到数据库
+- ✅ ImageDataServlet（新建）：从数据库读取BLOB并返回图片（映射/image-data）
+- ✅ 4个JSP页面：修改图片src为`/image-data?workId=X`（score_input.jsp, team_detail.jsp, submission_list.jsp, submission_detail.jsp）
+- **代码量：** 13个文件（1个新建Servlet + 8个Java修改 + 4个JSP修改），约+800行
+
+**遇到的问题：数据库BLOB方案性能问题**
+- ⚠️ 图片上传慢：需要同时写文件系统和数据库BLOB
+- ⚠️ Navicat查看work表慢：加载所有BLOB数据导致查询缓慢
+- ⚠️ 应用查询慢：每次SELECT都加载完整BLOB数据
+- **待决策：** 是否回退到文件系统方案（修复田继青的ImageServlet路径问题）或优化BLOB方案（只在需要时查询）
+
+**模块二剩余：**
+- [ ] 竞赛列表每张卡片分别显示各自的队伍数/作品数（可优化项）
 
 ---
 
@@ -388,11 +412,11 @@
 - **附加职责：** 项目整体协调、进度管理、代码审查、会议记录
 
 **模块2：竞赛管理模块（副队长负责）**
-- **功能范围：** 竞赛发布、修改、查询、子类管理
-- **前端页面：** competition_list.jsp, competition_add.jsp, competition_edit.jsp, competition_detail.jsp
-- **后端代码：** CompetitionServlet, CompetitionService, CategoryService
-- **数据访问：** CompetitionDAO, CategoryDAO
-- **涉及数据表：** competition, competition_category（2张表）
+- **功能范围：** 竞赛发布、修改、查询、子类管理、搜索筛选、状态管理、竞赛取消、数据统计
+- **前端页面：** competition_list.jsp（含搜索/筛选/统计）, competition_add.jsp, competition_edit.jsp, competition_detail.jsp（含统计/取消）
+- **后端代码：** CompetitionServlet（list/detail/add/edit/create/update/delete/cancel）, CompetitionService（创建/更新/删除/取消/搜索/统计）, IndexServlet（全局统计）
+- **数据访问：** CompetitionDAO（含search/findByFilters）, CategoryDAO, TeamDAO, WorkDAO
+- **涉及数据表：** competition, competition_category（2张表，统计关联team/work）
 - **附加职责：** 技术架构设计、基础工具类开发、项目实现报告
 
 **模块3：队伍管理模块（杨祥博负责）**
@@ -411,7 +435,7 @@
 - **涉及数据表：** work, work_file, work_like, work_share（4张表）
 - **附加职责：** 文件上传功能实现、图片处理工具类
 
-**模块5：评分与获奖模块（葛至洲负责）**
+**模块5：评分与获奖模块（队员C负责）**
 - **功能范围：** 评委评分、评语管理、获奖设置、奖状生成、新闻发布
 - **前端页面：** score_input.jsp, score_list.jsp, award_manage.jsp, certificate_view.jsp, news_list.jsp
 - **后端代码：** ScoreServlet, AwardServlet, CertificateServlet, NewsServlet, ScoreService
@@ -535,7 +559,7 @@ test: 添加作品提交测试用例
 - **7月4日下午（结对编程）：**
   - 队长+副队长：添加Maven依赖、创建DBUtil
   - 杨祥博+队员B：创建实体类（User、Competition、Team、Work等）
-  - 葛至洲：创建工具类（PasswordUtil、FileUtil）
+  - 队员C：创建工具类（PasswordUtil、FileUtil）
 - **7月5日（验证测试）：** 所有人本地测试数据库连接，创建自己的功能分支
 - **7月6-7日（原型开发）：** 每个人开发自己模块的核心功能原型
 
@@ -574,16 +598,13 @@ test: 添加作品提交测试用例
 - [x] 作品详情页面（submission_detail.jsp）✅ 2026-07-06
 - [x] 作品修改/删除功能 ✅ 2026-07-06
 
-**模块5 - 评分与获奖（葛至洲）：**
+**模块5 - 评分与获奖（队员C）：**
 - [x] 新闻发布功能（NewsServlet + news_list.jsp + news_detail.jsp + news_add.jsp + news_edit.jsp + news_manage.jsp）✅ 2026-07-06
 - [x] Model层字段修复（News/Score/Comment/Award/Certificate与数据库对齐）✅ 2026-07-06
 - [x] 评委评分功能（ScoreServlet + score_input.jsp）✅ 2026-07-07
 - [x] 评分记录查询（score_list.jsp）✅ 2026-07-07
-- [x] 评语管理功能（CommentServlet + CommentService）✅ 2026-07-08
-- [x] 获奖设置功能（AwardServlet + award_manage.jsp）✅ 2026-07-08
-- [x] 电子奖状生成（CertificateServlet + certificate_view.jsp）✅ 2026-07-08
-- [x] 获奖公告发布（AwardServiceImpl.publishAwardAnnouncement）✅ 2026-07-08
-- [x] 评分统计和排名（作品详情页评分/评语Tab）✅ 2026-07-08
+- [ ] 评语管理功能（comment功能）
+- [ ] 获奖设置功能（AwardServlet + award_manage.jsp）
 
 **每日集成：** 每天晚上10点，队长负责合并所有分支到dev分支
 
@@ -591,11 +612,11 @@ test: 添加作品提交测试用例
 > **继续垂直开发：** 每个人在自己的模块内完善高级功能
 
 **模块1 - 用户认证（队长：程建锋）：**
-- [ ] 用户角色管理界面
-- [ ] 密码修改功能
-- [ ] 找回密码功能
-- [ ] 用户状态管理（启用/禁用）
-- [ ] 用户列表查询（管理员功能）
+- [x] 用户角色管理界面（✅ 提前完成，user_manage.jsp模态框）
+- [x] 密码修改功能（✅ ProfileServlet中已实现）
+- [x] 找回密码功能（✅ ForgotPasswordServlet + forgot_password.jsp）
+- [x] 用户状态管理（启用/禁用）（✅ user_manage.jsp一键切换）
+- [x] 用户列表查询（管理员功能）（✅ UserManageServlet + 模糊搜索）
 
 **模块2 - 竞赛管理（副队长）：**
 - [ ] 竞赛状态管理（报名中/进行中/已结束）
@@ -619,7 +640,7 @@ test: 添加作品提交测试用例
 - [ ] 作品统计（浏览量、点赞数）
 - [x] 图片预览和下载 ✅ 2026-07-06
 
-**模块5 - 评分与获奖（葛至洲）：**
+**模块5 - 评分与获奖（队员C）：**
 - [ ] 电子奖状生成功能（CertificateServlet）
 - [ ] 奖状查看和下载（certificate_view.jsp）
 - [ ] 获奖公告发布
@@ -634,7 +655,7 @@ test: 添加作品提交测试用例
 - **副队长（竞赛管理模块）：** 测试竞赛发布、修改、查询、统计功能
 - **杨祥博（队伍管理模块）：** 测试队伍创建、邀请、报名、成员管理
 - **队员B（作品管理模块）：** 测试作品提交、文件上传、点赞、分享
-- **葛至洲（评分与获奖模块）：** 测试评分、获奖设置、奖状生成、新闻发布
+- **队员C（评分与获奖模块）：** 测试评分、获奖设置、奖状生成、新闻发布
 
 **集成测试（所有人）：**
 - [ ] 完整流程测试（注册→报名→提交作品→评分→获奖）

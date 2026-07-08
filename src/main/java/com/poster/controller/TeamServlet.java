@@ -38,6 +38,7 @@ public class TeamServlet extends HttpServlet {
 
     private TeamService teamService = new TeamServiceImpl();
     private CompetitionService competitionService = new CompetitionServiceImpl();
+    private WorkService workService = new WorkServiceImpl();
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private UserDAO userDAO = new UserDAOImpl();
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
@@ -226,6 +227,9 @@ public class TeamServlet extends HttpServlet {
             List<Competition> competitions = competitionService.getAllCompetitions();
             List<CompetitionCategory> categories = categoryDAO.findAll();
 
+            // 加载队伍作品列表
+            List<Work> works = workService.getWorksByTeamId(teamId);
+
             request.setAttribute("team", team);
             request.setAttribute("competitionName", competitionName);
             request.setAttribute("categoryName", categoryName);
@@ -234,6 +238,7 @@ public class TeamServlet extends HttpServlet {
             request.setAttribute("memberUsers", memberUsers);
             request.setAttribute("competitions", competitions);
             request.setAttribute("categories", categories);
+            request.setAttribute("works", works);
             request.getRequestDispatcher("/jsp/team_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {

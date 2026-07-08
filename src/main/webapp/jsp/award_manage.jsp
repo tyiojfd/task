@@ -194,7 +194,7 @@
     <div class="row">
         <!-- 左侧：作品列表 -->
         <div class="col-lg-7">
-            <h5 class="mb-3"><i class="fas fa-image"></i> <%= selectedCompetition.getTitle() %> - 作品列表</h5>
+            <h5 class="mb-3"><i class="fas fa-image"></i> <%= selectedCompetition.getName() %> - 作品列表</h5>
 
             <% if (works != null && !works.isEmpty()) {
                 for (Work w : works) {
