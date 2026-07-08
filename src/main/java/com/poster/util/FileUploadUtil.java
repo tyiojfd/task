@@ -1,6 +1,7 @@
 package com.poster.util;
 
 import javax.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,12 +20,6 @@ public class FileUploadUtil {
     private static final String[] ALLOWED_TYPES = {"image/jpeg", "image/png"};
     private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"};
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024L; // 10MB
-
-    /**
-     * 持久化存储相对路径（相对于webapp根目录）
-     * 文件保存在此目录下可避免项目重建时丢失
-     */
-    public static final String STORAGE_DIR = "storage" + java.io.File.separator + "uploads";
 
     /**
      * 校验文件类型是否允许
@@ -72,10 +67,10 @@ public class FileUploadUtil {
     /**
      * 保存上传文件到指定目录
      * @param part 上传的文件part
-     * @param uploadBasePath 上传根目录
+     * @param uploadBasePath 上传根目录（如 /uploads）
      * @param competitionId 竞赛ID（用于目录分组）
      * @param teamId 队伍ID（用于文件名）
-     * @return 存储的相对路径（如 /competition_1/team_3_20260705.jpg）
+     * @return 存储的相对路径（如 /uploads/competition_1/team_3_20260705.jpg）
      */
     public static String saveFile(Part part, String uploadBasePath, Integer competitionId, Integer teamId)
             throws IOException {

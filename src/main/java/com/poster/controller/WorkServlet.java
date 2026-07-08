@@ -343,8 +343,8 @@ public class WorkServlet extends HttpServlet {
             Part filePart = request.getPart("imageFile");
             String imagePath = null;
             if (filePart != null && filePart.getSize() > 0) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
-                imagePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath, competitionId, teamId);
+                String uploadRealPath = getServletContext().getRealPath("/" + UPLOAD_BASE);
+                imagePath = "/" + UPLOAD_BASE + FileUploadUtil.saveFile(filePart, uploadRealPath, competitionId, teamId);
             } else {
                 request.setAttribute("error", "请上传海报图片");
                 showAddForm(request, response);
@@ -412,11 +412,11 @@ public class WorkServlet extends HttpServlet {
             Part filePart = request.getPart("imageFile");
             String imagePath = existingWork.getImagePath();
             if (filePart != null && filePart.getSize() > 0) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String uploadRealPath = getServletContext().getRealPath("/" + UPLOAD_BASE);
                 if (existingWork.getImagePath() != null) {
                     FileUploadUtil.deleteFile(uploadRealPath, existingWork.getImagePath());
                 }
-                imagePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath,
+                imagePath = "/" + UPLOAD_BASE + FileUploadUtil.saveFile(filePart, uploadRealPath,
                         existingWork.getCompetitionId(), existingWork.getTeamId());
             }
 
@@ -478,7 +478,7 @@ public class WorkServlet extends HttpServlet {
             }
 
             if (work.getImagePath() != null) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String uploadRealPath = getServletContext().getRealPath("/" + UPLOAD_BASE);
                 FileUploadUtil.deleteFile(uploadRealPath, work.getImagePath());
             }
 
