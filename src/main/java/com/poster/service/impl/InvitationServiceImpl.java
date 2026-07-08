@@ -3,12 +3,15 @@ package com.poster.service.impl;
 import com.poster.dao.InvitationDAO;
 import com.poster.dao.TeamDAO;
 import com.poster.dao.TeamMemberDAO;
+import com.poster.dao.CompetitionDAO;
 import com.poster.dao.impl.InvitationDAOImpl;
 import com.poster.dao.impl.TeamDAOImpl;
 import com.poster.dao.impl.TeamMemberDAOImpl;
+import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.model.Invitation;
 import com.poster.model.Team;
 import com.poster.model.TeamMember;
+import com.poster.model.Competition;
 import com.poster.service.InvitationService;
 
 import java.time.LocalDateTime;
@@ -24,6 +27,7 @@ public class InvitationServiceImpl implements InvitationService {
     private InvitationDAO invitationDAO = new InvitationDAOImpl();
     private TeamDAO teamDAO = new TeamDAOImpl();
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
+    private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
 
     @Override
     public List<Invitation> getInvitationsForUser(Integer userId) {
@@ -62,9 +66,16 @@ public class InvitationServiceImpl implements InvitationService {
             return false;
         }
 
-        // 6. 检查队伍人数上限（默认5人）
+        // 6. 检查队伍人数上限（使用竞赛配置的maxTeamSize）
         int memberCount = teamMemberDAO.countByTeamId(invitation.getTeamId());
-        if (memberCount >= 5) {
+        int maxTeamSize = 5; // 默认值
+        if (team.getCompetitionId() != null) {
+            Competition comp = competitionDAO.findById(team.getCompetitionId());
+            if (comp != null && comp.getMaxTeamSize() != null && comp.getMaxTeamSize() > 0) {
+                maxTeamSize = comp.getMaxTeamSize();
+            }
+        }
+        if (memberCount >= maxTeamSize) {
             return false;
         }
 

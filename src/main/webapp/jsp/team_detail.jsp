@@ -44,6 +44,17 @@
     @SuppressWarnings("unchecked")
     List<CompetitionCategory> categories = (List<CompetitionCategory>) request.getAttribute("categories");
 
+    @SuppressWarnings("unchecked")
+    List<Work> works = (List<Work>) request.getAttribute("works");
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> likeCounts = (Map<Integer, Integer>) request.getAttribute("likeCounts");
+    Integer workCount = (Integer) request.getAttribute("workCount");
+    Integer totalLikes = (Integer) request.getAttribute("totalLikes");
+    Integer maxTeamSize = (Integer) request.getAttribute("maxTeamSize");
+    if (workCount == null) workCount = 0;
+    if (totalLikes == null) totalLikes = 0;
+    if (maxTeamSize == null) maxTeamSize = 5;
+
     int memberCount = members != null ? members.size() : 0;
     boolean isLeader = team.getLeaderId().equals(sessionUser.getUserId());
 
@@ -315,6 +326,8 @@
             <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i>移除成功！<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } else if ("register_success".equals(msg)) { %>
             <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i>报名成功！队伍已正式参赛。<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <% } else if ("cancel_success".equals(msg)) { %>
+            <div class="alert alert-info alert-dismissible fade show"><i class="fas fa-info-circle me-2"></i>已取消报名，队伍恢复为组建中状态。<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
         <% String error = request.getParameter("error"); %>
         <% if (error != null) { %>
@@ -378,13 +391,13 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="stat-mini">
-                                    <div class="number" style="color:#F39C12">0</div>
+                                    <div class="number" style="color:#F39C12"><%= workCount %></div>
                                     <div class="label">提交作品</div>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="stat-mini">
-                                    <div class="number" style="color:#FD79A8">0</div>
+                                    <div class="number" style="color:#FD79A8"><%= totalLikes %></div>
                                     <div class="label">获得点赞</div>
                                 </div>
                             </div>
@@ -482,6 +495,74 @@
 
                 <!-- Tab: 作品 -->
                 <div class="tab-panel" id="tab-works">
+                    <% if (works != null && !works.isEmpty()) { %>
+                        <div class="row g-3">
+                            <% for (Work w : works) {
+                                int likes = likeCounts != null && likeCounts.containsKey(w.getWorkId()) ? likeCounts.get(w.getWorkId()) : 0;
+                                String statusClass = "bg-success";
+                                String statusText = "已提交";
+                                if (w.getStatus() != null && w.getStatus() == 1) {
+                                    statusClass = "bg-warning text-dark";
+                                    statusText = "草稿";
+                                }
+                                String imagePath = w.getImagePath();
+                                boolean hasImage = imagePath != null && !imagePath.isEmpty();
+                            %>
+                                <div class="col-md-6">
+                                    <div class="info-card p-0 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;"
+                                         onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(108,92,231,0.15)';"
+                                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 14px rgba(108,92,231,0.05)';">
+                                        <!-- 作品图片 -->
+                                        <div style="height: 180px; background: linear-gradient(135deg, #E8ECF1, #DFE6E9); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                            <% if (hasImage) { %>
+                                                <img src="<%= request.getContextPath() + imagePath %>"
+                                                     alt="<%= w.getTitle() %>"
+                                                     style="width:100%; height:100%; object-fit:cover;"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                <i class="fas fa-image fa-3x" style="color:#B2BEC3; display:none;"></i>
+                                            <% } else { %>
+                                                <i class="fas fa-image fa-3x" style="color:#B2BEC3;"></i>
+                                            <% } %>
+                                        </div>
+                                        <!-- 作品信息 -->
+                                        <div class="p-3">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;" title="<%= w.getTitle() %>">
+                                                    <%= w.getTitle() %>
+                                                </h6>
+                                                <span class="badge <%= statusClass %>" style="font-size:0.7rem;"><%= statusText %></span>
+                                            </div>
+                                            <% if (w.getDescription() != null && !w.getDescription().isEmpty()) { %>
+                                                <p class="text-muted small mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                                    <%= w.getDescription().length() > 80 ? w.getDescription().substring(0, 80) + "..." : w.getDescription() %>
+                                                </p>
+                                            <% } %>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="far fa-clock me-1"></i>
+                                                    <%= w.getSubmitTime() != null ? w.getSubmitTime().format(dtf) : "未知" %>
+                                                </small>
+                                                <span class="badge rounded-pill" style="background:#FCE4EC; color:#FD79A8; font-weight:600;">
+                                                    <i class="far fa-heart me-1"></i><%= likes %>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% } else { %>
+                        <div class="info-card text-center py-5">
+                            <i class="fas fa-image fa-4x mb-3" style="color: #DFE6E9;"></i>
+                            <h5 class="text-muted">暂无作品</h5>
+                            <p class="text-muted">组队完成后即可提交参赛作品</p>
+                            <% if (isLeader && team.getStatus() != null && team.getStatus() == 2) { %>
+                                <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary mt-2 rounded-3 px-4" style="background:var(--primary); border:none;">
+                                    <i class="fas fa-plus me-1"></i>提交作品
+                                </a>
+                            <% } %>
+                        </div>
+                    <% } %>
                     <%
                         List<Work> works = (List<Work>) request.getAttribute("works");
                         boolean hasWorks = works != null && !works.isEmpty();
@@ -566,6 +647,13 @@
                                 <button class="action-btn btn-register" disabled style="opacity:0.6;">
                                     <i class="fas fa-check-circle"></i>已报名参赛
                                 </button>
+                                <form action="${pageContext.request.contextPath}/team?action=cancel" method="post"
+                                      onsubmit="return confirm('确定要取消报名吗？\n\n取消后队伍将恢复为组建中状态，您可以重新报名。')">
+                                    <input type="hidden" name="teamId" value="<%= team.getTeamId() %>">
+                                    <button type="submit" class="action-btn w-100 mt-2" style="background:linear-gradient(135deg, #F39C12, #FDCB6E); color:white; box-shadow: 0 4px 12px rgba(243,156,18,0.3);">
+                                        <i class="fas fa-undo"></i>取消报名
+                                    </button>
+                                </form>
                             <% } %>
                             <hr>
                             <a href="${pageContext.request.contextPath}/team?action=delete&id=<%= team.getTeamId() %>"
@@ -585,8 +673,8 @@
                 <div class="info-card">
                     <h6 class="mb-3"><i class="fas fa-lightbulb me-2" style="color:#F39C12;"></i>下一步做什么？</h6>
                     <%
-                        // 动态计算每步状态
-                        boolean step1Done = memberCount >= 5 || (team.getStatus() != null && team.getStatus() >= 2);
+                        // 动态计算每步状态（使用竞赛配置的maxTeamSize）
+                        boolean step1Done = memberCount >= maxTeamSize || (team.getStatus() != null && team.getStatus() >= 2);
                         boolean step2Done = team.getStatus() != null && team.getStatus() == 2;
                         boolean step1Active = !step1Done && !step2Done;
                         boolean step2Active = (memberCount >= 1 || step1Done) && !step2Done && team.getStatus() == 1;

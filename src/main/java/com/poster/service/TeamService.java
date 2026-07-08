@@ -74,4 +74,9 @@ public interface TeamService {
      * 报名竞赛
      */
     boolean registerCompetition(Integer teamId, Integer competitionId, Integer categoryId);
+
+    /**
+     * 取消报名（将队伍状态从已报名恢复为组建中）
+     */
+    boolean cancelRegistration(Integer teamId, Integer leaderId);
 }

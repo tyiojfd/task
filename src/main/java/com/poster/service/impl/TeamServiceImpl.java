@@ -3,12 +3,15 @@ package com.poster.service.impl;
 import com.poster.dao.TeamDAO;
 import com.poster.dao.TeamMemberDAO;
 import com.poster.dao.InvitationDAO;
+import com.poster.dao.CompetitionDAO;
 import com.poster.dao.impl.TeamDAOImpl;
 import com.poster.dao.impl.TeamMemberDAOImpl;
 import com.poster.dao.impl.InvitationDAOImpl;
+import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.model.Team;
 import com.poster.model.TeamMember;
 import com.poster.model.Invitation;
+import com.poster.model.Competition;
 import com.poster.service.TeamService;
 
 import java.time.LocalDateTime;
@@ -24,6 +27,7 @@ public class TeamServiceImpl implements TeamService {
     private TeamDAO teamDAO = new TeamDAOImpl();
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private InvitationDAO invitationDAO = new InvitationDAOImpl();
+    private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
 
     @Override
     public boolean createTeam(Team team, Integer leaderId) {
@@ -36,6 +40,12 @@ public class TeamServiceImpl implements TeamService {
         }
         if (team.getCategoryId() == null) {
             return false;
+        }
+
+        // 检查用户是否已在该竞赛中有队伍（含队长和队员身份）
+        Team existingTeam = getUserTeamInCompetition(leaderId, team.getCompetitionId());
+        if (existingTeam != null) {
+            return false; // 同一用户同一竞赛不得重复建队
         }
 
         // 设置队伍信息
@@ -193,9 +203,16 @@ public class TeamServiceImpl implements TeamService {
             return false;
         }
 
-        // 检查队伍人数是否已满（默认最大5人）
+        // 检查队伍人数是否已满（使用竞赛配置的maxTeamSize）
         int memberCount = teamMemberDAO.countByTeamId(teamId);
-        if (memberCount >= 5) {
+        int maxTeamSize = 5; // 默认值
+        if (team.getCompetitionId() != null) {
+            Competition comp = competitionDAO.findById(team.getCompetitionId());
+            if (comp != null && comp.getMaxTeamSize() != null && comp.getMaxTeamSize() > 0) {
+                maxTeamSize = comp.getMaxTeamSize();
+            }
+        }
+        if (memberCount >= maxTeamSize) {
             return false;
         }
 
@@ -269,6 +286,28 @@ public class TeamServiceImpl implements TeamService {
         team.setCategoryId(categoryId);
         team.setStatus(2); // 2-已报名
 
+        return teamDAO.update(team) > 0;
+    }
+
+    @Override
+    public boolean cancelRegistration(Integer teamId, Integer leaderId) {
+        if (teamId == null || leaderId == null) {
+            return false;
+        }
+
+        // 验证是否为队长
+        Team team = teamDAO.findById(teamId);
+        if (team == null || !team.getLeaderId().equals(leaderId)) {
+            return false;
+        }
+
+        // 只有已报名状态（status=2）才能取消报名
+        if (team.getStatus() == null || team.getStatus() != 2) {
+            return false;
+        }
+
+        // 恢复为组建中状态
+        team.setStatus(1);
         return teamDAO.update(team) > 0;
     }
 }

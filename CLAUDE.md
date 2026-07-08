@@ -393,6 +393,32 @@
 **模块二剩余：**
 - [ ] 竞赛列表每张卡片分别显示各自的队伍数/作品数（可优化项）
 
+### 2026-07-08（续）
+
+**已完成：取消报名 + 队伍详情页作品展示（完成人：杨祥博 / Claude 协助）**
+- ✅ Service层：`TeamService` / `TeamServiceImpl` 新增 `cancelRegistration()` 方法（队长验证、状态检查、status 2→1）
+- ✅ Controller层：`TeamServlet` 新增 `cancel` action 路由 + `cancelRegistration()` 处理（队长权限校验）
+- ✅ Controller层：`TeamServlet.showTeamDetail()` 新增作品加载（`WorkService.getWorksByTeamId()`）、点赞统计（`WorkLikeDAO.countByWorkId()`）、汇总数据（作品数/总赞数）
+- ✅ 前端页面：`team_detail.jsp` 概览Tab统计卡片从硬编码 `0` 改为真实数据（提交作品数/获得点赞数）
+- ✅ 前端页面：`team_detail.jsp` 作品Tab从静态占位符改为真实作品网格（缩略图/标题/描述摘要/时间/点赞数/状态标签）+ hover悬浮动画 + 空状态引导（已报名队伍显示提交作品按钮）
+- ✅ 前端页面：`team_detail.jsp` 已报名状态新增"取消报名"按钮（确认弹窗 → POST cancel → 队伍恢复组建中）
+- **代码量：** 4个文件，+167行，-7行
+- **编译状态：** BUILD SUCCESS
+
+**已完成：同一用户同一竞赛重复建队限制（完成人：杨祥博 / Claude 协助）**
+- ✅ Service层：`TeamServiceImpl.createTeam()` 新增重复建队校验（调用 `getUserTeamInCompetition()`，已在该竞赛有有效队伍则拒绝创建）
+- ✅ Controller层：`TeamServlet.createTeam()` 错误提示更新（明确告知"同一竞赛只能加入一支队伍"）
+- **代码量：** 2个文件，+5行，-1行
+- **编译状态：** BUILD SUCCESS
+
+**已完成：队伍人数上限改用竞赛配置maxTeamSize（完成人：杨祥博 / Claude 协助）**
+- ✅ Service层：`TeamServiceImpl.inviteMember()` 人数上限从硬编码 `5` 改为读取 `Competition.maxTeamSize`（新增 `CompetitionDAO` 依赖，null/0 时回退默认值 5）
+- ✅ Service层：`InvitationServiceImpl.acceptInvitation()` 同上（新增 `CompetitionDAO` 依赖）
+- ✅ Controller层：`TeamServlet.showTeamDetail()` 将 `maxTeamSize` 传递给 JSP
+- ✅ 前端页面：`team_detail.jsp` 步骤指示器 `memberCount >= 5` 改为 `memberCount >= maxTeamSize`
+- **代码量：** 4个文件，+27行，-5行
+- **编译状态：** BUILD SUCCESS
+
 ---
 
 ## 团队组织结构
