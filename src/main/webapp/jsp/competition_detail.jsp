@@ -62,7 +62,10 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0"><%= competition.getName() %></h4>
                     <span class="badge bg-light text-dark">
-                        <%= competition.getStatus() == 1 ? "报名中" : competition.getStatus() == 2 ? "进行中" : "已结束" %>
+                        <% if (competition.getStatus() == 1) { %>报名中<% }
+                           else if (competition.getStatus() == 2) { %>进行中<% }
+                           else if (competition.getStatus() == 3) { %>已结束<% }
+                           else { %>已取消<% } %>
                     </span>
                 </div>
                 <div class="card-body">
@@ -103,6 +106,16 @@
                         <span><%= competition.getCreateTime() != null ? competition.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未知" %></span>
                     </div>
 
+                    <!-- 竞赛统计 -->
+                    <% java.util.Map stats = (java.util.Map) request.getAttribute("stats");
+                       if (stats != null) { %>
+                    <div class="info-row">
+                        <span class="info-label">参赛统计：</span>
+                        <span><span class="badge bg-primary me-2"><%= stats.get("teamCount") %> 支队伍</span>
+                              <span class="badge bg-success"><%= stats.get("workCount") %> 件作品</span></span>
+                    </div>
+                    <% } %>
+
                     <!-- 参赛状态区域 -->
                     <div class="mt-4 p-3 bg-light rounded">
                         <% if (sessionUser == null) { %>
@@ -130,6 +143,9 @@
                         <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-secondary">返回列表</a>
                         <% if (isAdmin) { %>
                             <a href="${pageContext.request.contextPath}/competition?action=edit&id=<%= competition.getCompetitionId() %>" class="btn btn-primary">编辑竞赛</a>
+                            <% if (competition.getStatus() != 0) { %>
+                            <button type="button" class="btn btn-warning" onclick="cancelCompetition(<%= competition.getCompetitionId() %>)">取消竞赛</button>
+                            <% } %>
                             <button type="button" class="btn btn-danger" onclick="deleteCompetition(<%= competition.getCompetitionId() %>)">删除竞赛</button>
                         <% } %>
                     </div>
@@ -148,6 +164,16 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '${pageContext.request.contextPath}/competition?action=delete&id=' + id;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function cancelCompetition(id) {
+            if (confirm('确定要取消这个竞赛吗？取消后参赛者将不能继续操作。')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '${pageContext.request.contextPath}/competition?action=cancel&id=' + id;
                 document.body.appendChild(form);
                 form.submit();
             }

@@ -1,12 +1,20 @@
 package com.poster.service.impl;
 
 import com.poster.dao.CompetitionDAO;
+import com.poster.dao.TeamDAO;
+import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.CompetitionDAOImpl;
+import com.poster.dao.impl.TeamDAOImpl;
+import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Competition;
+import com.poster.model.Team;
+import com.poster.model.Work;
 import com.poster.service.CompetitionService;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 竞赛服务实现类
@@ -16,6 +24,8 @@ import java.util.List;
 public class CompetitionServiceImpl implements CompetitionService {
 
     private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
+    private TeamDAO teamDAO = new TeamDAOImpl();
+    private WorkDAO workDAO = new WorkDAOImpl();
 
     @Override
     public boolean createCompetition(Competition competition) {
@@ -106,5 +116,36 @@ public class CompetitionServiceImpl implements CompetitionService {
 
         competition.setStatus(status);
         return competitionDAO.update(competition) > 0;
+    }
+
+    @Override
+    public boolean cancelCompetition(Integer competitionId) {
+        return updateCompetitionStatus(competitionId, 0);
+    }
+
+    @Override
+    public List<Competition> searchCompetitions(String keyword, Integer year, Integer status) {
+        if ((keyword == null || keyword.trim().isEmpty()) && year == null && status == null) {
+            return competitionDAO.findAll();
+        }
+        return competitionDAO.findByFilters(keyword, year, status);
+    }
+
+    @Override
+    public Map<String, Integer> getCompetitionStats(Integer competitionId) {
+        Map<String, Integer> stats = new HashMap<>();
+        if (competitionId == null) {
+            stats.put("teamCount", 0);
+            stats.put("workCount", 0);
+            return stats;
+        }
+
+        List<Team> teams = teamDAO.findByCompetitionId(competitionId);
+        stats.put("teamCount", teams != null ? teams.size() : 0);
+
+        int workCount = workDAO.countByCompetitionId(competitionId);
+        stats.put("workCount", workCount);
+
+        return stats;
     }
 }

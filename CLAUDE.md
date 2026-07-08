@@ -331,6 +331,31 @@
 - [ ] 验证同竞赛重复入队限制：已在某竞赛队伍中的用户再次接受同竞赛其他队伍邀请时应失败
 - [ ] 检查并清理 `LoginServlet.java`、`AuthFilter.java`、`TeamServlet.java`、`WorkServlet.java`、`CompetitionServlet.java`、`InvitationServiceImpl.java` 等本轮修改后的编译问题与提示文案，必要时补充用户友好错误反馈
 
+### 2026-07-08
+
+**已完成：数据库一致性修复（完成人：洪振博 / Claude 协助）**
+- ✅ `schema.sql`：`team.status` 注释统一为 `0-已取消，1-组建中，2-已报名`，与 Java 代码一致
+- ✅ `schema.sql`：`work_share` 表新增 `platform VARCHAR(50)` 字段，匹配 WorkShare 模型
+- ✅ `WorkShareDAOImpl.java`：INSERT 和 SELECT 加上 platform 字段保存/读取
+- ✅ 新增迁移脚本 `database/migrations/V4__database_consistency.sql`，旧库直接 Navicat 运行修复 team.status、work_share.platform、user.avatar、work 作品字段、work_file.file_size 等
+
+**已完成：模块2-竞赛管理模块完善（完成人：洪振博 / Claude 协助）**
+- ✅ DAO层：`CompetitionDAO` / `CompetitionDAOImpl` 新增 `search(keyword)` 和 `findByFilters(keyword, year, status)` 方法
+- ✅ Service层：`CompetitionService` / `CompetitionServiceImpl` 新增 `cancelCompetition()`、`searchCompetitions()`、`getCompetitionStats()` 方法（含 TeamDAO/WorkDAO 注入统计队伍数/作品数）
+- ✅ Controller层：`CompetitionServlet.list` 支持多条件筛选（关键词 + 年度 + 状态）
+- ✅ Controller层：`CompetitionServlet` 新增 `cancel` action，管理员可取消竞赛（status → 0）
+- ✅ Controller层：`CompetitionServlet.detail` 传递赛事统计（队伍数/作品数）
+- ✅ Controller层：`IndexServlet` 新增全局统计（竞赛总数/队伍总数/作品总数/进行中竞赛数）
+- ✅ 前端页面：`competition_list.jsp` 新增搜索筛选栏（关键词/年度下拉/状态下拉）+ 重置按钮 + 统计概览卡片（竞赛总数/参赛队伍/作品总数）+ 空状态仅管理员显示发布链接
+- ✅ 前端页面：`competition_detail.jsp` 新增参赛统计行（队伍数/作品数）+ 状态标签4态统一 + 取消竞赛按钮 + 取消 JS 确认函数
+- ✅ 前端页面：`competition_edit.jsp` 状态下拉新增"已取消"选项
+- ✅ 前端页面：`index.jsp` 管理员统计卡片从占位符 `-` 改为真实数据 + 第4卡片统计"进行中竞赛" (status=2) + 评委首页从"开发中"改为评分/评记录双入口 + 竞赛卡片状态标签统一为 `报名中/进行中/已结束/已取消` 4态
+- ✅ 全站竞赛状态统一：`0=已取消(红) 1=报名中(绿) 2=进行中(蓝) 3=已结束(灰)`
+- **代码量：** 12个文件，+415行，-20行
+
+**模块二剩余：**
+- [ ] 竞赛列表每张卡片分别显示各自的队伍数/作品数（可优化项）
+
 ---
 
 ## 团队组织结构
@@ -350,11 +375,11 @@
 - **附加职责：** 项目整体协调、进度管理、代码审查、会议记录
 
 **模块2：竞赛管理模块（副队长负责）**
-- **功能范围：** 竞赛发布、修改、查询、子类管理
-- **前端页面：** competition_list.jsp, competition_add.jsp, competition_edit.jsp, competition_detail.jsp
-- **后端代码：** CompetitionServlet, CompetitionService, CategoryService
-- **数据访问：** CompetitionDAO, CategoryDAO
-- **涉及数据表：** competition, competition_category（2张表）
+- **功能范围：** 竞赛发布、修改、查询、子类管理、搜索筛选、状态管理、竞赛取消、数据统计
+- **前端页面：** competition_list.jsp（含搜索/筛选/统计）, competition_add.jsp, competition_edit.jsp, competition_detail.jsp（含统计/取消）
+- **后端代码：** CompetitionServlet（list/detail/add/edit/create/update/delete/cancel）, CompetitionService（创建/更新/删除/取消/搜索/统计）, IndexServlet（全局统计）
+- **数据访问：** CompetitionDAO（含search/findByFilters）, CategoryDAO, TeamDAO, WorkDAO
+- **涉及数据表：** competition, competition_category（2张表，统计关联team/work）
 - **附加职责：** 技术架构设计、基础工具类开发、项目实现报告
 
 **模块3：队伍管理模块（杨祥博负责）**
@@ -517,6 +542,11 @@ test: 添加作品提交测试用例
 - [x] 竞赛详情展示（competition_detail.jsp）
 - [x] 竞赛修改功能（competition_edit.jsp）
 - [x] 竞赛子类管理
+- [x] 竞赛搜索与多条件筛选（关键词+年度+状态）✅ 2026-07-08
+- [x] 竞赛统计（队伍数/作品数/进行中数）✅ 2026-07-08
+- [x] 竞赛取消功能（status → 0）✅ 2026-07-08
+- [x] 全站状态标签统一（0=已取消/1=报名中/2=进行中/3=已结束）✅ 2026-07-08
+- [x] 管理员首页真实统计 + 评委首页评分入口 ✅ 2026-07-08
 
 **模块3 - 队伍管理（杨祥博）：**
 - [x] 创建队伍功能（TeamServlet + team_create.jsp）
@@ -879,7 +909,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月7日
-**更新人：** 队员C
-**版本：** v1.8
-**版本：** v1.6
+**最后更新时间：** 2026年7月8日
+**更新人：** Claude AI 助手（模块二完成者）
+**版本：** v1.9

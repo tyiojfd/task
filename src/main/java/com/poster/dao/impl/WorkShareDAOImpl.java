@@ -17,12 +17,13 @@ public class WorkShareDAOImpl implements WorkShareDAO {
 
     @Override
     public int insert(WorkShare workShare) {
-        String sql = "INSERT INTO work_share (work_id, user_id) VALUES (?, ?)";
+        String sql = "INSERT INTO work_share (work_id, user_id, platform) VALUES (?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setInt(1, workShare.getWorkId());
             pstmt.setInt(2, workShare.getUserId());
+            pstmt.setString(3, workShare.getPlatform());
 
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
@@ -67,6 +68,7 @@ public class WorkShareDAOImpl implements WorkShareDAO {
                     ws.setId(rs.getInt("id"));
                     ws.setWorkId(rs.getInt("work_id"));
                     ws.setUserId(rs.getInt("user_id"));
+                    ws.setPlatform(rs.getString("platform"));
                     Timestamp shareTime = rs.getTimestamp("share_time");
                     if (shareTime != null) {
                         ws.setShareTime(shareTime.toLocalDateTime());
@@ -94,6 +96,7 @@ public class WorkShareDAOImpl implements WorkShareDAO {
                     ws.setId(rs.getInt("id"));
                     ws.setWorkId(rs.getInt("work_id"));
                     ws.setUserId(rs.getInt("user_id"));
+                    ws.setPlatform(rs.getString("platform"));
                     Timestamp shareTime = rs.getTimestamp("share_time");
                     if (shareTime != null) {
                         ws.setShareTime(shareTime.toLocalDateTime());

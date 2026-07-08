@@ -54,4 +54,14 @@ public interface CompetitionDAO {
      * 统计竞赛总数
      */
     int count();
+
+    /**
+     * 关键词搜索竞赛（匹配名称、主题、描述）
+     */
+    List<Competition> search(String keyword);
+
+    /**
+     * 多条件组合筛选
+     */
+    List<Competition> findByFilters(String keyword, Integer year, Integer status);
 }

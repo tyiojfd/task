@@ -204,6 +204,70 @@ public class CompetitionDAOImpl implements CompetitionDAO {
         return 0;
     }
 
+    @Override
+    public List<Competition> search(String keyword) {
+        String sql = "SELECT * FROM competition WHERE name LIKE ? OR theme LIKE ? OR description LIKE ? ORDER BY create_time DESC";
+        List<Competition> competitions = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            String likeKeyword = "%" + keyword + "%";
+            pstmt.setString(1, likeKeyword);
+            pstmt.setString(2, likeKeyword);
+            pstmt.setString(3, likeKeyword);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    competitions.add(extractCompetitionFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return competitions;
+    }
+
+    @Override
+    public List<Competition> findByFilters(String keyword, Integer year, Integer status) {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM competition WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sqlBuilder.append(" AND (name LIKE ? OR theme LIKE ? OR description LIKE ?)");
+            String likeKeyword = "%" + keyword.trim() + "%";
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+        }
+        if (year != null) {
+            sqlBuilder.append(" AND year = ?");
+            params.add(year);
+        }
+        if (status != null) {
+            sqlBuilder.append(" AND status = ?");
+            params.add(status);
+        }
+        sqlBuilder.append(" ORDER BY create_time DESC");
+
+        List<Competition> competitions = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    competitions.add(extractCompetitionFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return competitions;
+    }
+
     /**
      * 从ResultSet中提取Competition对象
      */
