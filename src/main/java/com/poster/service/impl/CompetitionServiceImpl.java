@@ -1,16 +1,14 @@
 package com.poster.service.impl;
 
-import com.poster.dao.CompetitionDAO;
-import com.poster.dao.TeamDAO;
-import com.poster.dao.WorkDAO;
-import com.poster.dao.impl.CompetitionDAOImpl;
-import com.poster.dao.impl.TeamDAOImpl;
-import com.poster.dao.impl.WorkDAOImpl;
-import com.poster.model.Competition;
-import com.poster.model.Team;
-import com.poster.model.Work;
+import com.poster.dao.*;
+import com.poster.dao.impl.*;
+import com.poster.model.*;
 import com.poster.service.CompetitionService;
+import com.poster.util.DBUtil;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -70,8 +68,91 @@ public class CompetitionServiceImpl implements CompetitionService {
             return false;
         }
 
-        // 调用DAO删除
-        return competitionDAO.deleteById(competitionId) > 0;
+        Connection conn = null;
+        try {
+            conn = DBUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. 删除该竞赛下所有队伍的作品文件 → work_file
+            List<Work> works = workDAO.findByCompetitionId(competitionId);
+            if (works != null) {
+                for (Work w : works) {
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM work_file WHERE work_id = ?")) {
+                        ps.setInt(1, w.getWorkId());
+                        ps.executeUpdate();
+                    }
+                    // 删除点赞
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM work_like WHERE work_id = ?")) {
+                        ps.setInt(1, w.getWorkId());
+                        ps.executeUpdate();
+                    }
+                    // 删除分享
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM work_share WHERE work_id = ?")) {
+                        ps.setInt(1, w.getWorkId());
+                        ps.executeUpdate();
+                    }
+                    // 删除作品
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM work WHERE work_id = ?")) {
+                        ps.setInt(1, w.getWorkId());
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
+            // 2. 删除该竞赛下的队伍成员 + 队伍
+            List<Team> teams = teamDAO.findByCompetitionId(competitionId);
+            if (teams != null) {
+                for (Team t : teams) {
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM team_member WHERE team_id = ?")) {
+                        ps.setInt(1, t.getTeamId());
+                        ps.executeUpdate();
+                    }
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM invitation WHERE team_id = ?")) {
+                        ps.setInt(1, t.getTeamId());
+                        ps.executeUpdate();
+                    }
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "DELETE FROM team WHERE team_id = ?")) {
+                        ps.setInt(1, t.getTeamId());
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
+            // 3. 删除竞赛子类
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM competition_category WHERE competition_id = ?")) {
+                ps.setInt(1, competitionId);
+                ps.executeUpdate();
+            }
+
+            // 4. 删除竞赛
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM competition WHERE competition_id = ?")) {
+                ps.setInt(1, competitionId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    conn.commit();
+                    return true;
+                }
+            }
+
+            conn.rollback();
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (SQLException ignored) {}
+            return false;
+        } finally {
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } }
+            catch (SQLException ignored) {}
+        }
     }
 
     @Override
