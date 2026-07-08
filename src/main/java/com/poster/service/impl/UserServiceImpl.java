@@ -153,4 +153,44 @@ public class UserServiceImpl implements UserService {
     public List<Role> getUserRoles(Integer userId) {
         return userRoleDAO.findRolesByUserId(userId);
     }
+
+    @Override
+    public boolean resetPassword(String username, String email, String newPassword) {
+        User user = userDAO.findByUsername(username);
+        if (user == null || user.getEmail() == null || !user.getEmail().equals(email)) {
+            return false;
+        }
+        return userDAO.updatePassword(user.getUserId(), PasswordUtil.encrypt(newPassword)) > 0;
+    }
+
+    @Override
+    public List<User> searchUsers(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return userDAO.findAll();
+        }
+        return userDAO.search(keyword.trim());
+    }
+
+    @Override
+    public List<Role> getAllRoles() {
+        return roleDAO.findAll();
+    }
+
+    @Override
+    public boolean updateUserRoles(Integer userId, String[] roleIds) {
+        userRoleDAO.deleteByUserId(userId);
+        if (roleIds == null || roleIds.length == 0) {
+            return true;
+        }
+        boolean success = true;
+        for (String rid : roleIds) {
+            try {
+                int id = Integer.parseInt(rid);
+                success = userRoleDAO.assignRole(userId, id) && success;
+            } catch (NumberFormatException e) {
+                success = false;
+            }
+        }
+        return success;
+    }
 }
