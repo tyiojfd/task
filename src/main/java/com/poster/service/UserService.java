@@ -60,4 +60,24 @@ public interface UserService {
      * 获取用户角色列表
      */
     List<Role> getUserRoles(Integer userId);
+
+    /**
+     * 找回密码（验证用户名+邮箱匹配后重置）
+     */
+    boolean resetPassword(String username, String email, String newPassword);
+
+    /**
+     * 搜索用户（管理员功能）
+     */
+    List<User> searchUsers(String keyword);
+
+    /**
+     * 获取所有角色
+     */
+    List<Role> getAllRoles();
+
+    /**
+     * 更新用户角色（管理员功能）
+     */
+    boolean updateUserRoles(Integer userId, String[] roleIds);
 }

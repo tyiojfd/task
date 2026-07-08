@@ -472,12 +472,11 @@
                 <p>已有账号？<a href="${pageContext.request.contextPath}/login">立即登录</a></p>
             </div>
 
-            <% String error = (String) request.getAttribute("error"); %>
-            <% if (error != null) { %>
+            <c:if test="${not empty error}">
                 <div class="alert-box alert-error">
-                    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+                    <i class="bi bi-exclamation-triangle-fill"></i> <c:out value="${error}"/>
                 </div>
-            <% } %>
+            </c:if>
 
             <form action="${pageContext.request.contextPath}/register" method="post" id="regForm">
 
