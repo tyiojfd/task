@@ -8,9 +8,11 @@ import com.poster.model.TeamMember;
 import com.poster.dao.TeamMemberDAO;
 import com.poster.dao.UserDAO;
 import com.poster.dao.CategoryDAO;
+import com.poster.dao.WorkLikeDAO;
 import com.poster.dao.impl.TeamMemberDAOImpl;
 import com.poster.dao.impl.UserDAOImpl;
 import com.poster.dao.impl.CategoryDAOImpl;
+import com.poster.dao.impl.WorkLikeDAOImpl;
 import com.poster.service.TeamService;
 import com.poster.service.CompetitionService;
 import com.poster.service.impl.TeamServiceImpl;
@@ -42,6 +44,7 @@ public class TeamServlet extends HttpServlet {
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private UserDAO userDAO = new UserDAOImpl();
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
+    private WorkLikeDAO workLikeDAO = new WorkLikeDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -81,6 +84,8 @@ public class TeamServlet extends HttpServlet {
             removeMember(request, response);
         } else if ("register".equals(action)) {
             registerCompetition(request, response);
+        } else if ("cancel".equals(action)) {
+            cancelRegistration(request, response);
         } else if ("searchUser".equals(action)) {
             searchUserForInvite(request, response);
         } else {
@@ -202,6 +207,8 @@ public class TeamServlet extends HttpServlet {
             // 鍔犺浇绔炶禌鍚嶇О
             Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
             String competitionName = competition != null ? competition.getName() : "鏈煡绔炶禌";
+            Integer maxTeamSize = (competition != null && competition.getMaxTeamSize() != null && competition.getMaxTeamSize() > 0)
+                    ? competition.getMaxTeamSize() : 5;
 
             // 鍔犺浇瀛愮被鍚嶇О
             CompetitionCategory category = categoryDAO.findById(team.getCategoryId());
@@ -223,6 +230,19 @@ public class TeamServlet extends HttpServlet {
                 }
             }
 
+            // 加载队伍作品列表
+            List<Work> works = workService.getWorksByTeamId(teamId);
+            Map<Integer, Integer> likeCounts = new HashMap<>();
+            int totalLikes = 0;
+            if (works != null) {
+                for (Work w : works) {
+                    int likes = workLikeDAO.countByWorkId(w.getWorkId());
+                    likeCounts.put(w.getWorkId(), likes);
+                    totalLikes += likes;
+                }
+            }
+            int workCount = works != null ? works.size() : 0;
+
             // 加载竞赛和子类列表（供编辑弹窗使用）
             List<Competition> competitions = competitionService.getAllCompetitions();
             List<CompetitionCategory> categories = categoryDAO.findAll();
@@ -232,12 +252,17 @@ public class TeamServlet extends HttpServlet {
 
             request.setAttribute("team", team);
             request.setAttribute("competitionName", competitionName);
+            request.setAttribute("maxTeamSize", maxTeamSize);
             request.setAttribute("categoryName", categoryName);
             request.setAttribute("leaderName", leaderName);
             request.setAttribute("members", members);
             request.setAttribute("memberUsers", memberUsers);
             request.setAttribute("competitions", competitions);
             request.setAttribute("categories", categories);
+            request.setAttribute("works", works);
+            request.setAttribute("likeCounts", likeCounts);
+            request.setAttribute("workCount", workCount);
+            request.setAttribute("totalLikes", totalLikes);
             request.setAttribute("works", works);
             request.getRequestDispatcher("/jsp/team_detail.jsp").forward(request, response);
 
@@ -266,7 +291,7 @@ public class TeamServlet extends HttpServlet {
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/team?action=myTeams");
             } else {
-                request.setAttribute("error", "创建队伍失败，请检查队伍名称是否填写完整");
+                request.setAttribute("error", "创建队伍失败。请检查：队伍名称是否填写完整、是否已在该竞赛中创建或加入了其他队伍（同一竞赛只能加入一支队伍）");
                 List<Competition> competitions = competitionService.getAllCompetitions();
                 List<CompetitionCategory> categories = categoryDAO.findAll();
                 request.setAttribute("competitions", competitions);
@@ -465,6 +490,34 @@ public class TeamServlet extends HttpServlet {
             }
         } catch (Exception e) {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=register_error");
+        }
+    }
+
+    /**
+     * 取消报名
+     */
+    private void cancelRegistration(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+
+        try {
+            Integer teamId = Integer.parseInt(request.getParameter("teamId"));
+
+            boolean success = teamService.cancelRegistration(teamId, user.getUserId());
+
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&msg=cancel_success");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&error=cancel_failed");
+            }
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=cancel_error");
         }
     }
 
