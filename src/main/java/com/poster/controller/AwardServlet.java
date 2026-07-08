@@ -5,6 +5,7 @@ import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Award;
+import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.model.Work;
 import com.poster.service.AwardService;
@@ -130,10 +131,7 @@ public class AwardServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
-
-        User user = (User) session.getAttribute("user");
-        List<String> userRoles = (List<String>) session.getAttribute("userRoles");
-        if (userRoles == null || !userRoles.contains("管理员")) {
+        if (!isAdmin(request)) {
             response.sendRedirect(request.getContextPath() + "/index");
             return;
         }
@@ -226,6 +224,22 @@ public class AwardServlet extends HttpServlet {
     }
 
     /**
+     * 检查当前用户是否为管理员
+     */
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles != null) {
+            for (Role role : roles) {
+                if ("管理员".equals(role.getRoleName())) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 设置获奖（管理员操作）
      */
     private void setAward(HttpServletRequest request, HttpServletResponse response)
@@ -233,6 +247,10 @@ public class AwardServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
             return;
         }
 
@@ -277,6 +295,10 @@ public class AwardServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
 
         try {
             Integer awardId = Integer.parseInt(request.getParameter("awardId"));
@@ -311,6 +333,10 @@ public class AwardServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
             return;
         }
 

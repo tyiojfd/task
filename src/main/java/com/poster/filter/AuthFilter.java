@@ -80,8 +80,17 @@ public class AuthFilter implements Filter {
         }
 
         // 新闻公开仅限列表和详情
-        return relativePath.equals("/news") || relativePath.startsWith("/news?action=list")
-                || relativePath.startsWith("/news?action=detail");
+        if (relativePath.equals("/news") || relativePath.startsWith("/news?action=list")
+                || relativePath.startsWith("/news?action=detail")) {
+            return true;
+        }
+
+        // 获奖名单和奖状查看公开（无需登录）
+        if (relativePath.startsWith("/award") || relativePath.startsWith("/certificate")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -111,7 +120,16 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/award")) {
+            // 获奖名单和详情公开查看，管理操作仅限管理员
+            if ("list".equals(action) || "detail".equals(action) || action == null) {
+                return true;
+            }
             return isAdmin;
+        }
+
+        if (relativePath.startsWith("/certificate")) {
+            // 奖状查看公开
+            return true;
         }
 
         if (relativePath.startsWith("/team") || relativePath.startsWith("/invitation")
@@ -120,11 +138,6 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/profile")) {
-            return true;
-        }
-
-        // 获奖名单和奖状查看公开
-        if (relativePath.startsWith("/award") || relativePath.startsWith("/certificate")) {
             return true;
         }
 
