@@ -162,6 +162,8 @@ CREATE TABLE work (
     work_title VARCHAR(200) NOT NULL COMMENT '作品标题',
     work_desc TEXT DEFAULT NULL COMMENT '作品描述',
     image_path VARCHAR(500) DEFAULT NULL COMMENT '海报图片路径',
+    image_data MEDIUMBLOB DEFAULT NULL COMMENT '海报图片二进制数据',
+    image_content_type VARCHAR(50) DEFAULT NULL COMMENT '图片MIME类型（image/jpeg, image/png）',
     file_path VARCHAR(500) DEFAULT NULL COMMENT '文件路径（兼容旧版字段，作品主图使用image_path）',
     file_size INT DEFAULT NULL COMMENT '文件大小（字节，兼容旧版字段）',
     version INT DEFAULT 1 COMMENT '版本号（兼容旧版字段）',

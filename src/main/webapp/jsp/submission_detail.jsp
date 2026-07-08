@@ -156,7 +156,7 @@
             <div class="row g-0">
                 <div class="col-lg-7">
                     <% if (work.getImagePath() != null && !work.getImagePath().isEmpty()) { %>
-                        <img src="${pageContext.request.contextPath}<%= work.getImagePath() %>" class="work-image"
+                        <img src="${pageContext.request.contextPath}/image-data?workId=<%= work.getWorkId() %>" class="work-image"
                              alt="<%= work.getTitle() %>" onclick="window.open(this.src, '_blank')">
                     <% } else { %>
                         <div class="work-image d-flex align-items-center justify-content-center" style="color:#B2BEC3;">
