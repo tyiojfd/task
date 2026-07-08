@@ -170,40 +170,6 @@ public class UserDAOImpl implements UserDAO {
         return 0;
     }
 
-    @Override
-    public int updatePassword(Integer userId, String password) {
-        String sql = "UPDATE user SET password = ? WHERE user_id = ?";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, password);
-            ps.setInt(2, userId);
-            return ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    @Override
-    public List<User> search(String keyword) {
-        String sql = "SELECT * FROM user WHERE username LIKE ? OR real_name LIKE ? OR email LIKE ? ORDER BY create_time DESC";
-        List<User> list = new ArrayList<>();
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            String pattern = "%" + keyword + "%";
-            ps.setString(1, pattern);
-            ps.setString(2, pattern);
-            ps.setString(3, pattern);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(extractUser(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
     /**
      * 从ResultSet提取User对象
      */

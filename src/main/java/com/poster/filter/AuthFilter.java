@@ -67,7 +67,7 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/login") || relativePath.startsWith("/register")
-                || relativePath.startsWith("/logout") || relativePath.startsWith("/forgot-password")) {
+                || relativePath.startsWith("/logout")) {
             return true;
         }
 
