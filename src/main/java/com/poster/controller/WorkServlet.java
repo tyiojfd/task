@@ -428,6 +428,14 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
+            // 检查竞赛截止日期，截止后不可修改作品
+            Competition competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
+            if (competition != null && competition.getSubmitDeadline() != null
+                    && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=deadline_passed");
+                return;
+            }
+
             Part filePart = request.getPart("imageFile");
             String imagePath = existingWork.getImagePath();
             byte[] imageData = existingWork.getImageData();

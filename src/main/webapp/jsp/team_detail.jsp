@@ -563,63 +563,6 @@
                             <% } %>
                         </div>
                     <% } %>
-                    <%
-                        List<Work> works = (List<Work>) request.getAttribute("works");
-                        boolean hasWorks = works != null && !works.isEmpty();
-                    %>
-
-                    <% if (hasWorks) { %>
-                        <!-- 作品列表 -->
-                        <div class="row g-3">
-                            <% for (Work work : works) { %>
-                                <div class="col-md-6">
-                                    <div class="info-card">
-                                        <% if (work.getImagePath() != null) { %>
-                                            <img src="${pageContext.request.contextPath}/image-data?workId=<%= work.getWorkId() %>"
-                                                 alt="作品图片"
-                                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
-                                        <% } %>
-                                        <h6 class="mb-2"><%= work.getTitle() %></h6>
-                                        <p class="text-muted mb-2" style="font-size: 0.9rem;">
-                                            <%= work.getDescription() != null && work.getDescription().length() > 60
-                                                ? work.getDescription().substring(0, 60) + "..."
-                                                : work.getDescription() %>
-                                        </p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <%= work.getStatus() == 1 ? "草稿" : work.getStatus() == 2 ? "已提交" : "已评分" %>
-                                            </small>
-                                            <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>"
-                                               class="btn btn-sm btn-outline-primary">查看详情</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% } %>
-                        </div>
-
-                        <% if (isLeader) { %>
-                            <div class="text-center mt-3">
-                                <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= team.getTeamId() %>&competitionId=<%= team.getCompetitionId() %>"
-                                   class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> 提交新作品
-                                </a>
-                            </div>
-                        <% } %>
-                    <% } else { %>
-                        <!-- 空状态 -->
-                        <div class="info-card text-center py-5">
-                            <i class="fas fa-image fa-4x mb-3" style="color: #DFE6E9;"></i>
-                            <h5 class="text-muted">暂无作品</h5>
-                            <p class="text-muted">组队完成后即可提交参赛作品</p>
-
-                            <% if (isLeader && team.getStatus() != null && team.getStatus() >= 2) { %>
-                                <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= team.getTeamId() %>&competitionId=<%= team.getCompetitionId() %>"
-                                   class="btn btn-primary mt-3">
-                                    <i class="fas fa-plus"></i> 立即提交作品
-                                </a>
-                            <% } %>
-                        </div>
-                    <% } %>
                 </div>
             </div>
 

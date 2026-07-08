@@ -1,6 +1,7 @@
 package com.poster.controller;
 
 import com.poster.model.News;
+import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.service.NewsService;
 import com.poster.service.impl.NewsServiceImpl;
@@ -105,6 +106,12 @@ public class NewsServlet extends HttpServlet {
      */
     private void showEditPage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 管理员权限检查
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
+
         String idStr = request.getParameter("id");
         if (idStr != null) {
             try {
@@ -129,6 +136,12 @@ public class NewsServlet extends HttpServlet {
      */
     private void manageNews(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 管理员权限检查
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
+
         List<News> newsList = newsService.getAllNews();
         request.setAttribute("newsList", newsList);
         request.getRequestDispatcher("/jsp/news_manage.jsp").forward(request, response);
@@ -139,6 +152,12 @@ public class NewsServlet extends HttpServlet {
      */
     private void publishNews(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 管理员权限检查
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
+
         try {
             News news = new News();
             news.setTitle(request.getParameter("title"));
@@ -179,6 +198,12 @@ public class NewsServlet extends HttpServlet {
      */
     private void updateNews(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 管理员权限检查
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
+
         try {
             String idStr = request.getParameter("newsId");
             if (idStr == null || idStr.isEmpty()) {
@@ -224,10 +249,32 @@ public class NewsServlet extends HttpServlet {
     }
 
     /**
+     * 检查当前用户是否为管理员
+     */
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles != null) {
+            for (Role role : roles) {
+                if ("管理员".equals(role.getRoleName())) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 删除新闻
      */
     private void deleteNews(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 管理员权限检查
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
+
         String idStr = request.getParameter("id");
         if (idStr != null) {
             try {
