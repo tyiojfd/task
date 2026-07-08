@@ -56,4 +56,14 @@ public interface UserDAO {
      * 统计用户总数
      */
     int count();
+
+    /**
+     * 更新用户密码
+     */
+    int updatePassword(Integer userId, String password);
+
+    /**
+     * 搜索用户（按用户名/姓名/邮箱模糊匹配）
+     */
+    List<User> search(String keyword);
 }
