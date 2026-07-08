@@ -107,7 +107,7 @@
 
 ### 2026-07-06
 
-**已完成：模块5-新闻发布功能（完成人：队员C）**
+**已完成：模块5-新闻发布功能（完成人：葛至洲）**
 - ✅ Model层：修正News、Score、Comment、Award、Certificate共5个实体类字段，与数据库schema完全对齐
   - News: publisherId→authorId, 新增competitionId, 移除updateTime
   - Score: score字段 Integer→Double（匹配DB DECIMAL(5,2)）
@@ -241,7 +241,7 @@
 
 ### 2026-07-07
 
-**已完成：模块5-评委评分功能（完成人：队员C）**
+**已完成：模块5-评委评分功能（完成人：葛至洲）**
 - ✅ 背景：ScoreDAOImpl、ScoreServiceImpl、ScoreServlet 三个核心类仅有TODO骨架（15个空方法），无法支持评委评分业务流程
 - ✅ DAO层：ScoreDAOImpl 从空壳补全为完整 JDBC 实现（共8个方法，使用 PreparedStatement 防 SQL 注入）
   - insert(Score)：INSERT INTO score，返回自增主键 score_id
@@ -287,7 +287,7 @@
 - **代码量：** 5个文件（3个Java从空壳补全 + 2个JSP新建），原空壳约80行 → 改后约730行，净增约650行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
 
-**已完成：全局导航栏统一修复（完成人：队员C）**
+**已完成：全局导航栏统一修复（完成人：葛至洲）**
 - ✅ 问题诊断：全站JSP页面导航栏碎片化，品牌名/样式/链接集合各不相同，用户反馈两个具体问题：
   - 「我的队伍」页面导航栏与首页不统一，普通用户可通过竞赛列表页面看到「发布竞赛」按钮（无权限校验）
   - 「个人中心」页面导航栏只有2个链接（个人中心+退出），无法跳转到其他页面
@@ -307,7 +307,7 @@
 
 ### 2026-07-08
 
-**已完成：模块5-评语管理功能（完成人：队员C）**
+**已完成：模块5-评语管理功能（完成人：葛至洲）**
 - ✅ DAO层：CommentDAOImpl 从7个空壳方法补全为完整 JDBC 实现（insert/deleteById/update/findById/findByWorkId/findByJudgeId/findAll，使用 PreparedStatement 防 SQL 注入）
 - ✅ Service层：新建 CommentService 接口 + CommentServiceImpl 实现类（7个方法：addComment/updateComment/deleteComment/getCommentById/getCommentsByWorkId/getCommentsByJudgeId/getAllComments，含输入验证）
 - ✅ Controller层：新建 CommentServlet（GET: list/myComments；POST: add/update/delete，Session 登录集成，评委可对自己的评语进行增删改）
@@ -316,7 +316,7 @@
 - ✅ 安全特性：PreparedStatement 防 SQL 注入、输入验证、Session 登录验证、评委只能编辑自己的评语
 - **代码量：** 4个文件（1个DAO补全 + 2个Service新建 + 1个Servlet新建），约350行 Java 代码
 
-**已完成：模块5-获奖设置功能（完成人：队员C）**
+**已完成：模块5-获奖设置功能（完成人：葛至洲）**
 - ✅ DAO层：AwardDAOImpl 从7个空壳方法补全为完整 JDBC 实现（insert/deleteById/update/findById/findByCompetitionId/findByWorkId/findAll）
 - ✅ Service层：AwardServiceImpl 从5个空壳方法补全为完整业务逻辑
   - setAward：三重校验（获奖等级/必要字段/防重检查）→ 插入获奖记录 → 自动生成电子奖状
@@ -334,7 +334,7 @@
 - ✅ 安全特性：管理员权限校验（manage/set/delete 操作）、获奖等级校验（仅一/二/三等奖）、防重复获奖检查
 - **代码量：** 6个文件（1个DAO补全 + 1个Service补全 + 1个Servlet补全 + 3个JSP新建），约1100行
 
-**已完成：模块5-电子奖状功能（完成人：队员C）**
+**已完成：模块5-电子奖状功能（完成人：葛至洲）**
 - ✅ DAO层：CertificateDAOImpl 从7个空壳方法补全为完整 JDBC 实现（insert/deleteById/update/findById/findByAwardId/findByTeamId/findAll，含 JOIN 查询）
 - ✅ Service层：新建 CertificateService 接口 + CertificateServiceImpl 实现类（5个方法：generateCertificate/getCertificateById/getCertificateByAwardId/getCertificatesByTeamId/getAllCertificates，含防重复生成）
 - ✅ Controller层：CertificateServlet 从空壳补全为完整实现
@@ -346,7 +346,7 @@
 - ✅ 权限控制：AuthFilter 新增 /award 和 /certificate 为公开资源（查看奖状无需登录）
 - **代码量：** 5个文件（1个DAO补全 + 2个Service新建 + 1个Servlet补全 + 2个JSP新建），约700行
 
-**已完成：作品详情页增强（完成人：队员C）**
+**已完成：作品详情页增强（完成人：葛至洲）**
 - ✅ WorkServlet.showDetail() 新增评分/评语/获奖数据加载（ScoreService + CommentService + AwardService + CertificateService）
 - ✅ submission_detail.jsp 重大升级：
   - 导航栏升级为完整版本（含角色判断、竞赛大厅/我的队伍/我的作品/评分工作台/管理中心）
@@ -411,7 +411,7 @@
 - **涉及数据表：** work, work_file, work_like, work_share（4张表）
 - **附加职责：** 文件上传功能实现、图片处理工具类
 
-**模块5：评分与获奖模块（队员C负责）**
+**模块5：评分与获奖模块（葛至洲负责）**
 - **功能范围：** 评委评分、评语管理、获奖设置、奖状生成、新闻发布
 - **前端页面：** score_input.jsp, score_list.jsp, award_manage.jsp, certificate_view.jsp, news_list.jsp
 - **后端代码：** ScoreServlet, AwardServlet, CertificateServlet, NewsServlet, ScoreService
@@ -535,7 +535,7 @@ test: 添加作品提交测试用例
 - **7月4日下午（结对编程）：**
   - 队长+副队长：添加Maven依赖、创建DBUtil
   - 杨祥博+队员B：创建实体类（User、Competition、Team、Work等）
-  - 队员C：创建工具类（PasswordUtil、FileUtil）
+  - 葛至洲：创建工具类（PasswordUtil、FileUtil）
 - **7月5日（验证测试）：** 所有人本地测试数据库连接，创建自己的功能分支
 - **7月6-7日（原型开发）：** 每个人开发自己模块的核心功能原型
 
@@ -574,7 +574,7 @@ test: 添加作品提交测试用例
 - [x] 作品详情页面（submission_detail.jsp）✅ 2026-07-06
 - [x] 作品修改/删除功能 ✅ 2026-07-06
 
-**模块5 - 评分与获奖（队员C）：**
+**模块5 - 评分与获奖（葛至洲）：**
 - [x] 新闻发布功能（NewsServlet + news_list.jsp + news_detail.jsp + news_add.jsp + news_edit.jsp + news_manage.jsp）✅ 2026-07-06
 - [x] Model层字段修复（News/Score/Comment/Award/Certificate与数据库对齐）✅ 2026-07-06
 - [x] 评委评分功能（ScoreServlet + score_input.jsp）✅ 2026-07-07
@@ -619,7 +619,7 @@ test: 添加作品提交测试用例
 - [ ] 作品统计（浏览量、点赞数）
 - [x] 图片预览和下载 ✅ 2026-07-06
 
-**模块5 - 评分与获奖（队员C）：**
+**模块5 - 评分与获奖（葛至洲）：**
 - [ ] 电子奖状生成功能（CertificateServlet）
 - [ ] 奖状查看和下载（certificate_view.jsp）
 - [ ] 获奖公告发布
@@ -634,7 +634,7 @@ test: 添加作品提交测试用例
 - **副队长（竞赛管理模块）：** 测试竞赛发布、修改、查询、统计功能
 - **杨祥博（队伍管理模块）：** 测试队伍创建、邀请、报名、成员管理
 - **队员B（作品管理模块）：** 测试作品提交、文件上传、点赞、分享
-- **队员C（评分与获奖模块）：** 测试评分、获奖设置、奖状生成、新闻发布
+- **葛至洲（评分与获奖模块）：** 测试评分、获奖设置、奖状生成、新闻发布
 
 **集成测试（所有人）：**
 - [ ] 完整流程测试（注册→报名→提交作品→评分→获奖）
@@ -678,7 +678,7 @@ test: 添加作品提交测试用例
 
 **会议时间：** 2026-07-XX 10:00-10:30  
 **会议地点：** 线上/教室  
-**参会人员：** 队长、副队长、杨祥博、队员B、队员C  
+**参会人员：** 队长、副队长、杨祥博、队员B、葛至洲  
 **会议照片：** [照片链接]
 
 ## 昨日完成情况
@@ -686,14 +686,14 @@ test: 添加作品提交测试用例
 - 副队长：完成数据库脚本编写
 - 杨祥博：完成登录页面
 - 队员B：完成用户注册逻辑
-- 队员C：编写测试用例10个
+- 葛至洲：编写测试用例10个
 
 ## 今日工作计划
 - 队长：实现用户权限控制
 - 副队长：优化数据库索引
 - 杨祥博：开发竞赛列表页面
 - 队员B：实现竞赛发布功能
-- 队员C：测试用户模块
+- 葛至洲：测试用户模块
 
 ## 问题与讨论
 - 问题1：文件上传大小限制设置为多少？
@@ -913,7 +913,7 @@ poster-competition-system/
 - 副队长：[姓名] - [QQ/微信] - [邮箱]
 - 队员A：杨祥博 - [QQ/微信] - [邮箱]
 - 队员B：[姓名] - [QQ/微信] - [邮箱]
-- 队员C：[姓名] - [QQ/微信] - [邮箱]
+- 葛至洲：[姓名] - [QQ/微信] - [邮箱]
 
 ### 紧急联系
 如遇紧急问题或blocking issue，请立即在团队群通知队长和副队长。
@@ -921,5 +921,5 @@ poster-competition-system/
 ---
 
 **最后更新时间：** 2026年7月8日
-**更新人：** 队员C
+**更新人：** 葛至洲
 **版本：** v1.9
