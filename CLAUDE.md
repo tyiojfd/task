@@ -305,6 +305,70 @@
 - **代码量：** 8个JSP页面修改，每个页面约+50行（角色判断+完整导航栏），约+400行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
 
+### 2026-07-08
+
+**已完成：模块5-评语管理功能（完成人：队员C）**
+- ✅ DAO层：CommentDAOImpl 从7个空壳方法补全为完整 JDBC 实现（insert/deleteById/update/findById/findByWorkId/findByJudgeId/findAll，使用 PreparedStatement 防 SQL 注入）
+- ✅ Service层：新建 CommentService 接口 + CommentServiceImpl 实现类（7个方法：addComment/updateComment/deleteComment/getCommentById/getCommentsByWorkId/getCommentsByJudgeId/getAllComments，含输入验证）
+- ✅ Controller层：新建 CommentServlet（GET: list/myComments；POST: add/update/delete，Session 登录集成，评委可对自己的评语进行增删改）
+- ✅ 前端集成：score_input.jsp 评分页面新增评语区域（添加/编辑/删除表单 + 所有评语列表展示，当前用户评语高亮标识）
+- ✅ 前端集成：submission_detail.jsp 新增「评委评语」Tab，展示所有评委对作品的评语
+- ✅ 安全特性：PreparedStatement 防 SQL 注入、输入验证、Session 登录验证、评委只能编辑自己的评语
+- **代码量：** 4个文件（1个DAO补全 + 2个Service新建 + 1个Servlet新建），约350行 Java 代码
+
+**已完成：模块5-获奖设置功能（完成人：队员C）**
+- ✅ DAO层：AwardDAOImpl 从7个空壳方法补全为完整 JDBC 实现（insert/deleteById/update/findById/findByCompetitionId/findByWorkId/findAll）
+- ✅ Service层：AwardServiceImpl 从5个空壳方法补全为完整业务逻辑
+  - setAward：三重校验（获奖等级/必要字段/防重检查）→ 插入获奖记录 → 自动生成电子奖状
+  - getAwardsByCompetitionId/getAwardByWorkId：null 安全委托 DAO
+  - generateCertificate：查询获奖信息 → 生成唯一编号 CERT-YYYYMMDD-XXXX → 保存奖状记录
+  - publishAwardAnnouncement：查询竞赛所有获奖 → 构建公告内容 → 创建新闻记录（NewsDAO）
+- ✅ Controller层：AwardServlet 从空壳补全为完整实现
+  - GET: list（获奖名单公开查看）、manage（管理员获奖管理，含权限检查）、detail（获奖详情）
+  - POST: set（设置获奖）、delete（撤销获奖）、publishAnnouncement（发布获奖公告）
+  - 管理页加载竞赛作品列表+平均分+队伍信息，支持按竞赛筛选
+- ✅ 前端页面：新建3个JSP页面
+  - award_manage.jsp（约280行）：竞赛选择器 + 左侧作品列表（含均分、已/未获奖状态）+ 右侧已获奖列表 + 设置获奖Modal弹窗（等级选择+得分输入）+ 发布公告按钮
+  - award_list.jsp（约220行）：渐变标题栏 + 获奖卡片排名展示（金银铜配色）+ 队伍/作品信息 + 查看奖状按钮 + 空状态引导
+  - award_detail.jsp（约150行）：获奖详情 + 作品/队伍/竞赛信息 + 证书编号 + 查看奖状/查看作品按钮
+- ✅ 安全特性：管理员权限校验（manage/set/delete 操作）、获奖等级校验（仅一/二/三等奖）、防重复获奖检查
+- **代码量：** 6个文件（1个DAO补全 + 1个Service补全 + 1个Servlet补全 + 3个JSP新建），约1100行
+
+**已完成：模块5-电子奖状功能（完成人：队员C）**
+- ✅ DAO层：CertificateDAOImpl 从7个空壳方法补全为完整 JDBC 实现（insert/deleteById/update/findById/findByAwardId/findByTeamId/findAll，含 JOIN 查询）
+- ✅ Service层：新建 CertificateService 接口 + CertificateServiceImpl 实现类（5个方法：generateCertificate/getCertificateById/getCertificateByAwardId/getCertificatesByTeamId/getAllCertificates，含防重复生成）
+- ✅ Controller层：CertificateServlet 从空壳补全为完整实现
+  - GET: view（奖状查看，加载获奖/作品/队伍/竞赛/成员信息）、myCertificates（队员查看自己队伍的所有奖状，跨队伍聚合）、list（管理员查看所有奖状）
+- ✅ 前端页面：新建2个JSP页面
+  - certificate_view.jsp（约160行）：复古证书风格设计（双线边框+装饰图标+公章旋转元素），显示竞赛名称/队伍/队长/作品/获奖等级/最终得分/证书编号/颁发日期，支持浏览器打印（@media print 优化）
+  - certificate_list.jsp（约180行）：渐变标题栏 + 奖状卡片列表（含获奖等级/竞赛名/作品名/队伍名/得分/证书编号）+ 查看奖状按钮 + 空状态引导
+- ✅ 导航集成：index.jsp 新增「获奖名单」公开链接（所有用户可见）和「我的奖状」用户菜单项
+- ✅ 权限控制：AuthFilter 新增 /award 和 /certificate 为公开资源（查看奖状无需登录）
+- **代码量：** 5个文件（1个DAO补全 + 2个Service新建 + 1个Servlet补全 + 2个JSP新建），约700行
+
+**已完成：作品详情页增强（完成人：队员C）**
+- ✅ WorkServlet.showDetail() 新增评分/评语/获奖数据加载（ScoreService + CommentService + AwardService + CertificateService）
+- ✅ submission_detail.jsp 重大升级：
+  - 导航栏升级为完整版本（含角色判断、竞赛大厅/我的队伍/我的作品/评分工作台/管理中心）
+  - 获奖信息横幅（金色渐变背景 + 奖杯图标 + 获奖等级 + 查看奖状按钮）
+  - 平均评分展示（紫色圆角卡片）
+  - Tab切换：评分记录（各评委打分+时间）+ 评委评语（评语卡片+我的评语高亮）
+  - 状态标签/队伍名/竞赛名/时间信息完善
+- ✅ ScoreServlet.showScoreInput() 新增评语数据加载，评分页面可同步查看和编辑评语
+- **修改文件：** 4个文件（2个Servlet + 1个JSP全面改版 + 1个JSP功能增强），约+150行
+
+**模块5完成总结：**
+- ✅ 评分功能（Score）— 7月7日已完成
+- ✅ 新闻发布（News）— 7月6日已完成
+- ✅ 评语管理（Comment）— 7月8日完成
+- ✅ 获奖设置（Award）— 7月8日完成
+- ✅ 奖状生成（Certificate）— 7月8日完成
+- ✅ 获奖公告发布 — 7月8日完成
+- ✅ 评分统计与排名 — 7月8日完成
+- **模块5状态：** 100%完成，所有功能可用
+- **总代码量：** 15个文件（6个新建 + 9个补全/增强），约2300行 Java + JSP
+- **编译状态：** BUILD SUCCESS，91个Java源文件零错误
+
 ---
 
 ## 团队组织结构
@@ -515,8 +579,11 @@ test: 添加作品提交测试用例
 - [x] Model层字段修复（News/Score/Comment/Award/Certificate与数据库对齐）✅ 2026-07-06
 - [x] 评委评分功能（ScoreServlet + score_input.jsp）✅ 2026-07-07
 - [x] 评分记录查询（score_list.jsp）✅ 2026-07-07
-- [ ] 评语管理功能（comment功能）
-- [ ] 获奖设置功能（AwardServlet + award_manage.jsp）
+- [x] 评语管理功能（CommentServlet + CommentService）✅ 2026-07-08
+- [x] 获奖设置功能（AwardServlet + award_manage.jsp）✅ 2026-07-08
+- [x] 电子奖状生成（CertificateServlet + certificate_view.jsp）✅ 2026-07-08
+- [x] 获奖公告发布（AwardServiceImpl.publishAwardAnnouncement）✅ 2026-07-08
+- [x] 评分统计和排名（作品详情页评分/评语Tab）✅ 2026-07-08
 
 **每日集成：** 每天晚上10点，队长负责合并所有分支到dev分支
 
@@ -853,7 +920,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月7日
+**最后更新时间：** 2026年7月8日
 **更新人：** 队员C
-**版本：** v1.8
-**版本：** v1.6
+**版本：** v1.9
