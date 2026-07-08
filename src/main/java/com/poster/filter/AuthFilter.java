@@ -123,6 +123,11 @@ public class AuthFilter implements Filter {
             return true;
         }
 
+        // 获奖名单和奖状查看公开
+        if (relativePath.startsWith("/award") || relativePath.startsWith("/certificate")) {
+            return true;
+        }
+
         return true;
     }
 

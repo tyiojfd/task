@@ -28,6 +28,10 @@ public class WorkServlet extends HttpServlet {
     private WorkService workService = new WorkServiceImpl();
     private TeamService teamService = new TeamServiceImpl();
     private CompetitionService competitionService = new CompetitionServiceImpl();
+    private ScoreService scoreService = new ScoreServiceImpl();
+    private CommentService commentService = new CommentServiceImpl();
+    private AwardService awardService = new AwardServiceImpl();
+    private CertificateService certificateService = new CertificateServiceImpl();
     private com.poster.dao.CategoryDAO categoryDAO = new com.poster.dao.impl.CategoryDAOImpl();
     private com.poster.dao.UserDAO userDAO = new com.poster.dao.impl.UserDAOImpl();
     private com.poster.dao.TeamMemberDAO teamMemberDAO = new com.poster.dao.impl.TeamMemberDAOImpl();
@@ -261,9 +265,28 @@ public class WorkServlet extends HttpServlet {
 
             Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
 
+            // 加载评分数据
+            List<Score> scores = scoreService.getScoresByWorkId(workId);
+            Double avgScore = scoreService.getAverageScore(workId);
+
+            // 加载评语数据
+            List<Comment> comments = commentService.getCommentsByWorkId(workId);
+
+            // 加载获奖数据
+            Award award = awardService.getAwardByWorkId(workId);
+            Certificate certificate = null;
+            if (award != null) {
+                certificate = certificateService.getCertificateByAwardId(award.getAwardId());
+            }
+
             request.setAttribute("work", work);
             request.setAttribute("team", team);
             request.setAttribute("competition", competition);
+            request.setAttribute("scores", scores);
+            request.setAttribute("avgScore", avgScore);
+            request.setAttribute("comments", comments);
+            request.setAttribute("award", award);
+            request.setAttribute("certificate", certificate);
             request.getRequestDispatcher("/jsp/submission_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {

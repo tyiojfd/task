@@ -63,7 +63,7 @@
 - ✅ 修复 POST /register 挂起问题：恢复 RegisterServlet 正式注册逻辑，完善参数 trim 处理和错误反馈
 - ✅ 注册页面全新设计（register.jsp）：左右分栏布局、动态渐变背景、Bootstrap Icons 图标、密码强度实时检测、确认密码校验、响应式适配
 - ✅ EncodingFilter 注释更新，避免双重注册说明
-- ✅ 数据库清理：删除15个调试产生的测试账号（ID 8-22），删除用户 jdff（236319889@qq.com）
+- ✅ 数据库清理：删除15个调试[target](target)产生的测试账号（ID 8-22），删除用户 jdff（236319889@qq.com）
 - **服务器环境：** Jetty 9.4.58 + Java 21，运行端口 8080
 
 ⚠️ **待优化项：**
@@ -422,7 +422,7 @@ public class UserService { }
 public void createUser() { }
 
 // 变量名：小驼峰命名
-private String userName;
+private String userName;[init.sql](src%2Fmain%2Fresources%2Finit.sql)
 
 // 常量：全大写+下划线
 public static final int MAX_TEAM_SIZE = 5;
