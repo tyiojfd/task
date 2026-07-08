@@ -22,6 +22,11 @@ public interface UserService {
     User login(String username, String password);
 
     /**
+     * 按指定角色登录
+     */
+    User login(String username, String password, String expectedRole);
+
+    /**
      * 根据ID查询用户
      */
     User getUserById(Integer userId);

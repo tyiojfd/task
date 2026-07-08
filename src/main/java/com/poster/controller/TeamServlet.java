@@ -191,6 +191,13 @@ public class TeamServlet extends HttpServlet {
                 return;
             }
 
+            HttpSession session = request.getSession(false);
+            User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
+            if (currentUser == null || !teamService.isUserMemberOfTeam(currentUser.getUserId(), teamId)) {
+                response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=permission_denied");
+                return;
+            }
+
             // 鍔犺浇绔炶禌鍚嶇О
             Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
             String competitionName = competition != null ? competition.getName() : "鏈煡绔炶禌";
@@ -283,10 +290,16 @@ public class TeamServlet extends HttpServlet {
                 return;
             }
 
+            User user = (User) session.getAttribute("user");
             Team team = extractTeamFromRequest(request);
             String idStr = request.getParameter("teamId");
             if (idStr != null) {
                 team.setTeamId(Integer.parseInt(idStr));
+            }
+
+            if (team.getTeamId() == null || !teamService.isUserLeaderOfTeam(user.getUserId(), team.getTeamId())) {
+                response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=permission_denied");
+                return;
             }
 
             boolean success = teamService.updateTeam(team);

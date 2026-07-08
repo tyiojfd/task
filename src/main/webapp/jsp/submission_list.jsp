@@ -1,16 +1,28 @@
 ﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
 <%@ page import="com.poster.model.Work" %>
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.Competition" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.util.Collections" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
         response.sendRedirect(request.getContextPath() + "/login");
         return;
+    }
+    @SuppressWarnings("unchecked")
+    List<Role> userRoles = (List<Role>) session.getAttribute("roles");
+    boolean isAdmin = false;
+    boolean isJudge = false;
+    if (userRoles != null) {
+        for (Role role : userRoles) {
+            if ("管理员".equals(role.getRoleName())) isAdmin = true;
+            if ("评委".equals(role.getRoleName())) isJudge = true;
+        }
     }
     @SuppressWarnings("unchecked")
     List<Work> works = (List<Work>) request.getAttribute("works");
@@ -250,13 +262,36 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home me-1"></i>首页</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home me-1"></i>竞赛大厅</a>
                     </li>
+                    <% if (!isAdmin && !isJudge) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams"><i class="fas fa-users me-1"></i>我的队伍</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/work?action=myWorks"><i class="fas fa-image me-1"></i>作品管理</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/invitation"><i class="fas fa-envelope me-1"></i>邀请通知</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="${pageContext.request.contextPath}/work?action=myWorks"><i class="fas fa-image me-1"></i>我的作品</a>
+                    </li>
+                    <% } %>
+                    <% if (isJudge) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/score?action=list"><i class="fas fa-star-half-alt me-1"></i>评分管理</a>
+                    </li>
+                    <% } %>
+                    <% if (isAdmin) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
+                        </ul>
+                    </li>
+                    <% } %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/news?action=list"><i class="fas fa-bullhorn me-1"></i>新闻公告</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user me-1"></i>个人中心</a>
@@ -329,10 +364,12 @@
         </div>
 
         <!-- 队伍快速入口 -->
-        <% if (myTeams != null && !myTeams.isEmpty()) { %>
+        <% List<Integer> leaderTeamIds = (List<Integer>) request.getAttribute("leaderTeamIds"); if (leaderTeamIds == null) leaderTeamIds = Collections.emptyList(); %>
+        <% if (myTeams != null && !myTeams.isEmpty() && !leaderTeamIds.isEmpty()) { %>
             <div class="team-select-list">
                 <% for (Team t : myTeams) {
-                    String compName = competitionNameMap != null ? competitionNameMap.getOrDefault(t.getTeamId(), "") : "";
+                    if (!leaderTeamIds.contains(t.getTeamId())) continue;
+                    String compName = competitionNameMap != null ? competitionNameMap.getOrDefault(t.getCompetitionId(), "") : "";
                 %>
                     <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= t.getTeamId() %>" class="team-select-btn">
                         <i class="fas fa-plus-circle" style="color:var(--primary)"></i>
@@ -348,9 +385,10 @@
             <div class="row g-4">
                 <% for (Work work : works) {
                     String teamName = teamNameMap != null ? teamNameMap.getOrDefault(work.getTeamId(), "队伍#" + work.getTeamId()) : "队伍#" + work.getTeamId();
-                    String compName = competitionNameMap != null ? competitionNameMap.getOrDefault(work.getTeamId(), "") : "";
+                    String compName = competitionNameMap != null ? competitionNameMap.getOrDefault(work.getCompetitionId(), "") : "";
                     String statusText = work.getStatus() == 2 ? "已提交" : (work.getStatus() == 3 ? "已评分" : "草稿");
                     String statusClass = work.getStatus() == 2 ? "success" : (work.getStatus() == 3 ? "primary" : "secondary");
+                    boolean canManage = leaderTeamIds.contains(work.getTeamId());
                 %>
                     <div class="col-lg-4 col-md-6">
                         <div class="work-card">
@@ -381,6 +419,7 @@
                                         <i class="fas fa-search-plus"></i> 预览
                                     </button>
                                 <% } %>
+                                <% if (canManage) { %>
                                 <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-edit"></i> 修改
                                 </a>
@@ -389,6 +428,7 @@
                                    onclick="return confirm('确定要删除作品「<%= work.getTitle() %>」吗？此操作不可恢复。')">
                                     <i class="fas fa-trash-alt"></i> 删除
                                 </a>
+                                <% } %>
                             </div>
                         </div>
                     </div>
@@ -402,9 +442,13 @@
                 </div>
                 <h4>还没有提交作品</h4>
                 <p>创建队伍并报名参赛后，即可提交海报作品参与竞赛</p>
-                <% if (myTeams != null && !myTeams.isEmpty()) { %>
-                    <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= myTeams.get(0).getTeamId() %>" class="btn-primary-custom">
+                <% if (!leaderTeamIds.isEmpty()) { %>
+                    <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= leaderTeamIds.get(0) %>" class="btn-primary-custom">
                         <i class="fas fa-plus-circle me-2"></i>立即提交作品
+                    </a>
+                <% } else if (myTeams != null && !myTeams.isEmpty()) { %>
+                    <a href="${pageContext.request.contextPath}/team?action=myTeams" class="btn-primary-custom text-decoration-none">
+                        <i class="fas fa-eye me-2"></i>查看我的队伍与作品
                     </a>
                 <% } else { %>
                     <a href="${pageContext.request.contextPath}/team?action=myTeams" class="btn-primary-custom text-decoration-none">

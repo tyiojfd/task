@@ -41,6 +41,26 @@ public interface TeamService {
     List<Team> getTeamsByCompetitionId(Integer competitionId);
 
     /**
+     * 获取用户参与的所有队伍（含队长和队员身份）
+     */
+    List<Team> getTeamsByUserId(Integer userId);
+
+    /**
+     * 获取用户在某竞赛中的队伍（含队长和队员身份）
+     */
+    Team getUserTeamInCompetition(Integer userId, Integer competitionId);
+
+    /**
+     * 判断用户是否为某队伍队长
+     */
+    boolean isUserLeaderOfTeam(Integer userId, Integer teamId);
+
+    /**
+     * 判断用户是否属于某队伍成员
+     */
+    boolean isUserMemberOfTeam(Integer userId, Integer teamId);
+
+    /**
      * 邀请队员
      */
     boolean inviteMember(Integer teamId, Integer inviterId, Integer inviteeId);

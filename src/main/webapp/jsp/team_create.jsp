@@ -248,9 +248,11 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">竞赛大厅</a></li>
+                    <% if (!isAdmin && !isJudge) { %>
                     <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
+                    <% } %>
                     <% if (isJudge) { %>
                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
                     <% } %>

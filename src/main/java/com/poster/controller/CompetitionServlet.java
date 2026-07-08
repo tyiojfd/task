@@ -16,6 +16,7 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 竞赛Servlet
@@ -65,18 +66,59 @@ public class CompetitionServlet extends HttpServlet {
         } else if ("delete".equals(action)) {
             // 删除竞赛
             deleteCompetition(request, response);
+        } else if ("cancel".equals(action)) {
+            // 取消竞赛
+            cancelCompetition(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/competition?action=list");
         }
     }
 
     /**
-     * 显示竞赛列表
+     * 显示竞赛列表（支持关键词搜索、年度筛选、状态筛选）
      */
     private void listCompetitions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Competition> competitions = competitionService.getAllCompetitions();
+        String keyword = request.getParameter("keyword");
+        String yearStr = request.getParameter("year");
+        String statusStr = request.getParameter("status");
+
+        Integer year = null;
+        Integer status = null;
+        try {
+            if (yearStr != null && !yearStr.isEmpty()) {
+                year = Integer.parseInt(yearStr);
+            }
+        } catch (NumberFormatException ignored) {}
+        try {
+            if (statusStr != null && !statusStr.isEmpty()) {
+                status = Integer.parseInt(statusStr);
+            }
+        } catch (NumberFormatException ignored) {}
+
+        List<Competition> competitions = competitionService.searchCompetitions(keyword, year, status);
+
+        // 级联筛选：子类统一从关联竞赛获取
+        if (yearStr == null && (keyword == null || keyword.trim().isEmpty())) {
+            Map<String, Integer> globalStats = new java.util.HashMap<>();
+            int totalComps = competitionService.getAllCompetitions().size();
+            int totalTeams = 0;
+            int totalWorks = 0;
+            for (Competition c : competitions) {
+                Map<String, Integer> s = competitionService.getCompetitionStats(c.getCompetitionId());
+                totalTeams += s.getOrDefault("teamCount", 0);
+                totalWorks += s.getOrDefault("workCount", 0);
+            }
+            globalStats.put("compCount", totalComps);
+            globalStats.put("teamCount", totalTeams);
+            globalStats.put("workCount", totalWorks);
+            request.setAttribute("globalStats", globalStats);
+        }
+
         request.setAttribute("competitions", competitions);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("filterYear", year);
+        request.setAttribute("filterStatus", status);
         request.getRequestDispatcher("/jsp/competition_list.jsp").forward(request, response);
     }
 
@@ -98,16 +140,14 @@ public class CompetitionServlet extends HttpServlet {
                 Team userTeam = null;
 
                 if (user != null) {
-                    // 查询用户在该竞赛中的队伍
-                    List<Team> teams = teamService.getTeamsByLeaderId(user.getUserId());
-                    for (Team team : teams) {
-                        if (team.getCompetitionId().equals(competitionId)) {
-                            hasJoined = true;
-                            userTeam = team;
-                            break;
-                        }
-                    }
+                    // 查询用户在该竞赛中的队伍（无论是队长还是队员）
+                    userTeam = teamService.getUserTeamInCompetition(user.getUserId(), competitionId);
+                    hasJoined = (userTeam != null);
                 }
+
+                // 获取竞赛统计
+                Map<String, Integer> stats = competitionService.getCompetitionStats(competitionId);
+                request.setAttribute("stats", stats);
 
                 request.setAttribute("competition", competition);
                 request.setAttribute("hasJoined", hasJoined);
@@ -230,6 +270,29 @@ public class CompetitionServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/competition?action=list");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/competition?action=detail&id=" + id + "&error=delete_failed");
+                }
+            } catch (NumberFormatException e) {
+                response.sendRedirect(request.getContextPath() + "/competition?action=list");
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/competition?action=list");
+        }
+    }
+
+    /**
+     * 取消竞赛
+     */
+    private void cancelCompetition(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr != null) {
+            try {
+                Integer id = Integer.parseInt(idStr);
+                boolean success = competitionService.cancelCompetition(id);
+                if (success) {
+                    response.sendRedirect(request.getContextPath() + "/competition?action=detail&id=" + id);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/competition?action=detail&id=" + id + "&error=cancel_failed");
                 }
             } catch (NumberFormatException e) {
                 response.sendRedirect(request.getContextPath() + "/competition?action=list");

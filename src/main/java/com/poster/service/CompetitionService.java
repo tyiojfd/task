@@ -49,4 +49,19 @@ public interface CompetitionService {
      * 更新竞赛状态
      */
     boolean updateCompetitionStatus(Integer competitionId, Integer status);
+
+    /**
+     * 取消竞赛
+     */
+    boolean cancelCompetition(Integer competitionId);
+
+    /**
+     * 多条件搜索竞赛
+     */
+    List<Competition> searchCompetitions(String keyword, Integer year, Integer status);
+
+    /**
+     * 获取竞赛统计信息
+     */
+    java.util.Map<String, Integer> getCompetitionStats(Integer competitionId);
 }

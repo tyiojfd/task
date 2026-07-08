@@ -9,6 +9,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -36,8 +38,9 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("success", "注册成功，请登录");
         }
 
-        // 转发到登录页面
-        request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+        String role = normalizeRole(request.getParameter("role"));
+        request.setAttribute("loginRole", role);
+        forwardByRole(request, response, role);
     }
 
     @Override
@@ -46,16 +49,18 @@ public class LoginServlet extends HttpServlet {
         // 1. 获取表单参数
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        String loginRole = normalizeRole(request.getParameter("loginRole"));
 
         // 2. 验证输入
         if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             request.setAttribute("error", "用户名和密码不能为空");
-            request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+            request.setAttribute("loginRole", loginRole);
+            forwardByRole(request, response, loginRole);
             return;
         }
 
         // 3. 调用Service验证登录
-        User user = userService.login(username.trim(), password);
+        User user = userService.login(username.trim(), password, loginRole);
 
         if (user != null) {
             // 登录成功，设置Session
@@ -69,9 +74,40 @@ public class LoginServlet extends HttpServlet {
             // 重定向到主页
             response.sendRedirect(request.getContextPath() + "/index");
         } else {
-            request.setAttribute("error", "用户名或密码错误，或账号已被禁用");
+            request.setAttribute("error", loginRole == null
+                    ? "用户名或密码错误，或账号已被禁用"
+                    : "该账号不属于当前登录入口，或用户名/密码错误");
             request.setAttribute("username", username);
+            request.setAttribute("loginRole", loginRole);
+            forwardByRole(request, response, loginRole);
+        }
+    }
+
+    private void forwardByRole(HttpServletRequest request, HttpServletResponse response, String role)
+            throws ServletException, IOException {
+        if ("评委".equals(role)) {
+            request.getRequestDispatcher("/jsp/login_judge.jsp").forward(request, response);
+        } else if ("管理员".equals(role)) {
+            request.getRequestDispatcher("/jsp/login_admin.jsp").forward(request, response);
+        } else {
             request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
         }
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null) {
+            return null;
+        }
+        role = role.trim();
+        if ("admin".equalsIgnoreCase(role) || "管理员".equals(role)) {
+            return "管理员";
+        }
+        if ("judge".equalsIgnoreCase(role) || "评委".equals(role)) {
+            return "评委";
+        }
+        if ("member".equalsIgnoreCase(role) || "队员".equals(role)) {
+            return "队员";
+        }
+        return null;
     }
 }

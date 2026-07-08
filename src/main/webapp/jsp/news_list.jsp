@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.News" %>
 <%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
@@ -8,6 +9,16 @@
     List<News> newsList = (List<News>) request.getAttribute("newsList");
     User sessionUser = (User) session.getAttribute("user");
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    @SuppressWarnings("unchecked")
+    List<Role> userRoles = (sessionUser != null) ? (List<Role>) session.getAttribute("roles") : null;
+    boolean isAdmin = false;
+    boolean isJudge = false;
+    if (userRoles != null) {
+        for (Role role : userRoles) {
+            if ("管理员".equals(role.getRoleName())) isAdmin = true;
+            if ("评委".equals(role.getRoleName())) isJudge = true;
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -95,16 +106,29 @@
             </a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/index">首页</a>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">竞赛大厅</a></li>
+                    <% if (sessionUser != null && !isAdmin && !isJudge) { %>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
+                    <% } %>
+                    <% if (isJudge) { %>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
+                    <% } %>
+                    <% if (isAdmin) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a>
-                    </li>
+                    <% } %>
+                    <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
                     <% if (sessionUser != null) { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/profile">个人中心</a>
-                        </li>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">退出</a></li>
                     <% } %>
                 </ul>
             </div>
@@ -118,7 +142,7 @@
                 <h3 class="mb-1"><i class="fas fa-newspaper me-2"></i>新闻公告</h3>
                 <p class="mb-0 opacity-75">了解最新竞赛动态与通知</p>
             </div>
-            <% if (sessionUser != null) { %>
+            <% if (isAdmin) { %>
                 <a href="${pageContext.request.contextPath}/news?action=publish" class="btn btn-light">
                     <i class="fas fa-plus me-1"></i>发布新闻
                 </a>

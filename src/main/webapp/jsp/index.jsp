@@ -27,6 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>首页 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background: #f5f5f5; }
         .hero-section {
@@ -72,15 +73,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="${pageContext.request.contextPath}/index">竞赛大厅</a>
+                        <a class="nav-link active" href="${pageContext.request.contextPath}/index">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/competition?action=list">竞赛大厅</a>
                     </li>
                     <% if (sessionUser != null) { %>
+                        <% if (!isAdmin && !isJudge) { %>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/invitation">邀请通知</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a>
                         </li>
+                        <% } %>
                         <% if (isJudge) { %>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/score?action=list">评分管理</a>
@@ -156,28 +165,37 @@
         <% if (sessionUser != null && isAdmin) { %>
             <!-- 管理员首页 -->
             <h2 class="mb-4">管理控制台</h2>
+            <% java.util.Map globalStats = (java.util.Map) request.getAttribute("globalStats"); %>
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h3 class="text-primary"><%= competitions != null ? competitions.size() : 0 %></h3>
+                            <h3 class="text-primary"><%= globalStats != null ? globalStats.get("compCount") : 0 %></h3>
                             <p class="text-muted mb-0">竞赛总数</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h3 class="text-success">-</h3>
+                            <h3 class="text-success"><%= globalStats != null ? globalStats.get("teamCount") : 0 %></h3>
                             <p class="text-muted mb-0">队伍总数</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h3 class="text-info">-</h3>
+                            <h3 class="text-info"><%= globalStats != null ? globalStats.get("workCount") : 0 %></h3>
                             <p class="text-muted mb-0">作品总数</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-warning"><%= globalStats != null ? globalStats.get("activeCount") : 0 %></h3>
+                            <p class="text-muted mb-0">进行中竞赛</p>
                         </div>
                     </div>
                 </div>
@@ -193,8 +211,29 @@
         <% } else if (sessionUser != null && isJudge) { %>
             <!-- 评委首页 -->
             <h2 class="mb-4">评分工作台</h2>
-            <div class="alert alert-info">
-                <strong>提示：</strong> 评分功能正在开发中，敬请期待
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <a href="${pageContext.request.contextPath}/score?action=list" class="text-decoration-none">
+                        <div class="card text-center bg-primary bg-opacity-10 border-primary h-100">
+                            <div class="card-body py-5">
+                                <i class="fas fa-star-half-alt fa-3x text-primary mb-3"></i>
+                                <h5>开始评分</h5>
+                                <p class="text-muted mb-0">查看待评作品并打分</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="${pageContext.request.contextPath}/score?action=myScores" class="text-decoration-none">
+                        <div class="card text-center bg-success bg-opacity-10 border-success h-100">
+                            <div class="card-body py-5">
+                                <i class="fas fa-list-check fa-3x text-success mb-3"></i>
+                                <h5>我的评分记录</h5>
+                                <p class="text-muted mb-0">查看已完成的评分</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
 
         <% } else { %>
@@ -212,13 +251,16 @@
                     String statusText = "";
                     if (comp.getStatus() == 1) {
                         statusClass = "status-ongoing";
-                        statusText = "进行中";
-                    } else if (comp.getStatus() == 0) {
+                        statusText = "报名中";
+                    } else if (comp.getStatus() == 2) {
                         statusClass = "status-upcoming";
-                        statusText = "未开始";
-                    } else {
+                        statusText = "进行中";
+                    } else if (comp.getStatus() == 3) {
                         statusClass = "status-ended";
                         statusText = "已结束";
+                    } else {
+                        statusClass = "status-ended";
+                        statusText = "已取消";
                     }
                 %>
                 <div class="col">

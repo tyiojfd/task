@@ -112,8 +112,78 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    public List<Team> getTeamsByUserId(Integer userId) {
+        if (userId == null) {
+            return null;
+        }
+        List<TeamMember> memberships = teamMemberDAO.findByUserId(userId);
+        java.util.ArrayList<Team> teams = new java.util.ArrayList<>();
+        if (memberships != null) {
+            for (TeamMember member : memberships) {
+                Team team = teamDAO.findById(member.getTeamId());
+                if (team != null) {
+                    teams.add(team);
+                }
+            }
+        }
+        return teams;
+    }
+
+    @Override
+    public Team getUserTeamInCompetition(Integer userId, Integer competitionId) {
+        if (userId == null || competitionId == null) {
+            return null;
+        }
+        List<Team> teams = getTeamsByUserId(userId);
+        if (teams == null) {
+            return null;
+        }
+        for (Team team : teams) {
+            if (competitionId.equals(team.getCompetitionId()) && team.getStatus() != null && team.getStatus() != 0) {
+                return team;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isUserLeaderOfTeam(Integer userId, Integer teamId) {
+        if (userId == null || teamId == null) {
+            return false;
+        }
+        Team team = teamDAO.findById(teamId);
+        return team != null && userId.equals(team.getLeaderId());
+    }
+
+    @Override
+    public boolean isUserMemberOfTeam(Integer userId, Integer teamId) {
+        if (userId == null || teamId == null) {
+            return false;
+        }
+        List<TeamMember> members = teamMemberDAO.findByTeamId(teamId);
+        if (members == null) {
+            return false;
+        }
+        for (TeamMember member : members) {
+            if (userId.equals(member.getUserId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean inviteMember(Integer teamId, Integer inviterId, Integer inviteeId) {
         if (teamId == null || inviterId == null || inviteeId == null) {
+            return false;
+        }
+
+        // 检查邀请人必须是该队队长
+        if (!isUserLeaderOfTeam(inviterId, teamId)) {
+            return false;
+        }
+
+        if (inviterId.equals(inviteeId)) {
             return false;
         }
 
@@ -134,6 +204,22 @@ public class TeamServiceImpl implements TeamService {
         for (TeamMember member : members) {
             if (member.getUserId().equals(inviteeId)) {
                 return false; // 已是队伍成员
+            }
+        }
+
+        // 检查被邀请人是否已在同竞赛的其他队伍中
+        Team joinedTeam = getUserTeamInCompetition(inviteeId, team.getCompetitionId());
+        if (joinedTeam != null) {
+            return false;
+        }
+
+        // 避免重复待处理邀请
+        List<Invitation> invitations = invitationDAO.findByTeamId(teamId);
+        if (invitations != null) {
+            for (Invitation inv : invitations) {
+                if (inviteeId.equals(inv.getInviteeId()) && inv.getStatus() != null && inv.getStatus() == 0) {
+                    return false;
+                }
             }
         }
 

@@ -81,6 +81,7 @@
                                         <option value="1" <%= competition.getStatus() == 1 ? "selected" : "" %>>报名中</option>
                                         <option value="2" <%= competition.getStatus() == 2 ? "selected" : "" %>>进行中</option>
                                         <option value="3" <%= competition.getStatus() == 3 ? "selected" : "" %>>已结束</option>
+                                        <option value="0" <%= competition.getStatus() != null && competition.getStatus() == 0 ? "selected" : "" %>>已取消</option>
                                     </select>
                                 </div>
 
