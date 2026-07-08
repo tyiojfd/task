@@ -99,6 +99,9 @@
                         </li>
                         <% } %>
                         <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a>
                         </li>
                         <li class="nav-item dropdown">
@@ -107,11 +110,15 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
+                                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/certificate?action=myCertificates"><i class="fas fa-certificate"></i> 我的奖状</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">退出登录</a></li>
                             </ul>
                         </li>
                     <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a>
                         </li>

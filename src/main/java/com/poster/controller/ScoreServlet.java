@@ -2,11 +2,14 @@ package com.poster.controller;
 
 import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.WorkDAOImpl;
+import com.poster.model.Comment;
 import com.poster.model.Score;
 import com.poster.model.User;
 import com.poster.model.Work;
+import com.poster.service.CommentService;
 import com.poster.service.ScoreService;
 import com.poster.service.TeamService;
+import com.poster.service.impl.CommentServiceImpl;
 import com.poster.service.impl.ScoreServiceImpl;
 import com.poster.service.impl.TeamServiceImpl;
 
@@ -25,6 +28,7 @@ import java.util.List;
 public class ScoreServlet extends HttpServlet {
 
     private ScoreService scoreService = new ScoreServiceImpl();
+    private CommentService commentService = new CommentServiceImpl();
     private WorkDAO workDAO = new WorkDAOImpl();
     private TeamService teamService = new TeamServiceImpl();
 
@@ -115,6 +119,10 @@ public class ScoreServlet extends HttpServlet {
 
             request.setAttribute("work", work);
             request.setAttribute("team", teamService.getTeamById(work.getTeamId()));
+
+            // 加载该作品的所有评语
+            List<Comment> comments = commentService.getCommentsByWorkId(workId);
+            request.setAttribute("comments", comments);
 
             // 检查当前评委是否已评分
             HttpSession session = request.getSession(false);

@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Work" %>
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.Score" %>
+<%@ page import="com.poster.model.Comment" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
@@ -22,6 +23,9 @@
     Team targetTeam = (Team) request.getAttribute("team");
     Boolean hasScored = (Boolean) request.getAttribute("hasScored");
     Score existingScore = (Score) request.getAttribute("existingScore");
+
+    @SuppressWarnings("unchecked")
+    List<Comment> comments = (List<Comment>) request.getAttribute("comments");
 
     String message = (String) session.getAttribute("message");
     if (message != null) {
@@ -372,6 +376,80 @@
                         </a>
                     </div>
                 </form>
+            </div>
+
+            <!-- 评语区域 -->
+            <div class="score-form-card mt-3">
+                <h5 class="mb-3"><i class="fas fa-comment-dots me-2"></i>评委评语</h5>
+
+                <!-- 添加/编辑评语表单 -->
+                <form action="${pageContext.request.contextPath}/comment" method="post" class="mb-4">
+                    <input type="hidden" name="workId" value="<%= targetWork.getWorkId() %>">
+                    <%
+                        Comment myComment = null;
+                        if (comments != null && sessionUser != null) {
+                            for (Comment c : comments) {
+                                if (c.getJudgeId().equals(sessionUser.getUserId())) {
+                                    myComment = c;
+                                    break;
+                                }
+                            }
+                        }
+                    %>
+                    <% if (myComment != null) { %>
+                    <input type="hidden" name="action" value="update">
+                    <input type="hidden" name="commentId" value="<%= myComment.getCommentId() %>">
+                    <% } else { %>
+                    <input type="hidden" name="action" value="add">
+                    <% } %>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <%= myComment != null ? "编辑我的评语" : "添加评语" %>
+                        </label>
+                        <textarea class="form-control" name="commentText" rows="3"
+                                  placeholder="请输入您的评语..." required><%= myComment != null ? myComment.getCommentText() : "" %></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i>
+                        <%= myComment != null ? "更新评语" : "提交评语" %>
+                    </button>
+                    <% if (myComment != null) { %>
+                    <form action="${pageContext.request.contextPath}/comment" method="post" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="commentId" value="<%= myComment.getCommentId() %>">
+                        <input type="hidden" name="workId" value="<%= targetWork.getWorkId() %>">
+                        <button type="submit" class="btn btn-outline-danger ms-2"
+                                onclick="return confirm('确定要删除此评语吗？')">
+                            <i class="fas fa-trash me-1"></i>删除评语
+                        </button>
+                    </form>
+                    <% } %>
+                </form>
+
+                <!-- 所有评语列表 -->
+                <% if (comments != null && !comments.isEmpty()) { %>
+                <hr>
+                <h6 class="text-muted mb-3">所有评语（<%= comments.size() %>条）</h6>
+                <% for (Comment c : comments) { %>
+                <div style="background:#F8F9FA;border-radius:12px;padding:1rem;margin-bottom:0.8rem;
+                            border-left:3px solid <%= c.getJudgeId().equals(sessionUser.getUserId()) ? "var(--primary)" : "#dee2e6" %>;">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="fw-bold text-muted">
+                            <i class="fas fa-user-circle"></i> 评委 #<%= c.getJudgeId() %>
+                            <%= c.getJudgeId().equals(sessionUser.getUserId()) ? "<span class='badge bg-primary ms-1'>我</span>" : "" %>
+                        </small>
+                        <small class="text-muted">
+                            <%= c.getCommentTime() != null ? c.getCommentTime().format(dtf) : "" %>
+                        </small>
+                    </div>
+                    <p class="mb-0"><%= c.getCommentText() %></p>
+                </div>
+                <% } %>
+                <% } else { %>
+                <div class="text-center py-3 text-muted">
+                    <i class="fas fa-comment-slash"></i> 暂无评语
+                </div>
+                <% } %>
             </div>
         </div>
     </div>
