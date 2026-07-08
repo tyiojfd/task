@@ -393,9 +393,9 @@
                     <div class="col-lg-4 col-md-6">
                         <div class="work-card">
                             <% if (work.getImagePath() != null && !work.getImagePath().isEmpty()) { %>
-                                <img src="${pageContext.request.contextPath}<%= work.getImagePath() %>"
+                                <img src="${pageContext.request.contextPath}/image-data?workId=<%= work.getWorkId() %>"
                                      class="work-thumb" alt="<%= work.getTitle() %>"
-                                     onclick="previewImage('${pageContext.request.contextPath}<%= work.getImagePath() %>')">
+                                     onclick="previewImage('${pageContext.request.contextPath}/image-data?workId=<%= work.getWorkId() %>')">
                             <% } else { %>
                                 <div class="work-thumb-placeholder">
                                     <i class="fas fa-image"></i>
@@ -415,7 +415,7 @@
                             </div>
                             <div class="work-actions">
                                 <% if (work.getImagePath() != null && !work.getImagePath().isEmpty()) { %>
-                                    <button class="btn btn-outline-primary btn-sm" onclick="previewImage('${pageContext.request.contextPath}<%= work.getImagePath() %>')">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="previewImage('${pageContext.request.contextPath}/image-data?workId=<%= work.getWorkId() %>')">
                                         <i class="fas fa-search-plus"></i> 预览
                                     </button>
                                 <% } %>

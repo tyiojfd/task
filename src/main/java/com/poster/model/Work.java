@@ -12,6 +12,8 @@ public class Work {
     private Integer teamId;
     private Integer categoryId;
     private String imagePath;
+    private byte[] imageData;
+    private String imageContentType;
     private Integer competitionId;
     private String title;
     private String description;
@@ -51,6 +53,22 @@ public class Work {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public void setImageContentType(String imageContentType) {
+        this.imageContentType = imageContentType;
     }
 
     public Integer getCompetitionId() {
