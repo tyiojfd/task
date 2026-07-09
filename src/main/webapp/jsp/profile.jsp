@@ -122,11 +122,12 @@
                             </span>
                         </p>
                         <!-- 隐藏的头像上传表单 -->
+                        <input type="file" name="avatar" id="avatarUpload" accept="image/jpeg,image/png"
+                               form="avatarForm" style="display:none"
+                               onchange="document.getElementById('avatarForm').submit()">
                         <form id="avatarForm" action="${pageContext.request.contextPath}/profile" method="post"
                               enctype="multipart/form-data" style="display:none;">
                             <input type="hidden" name="action" value="uploadAvatar">
-                            <input type="file" name="avatar" id="avatarUpload" accept="image/jpeg,image/png"
-                                   onchange="document.getElementById('avatarForm').submit()">
                         </form>
                     </div>
                 </div>
