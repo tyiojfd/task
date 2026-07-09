@@ -64,4 +64,9 @@ public interface WorkDAO {
      * 统计指定竞赛的作品数
      */
     int countByCompetitionId(Integer competitionId);
+
+    /**
+     * 根据队伍ID列表和关键词搜索作品（关键词匹配作品标题）
+     */
+    List<Work> findByTeamIdsAndKeyword(List<Integer> teamIds, String keyword);
 }

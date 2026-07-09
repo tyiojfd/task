@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 作品DAO实现类
+ * 作品DAO实现�?
  * @author 队员B
  * @date 2026-07-06
  */
@@ -234,6 +234,50 @@ public class WorkDAOImpl implements WorkDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    @Override
+    public List<Work> findByTeamIdsAndKeyword(List<Integer> teamIds, String keyword) {
+        if (teamIds == null || teamIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT DISTINCT w.* FROM work w LEFT JOIN team t ON w.team_id = t.team_id WHERE w.team_id IN (");
+        for (int i = 0; i < teamIds.size(); i++) {
+            sql.append(i > 0 ? ",?" : "?");
+        }
+        sql.append(")");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (w.work_title LIKE ? OR t.team_name LIKE ?)");
+        }
+        sql.append(" ORDER BY w.submit_time DESC");
+
+        List<Work> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+            for (Integer teamId : teamIds) {
+                pstmt.setInt(index++, teamId);
+            }
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String likePattern = "%" + keyword.trim() + "%";
+                pstmt.setString(index++, likePattern);
+                pstmt.setString(index++, likePattern);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(extractWorkFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     /**

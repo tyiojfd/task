@@ -4,6 +4,8 @@ import com.poster.model.*;
 import com.poster.service.*;
 import com.poster.service.impl.*;
 import com.poster.util.FileUploadUtil;
+import com.poster.dao.*;
+import com.poster.dao.impl.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -12,11 +14,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * 作品Servlet
- * @author 队员B
- * @date 2026-07-06
- */
 @WebServlet("/work")
 @MultipartConfig(
     maxFileSize = 10485760,
@@ -28,14 +25,9 @@ public class WorkServlet extends HttpServlet {
     private WorkService workService = new WorkServiceImpl();
     private TeamService teamService = new TeamServiceImpl();
     private CompetitionService competitionService = new CompetitionServiceImpl();
-    private ScoreService scoreService = new ScoreServiceImpl();
-    private CommentService commentService = new CommentServiceImpl();
-    private AwardService awardService = new AwardServiceImpl();
-    private CertificateService certificateService = new CertificateServiceImpl();
-    private com.poster.dao.CategoryDAO categoryDAO = new com.poster.dao.impl.CategoryDAOImpl();
-    private com.poster.dao.UserDAO userDAO = new com.poster.dao.impl.UserDAOImpl();
-    private com.poster.dao.TeamMemberDAO teamMemberDAO = new com.poster.dao.impl.TeamMemberDAOImpl();
-    private com.poster.dao.TeamDAO teamDAO = new com.poster.dao.impl.TeamDAOImpl();
+    private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
+    private TeamDAO teamDAO = new TeamDAOImpl();
+    private UserDAO userDAO = new UserDAOImpl();
 
     private static final String UPLOAD_BASE = "uploads";
 
@@ -59,7 +51,7 @@ public class WorkServlet extends HttpServlet {
         } else if ("delete".equals(action)) {
             deleteWork(request, response);
         } else {
-            listMyWorks(request, response);
+            listWorks(request, response);
         }
     }
 
@@ -78,174 +70,198 @@ public class WorkServlet extends HttpServlet {
             submitWork(request, response);
         } else if ("update".equals(action)) {
             updateWork(request, response);
-        } else if ("delete".equals(action)) {
-            deleteWork(request, response);
         } else if ("like".equals(action)) {
             likeWork(request, response);
         } else if ("unlike".equals(action)) {
             unlikeWork(request, response);
         } else {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+            response.sendRedirect(request.getContextPath() + "/work");
         }
     }
 
-    /**
-     * 显示"我的作品"列表
-     */
-    private void listMyWorks(HttpServletRequest request, HttpServletResponse response)
+    // ==================== 已提交的作品列表（含搜索） ====================
+
+    private void listWorks(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
+        String keyword = request.getParameter("keyword");
 
-        List<TeamMember> memberships = teamMemberDAO.findByUserId(user.getUserId());
-        List<Team> myTeams = new ArrayList<>();
-        List<Integer> leaderTeamIds = new ArrayList<>();
-        for (TeamMember m : memberships) {
-            Team t = teamDAO.findById(m.getTeamId());
-            if (t != null && t.getStatus() != null && t.getStatus() != 0) {
-                myTeams.add(t);
-                if (t.getLeaderId() != null && t.getLeaderId().equals(user.getUserId()) && t.getStatus() == 2) {
-                    leaderTeamIds.add(t.getTeamId());
-                }
-            }
+        List<Work> works;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            works = workService.searchWorksByUserTeams(user.getUserId(), keyword.trim());
+        } else {
+            works = workService.getWorksByUserId(user.getUserId());
         }
 
-        List<Work> works = workService.getWorksByUserId(user.getUserId());
+        // 加载关联数据
+        Map<Integer, Team> teamMap = new HashMap<>();
+        Map<Integer, Competition> compMap = new HashMap<>();
+        Map<Integer, Integer> likeCountMap = new HashMap<>();
+        Map<Integer, Boolean> likedMap = new HashMap<>();
+        List<Integer> userTeamIds = new ArrayList<>();
 
-        Map<Integer, String> teamNameMap = new HashMap<>();
-        Map<Integer, String> competitionNameMap = new HashMap<>();
+        List<TeamMember> memberships = teamMemberDAO.findByUserId(user.getUserId());
+        for (TeamMember m : memberships) {
+            userTeamIds.add(m.getTeamId());
+        }
 
-        for (Team team : myTeams) {
-            teamNameMap.put(team.getTeamId(), team.getTeamName());
+        // 找出用户是队长的队伍ID集合
+        Set<Integer> leaderTeamIds = new HashSet<>();
+        for (TeamMember m : memberships) {
+            Team t = teamDAO.findById(m.getTeamId());
+            if (t != null && t.getLeaderId() != null && t.getLeaderId().equals(user.getUserId())) {
+                leaderTeamIds.add(t.getTeamId());
+            }
         }
 
         for (Work work : works) {
-            if (work.getCompetitionId() != null && !competitionNameMap.containsKey(work.getCompetitionId())) {
-                Competition comp = competitionService.getCompetitionById(work.getCompetitionId());
-                if (comp != null) {
-                    competitionNameMap.put(work.getCompetitionId(), comp.getName());
-                }
-            }
-            if (!teamNameMap.containsKey(work.getTeamId())) {
+            if (!teamMap.containsKey(work.getTeamId())) {
                 Team t = teamDAO.findById(work.getTeamId());
-                if (t != null) {
-                    teamNameMap.put(work.getTeamId(), t.getTeamName());
-                }
+                if (t != null) teamMap.put(work.getTeamId(), t);
             }
+            if (work.getCompetitionId() != null && !compMap.containsKey(work.getCompetitionId())) {
+                Competition c = competitionService.getCompetitionById(work.getCompetitionId());
+                if (c != null) compMap.put(work.getCompetitionId(), c);
+            }
+            likeCountMap.put(work.getWorkId(), workService.getLikeCount(work.getWorkId()));
+            likedMap.put(work.getWorkId(), workService.isWorkLikedByUser(work.getWorkId(), user.getUserId()));
         }
 
         request.setAttribute("works", works);
-        request.setAttribute("myTeams", myTeams);
+        request.setAttribute("teamMap", teamMap);
+        request.setAttribute("compMap", compMap);
+        request.setAttribute("likeCountMap", likeCountMap);
+        request.setAttribute("likedMap", likedMap);
         request.setAttribute("leaderTeamIds", leaderTeamIds);
-        request.setAttribute("teamNameMap", teamNameMap);
-        request.setAttribute("competitionNameMap", competitionNameMap);
+        request.setAttribute("keyword", keyword);
         request.getRequestDispatcher("/jsp/submission_list.jsp").forward(request, response);
     }
 
-    /**
-     * 显示作品提交表单
-     */
+    // ==================== 提交作品表单（选择队伍） ====================
+
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
 
-        String teamIdStr = request.getParameter("teamId");
-        if (teamIdStr == null || teamIdStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
-            return;
-        }
+        // 显示当前用户创建的所有队伍（含未报名）
+        List<Team> leaderTeams = teamService.getTeamsByLeaderId(user.getUserId());
 
-        try {
-            Integer teamId = Integer.parseInt(teamIdStr);
-            Team team = teamService.getTeamById(teamId);
-            if (team == null) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=team_not_found");
-                return;
-            }
-
-            if (!team.getLeaderId().equals(user.getUserId())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=not_leader");
-                return;
-            }
-
-            Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
-            List<com.poster.model.CompetitionCategory> categories = categoryDAO.findByCompetitionId(team.getCompetitionId());
-
-            List<Work> existingWorks = workService.getWorksByTeamId(teamId);
-            Work existingWork = null;
-            for (Work w : existingWorks) {
-                if (w.getStatus() >= 2) {
-                    existingWork = w;
-                    break;
-                }
-            }
-
-            request.setAttribute("team", team);
-            request.setAttribute("competition", competition);
-            request.setAttribute("categories", categories);
-            request.setAttribute("existingWork", existingWork);
-            request.getRequestDispatcher("/jsp/submission_add.jsp").forward(request, response);
-
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=invalid_team");
-        }
+        request.setAttribute("teams", leaderTeams);
+        request.getRequestDispatcher("/jsp/submission_add.jsp").forward(request, response);
     }
 
-    /**
-     * 显示作品编辑表单
-     */
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+    // ==================== 提交作品（POST） ====================
+
+    private void submitWork(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
 
-        String idStr = request.getParameter("id");
-        if (idStr == null || idStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+        // 1. 验证队伍
+        String teamIdStr = request.getParameter("teamId");
+        if (teamIdStr == null || teamIdStr.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=no_team");
             return;
         }
 
+        Integer teamId;
         try {
-            Integer workId = Integer.parseInt(idStr);
-            Work work = workService.getWorkById(workId);
-            if (work == null) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=work_not_found");
-                return;
-            }
-
-            Team team = teamService.getTeamById(work.getTeamId());
-            if (team == null || !team.getLeaderId().equals(user.getUserId())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
-                return;
-            }
-
-            Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
-            List<com.poster.model.CompetitionCategory> categories =
-                    categoryDAO.findByCompetitionId(work.getCompetitionId());
-
-            request.setAttribute("work", work);
-            request.setAttribute("team", team);
-            request.setAttribute("competition", competition);
-            request.setAttribute("categories", categories);
-            request.getRequestDispatcher("/jsp/submission_add.jsp").forward(request, response);
-
+            teamId = Integer.parseInt(teamIdStr);
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=invalid_id");
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=invalid_team");
+            return;
+        }
+
+        Team team = teamDAO.findById(teamId);
+        if (team == null) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=team_not_found");
+            return;
+        }
+
+        // 2. 权限验证：只有队长能提交
+        if (!team.getLeaderId().equals(user.getUserId())) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=permission_denied");
+            return;
+        }
+
+        // 3. 验证截止日期
+        Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
+        if (competition != null && competition.getSubmitDeadline() != null
+                && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=deadline_passed");
+            return;
+        }
+
+        // 4. 验证作品标题
+        String title = request.getParameter("title");
+        if (title == null || title.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=no_title");
+            return;
+        }
+
+        // 5. 处理文件上传
+        Part filePart = request.getPart("imageFile");
+        String imagePath = null;
+        byte[] imageData = null;
+        String imageContentType = null;
+
+        if (filePart != null && filePart.getSize() > 0) {
+            String contentType = filePart.getContentType();
+            if (!FileUploadUtil.isAllowedType(contentType)) {
+                response.sendRedirect(request.getContextPath() + "/work?action=add&error=invalid_type");
+                return;
+            }
+            if (!FileUploadUtil.isAllowedSize(filePart.getSize())) {
+                response.sendRedirect(request.getContextPath() + "/work?action=add&error=file_too_large");
+                return;
+            }
+
+            // 保存到文件系统
+            String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+            try {
+                imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), teamId);
+            } catch (IOException e) {
+                e.printStackTrace();
+                response.sendRedirect(request.getContextPath() + "/work?action=add&error=upload_failed");
+                return;
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=no_image");
+            return;
+        }
+
+        // 6. 构建作品对象
+        Work work = new Work();
+        work.setTeamId(teamId);
+        work.setCompetitionId(team.getCompetitionId());
+        work.setCategoryId(team.getCategoryId());
+        work.setTitle(title.trim());
+        work.setDescription(request.getParameter("description"));
+        work.setImagePath(imagePath);
+        work.setImageData(imageData);
+        work.setImageContentType(imageContentType);
+        work.setStatus(2); // 已提交
+
+        boolean success = workService.submitWork(work);
+        if (success) {
+            response.sendRedirect(request.getContextPath() + "/work?msg=submit_success");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=submit_failed");
         }
     }
 
-    /**
-     * 显示作品详情
-     */
+    // ==================== 作品详情 ====================
+
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
 
         String idStr = request.getParameter("id");
-        if (idStr == null || idStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+        if (idStr == null) {
+            response.sendRedirect(request.getContextPath() + "/work");
             return;
         }
 
@@ -253,234 +269,179 @@ public class WorkServlet extends HttpServlet {
             Integer workId = Integer.parseInt(idStr);
             Work work = workService.getWorkById(workId);
             if (work == null) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=work_not_found");
+                response.sendRedirect(request.getContextPath() + "/work?error=not_found");
                 return;
             }
 
-            Team team = teamService.getTeamById(work.getTeamId());
-            if (team == null || !teamService.isUserMemberOfTeam(user.getUserId(), team.getTeamId())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
+            // 权限验证：非本队成员不能查看
+            List<TeamMember> memberships = teamMemberDAO.findByUserId(user.getUserId());
+            boolean isMember = false;
+            boolean isLeader = false;
+            for (TeamMember m : memberships) {
+                if (m.getTeamId().equals(work.getTeamId())) {
+                    isMember = true;
+                    Team t = teamDAO.findById(m.getTeamId());
+                    if (t != null && t.getLeaderId().equals(user.getUserId())) {
+                        isLeader = true;
+                    }
+                    break;
+                }
+            }
+            if (!isMember) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权查看其他队伍的作品");
                 return;
             }
 
+            Team team = teamDAO.findById(work.getTeamId());
             Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
+            int likeCount = workService.getLikeCount(workId);
+            boolean liked = workService.isWorkLikedByUser(workId, user.getUserId());
 
-            // 加载评分数据
-            List<Score> scores = scoreService.getScoresByWorkId(workId);
-            Double avgScore = scoreService.getAverageScore(workId);
+            request.setAttribute("work", work);
+            request.setAttribute("team", team);
+            request.setAttribute("competition", competition);
+            request.setAttribute("likeCount", likeCount);
+            request.setAttribute("liked", liked);
+            request.setAttribute("isLeader", isLeader);
+            request.getRequestDispatcher("/jsp/submission_detail.jsp").forward(request, response);
 
-            // 加载评语数据
-            List<Comment> comments = commentService.getCommentsByWorkId(workId);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/work");
+        }
+    }
 
-            // 加载获奖数据
-            Award award = awardService.getAwardByWorkId(workId);
-            Certificate certificate = null;
-            if (award != null) {
-                certificate = certificateService.getCertificateByAwardId(award.getAwardId());
+    // ==================== 编辑作品表单 ====================
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+
+        String idStr = request.getParameter("id");
+        if (idStr == null) {
+            response.sendRedirect(request.getContextPath() + "/work");
+            return;
+        }
+
+        try {
+            Integer workId = Integer.parseInt(idStr);
+            Work work = workService.getWorkById(workId);
+            if (work == null) {
+                response.sendRedirect(request.getContextPath() + "/work?error=not_found");
+                return;
+            }
+
+            // 权限验证：只有队长能编辑
+            Team team = teamDAO.findById(work.getTeamId());
+            if (team == null || !team.getLeaderId().equals(user.getUserId())) {
+                response.sendRedirect(request.getContextPath() + "/work?error=permission_denied");
+                return;
+            }
+
+            // 截止日期验证
+            Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
+            if (competition != null && competition.getSubmitDeadline() != null
+                    && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=deadline_passed");
+                return;
             }
 
             request.setAttribute("work", work);
             request.setAttribute("team", team);
             request.setAttribute("competition", competition);
-            request.setAttribute("scores", scores);
-            request.setAttribute("avgScore", avgScore);
-            request.setAttribute("comments", comments);
-            request.setAttribute("award", award);
-            request.setAttribute("certificate", certificate);
-            request.getRequestDispatcher("/jsp/submission_detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/submission_add.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=invalid_id");
+            response.sendRedirect(request.getContextPath() + "/work");
         }
     }
 
-    /**
-     * 提交新作品
-     */
-    private void submitWork(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        User user = (User) session.getAttribute("user");
+    // ==================== 更新作品（POST） ====================
 
-        try {
-            String teamIdStr = request.getParameter("teamId");
-            String categoryIdStr = request.getParameter("categoryId");
-            String title = request.getParameter("title");
-            String description = request.getParameter("description");
-
-            if (teamIdStr == null || title == null || title.trim().isEmpty()) {
-                request.setAttribute("error", "请填写必要信息");
-                showAddForm(request, response);
-                return;
-            }
-
-            Integer teamId = Integer.parseInt(teamIdStr);
-
-            Team team = teamService.getTeamById(teamId);
-            if (team == null || !team.getLeaderId().equals(user.getUserId())) {
-                request.setAttribute("error", "只有队长可以提交作品");
-                showAddForm(request, response);
-                return;
-            }
-            if (team.getStatus() == null || team.getStatus() != 2) {
-                request.setAttribute("error", "队伍报名参赛后才能提交作品");
-                showAddForm(request, response);
-                return;
-            }
-
-            Integer competitionId = team.getCompetitionId();
-
-            // 校验截止日期
-            Competition competition = competitionService.getCompetitionById(competitionId);
-            if (competition != null && competition.getSubmitDeadline() != null
-                    && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-                request.setAttribute("error", "提交已截止，无法提交作品");
-                showAddForm(request, response);
-                return;
-            }
-
-            // 处理文件上传
-            Part filePart = request.getPart("imageFile");
-            String imagePath = null;
-            byte[] imageData = null;
-            String imageContentType = null;
-
-            if (filePart != null && filePart.getSize() > 0) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
-                imagePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath, competitionId, teamId);
-
-                // 读取图片二进制数据保存到数据库
-                imageContentType = filePart.getContentType();
-                try (java.io.InputStream inputStream = filePart.getInputStream();
-                     java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
-                    imageData = outputStream.toByteArray();
-                } catch (java.io.IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                request.setAttribute("error", "请上传海报图片");
-                showAddForm(request, response);
-                return;
-            }
-
-            Work work = new Work();
-            work.setTeamId(teamId);
-            work.setCompetitionId(competitionId);
-            if (categoryIdStr != null && !categoryIdStr.isEmpty()) {
-                work.setCategoryId(Integer.parseInt(categoryIdStr));
-            }
-            work.setTitle(title.trim());
-            work.setDescription(description != null ? description.trim() : null);
-            work.setImagePath(imagePath);
-            work.setImageData(imageData);
-            work.setImageContentType(imageContentType);
-
-            boolean success = workService.submitWork(work);
-
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&msg=submit_success");
-            } else {
-                request.setAttribute("error", "作品提交失败，请重试");
-                showAddForm(request, response);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "提交作品时发生错误：" + e.getMessage());
-            showAddForm(request, response);
-        }
-    }
-
-    /**
-     * 更新作品
-     */
     private void updateWork(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
 
+        String workIdStr = request.getParameter("workId");
+        if (workIdStr == null) {
+            response.sendRedirect(request.getContextPath() + "/work");
+            return;
+        }
+
         try {
-            String workIdStr = request.getParameter("workId");
-            String title = request.getParameter("title");
-            String description = request.getParameter("description");
-            String categoryIdStr = request.getParameter("categoryId");
-
-            if (workIdStr == null || title == null || title.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=invalid_input");
-                return;
-            }
-
             Integer workId = Integer.parseInt(workIdStr);
             Work existingWork = workService.getWorkById(workId);
             if (existingWork == null) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=work_not_found");
+                response.sendRedirect(request.getContextPath() + "/work?error=not_found");
                 return;
             }
 
-            Team team = teamService.getTeamById(existingWork.getTeamId());
+            // 权限验证：只有队长能修改
+            Team team = teamDAO.findById(existingWork.getTeamId());
             if (team == null || !team.getLeaderId().equals(user.getUserId())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
+                response.sendRedirect(request.getContextPath() + "/work?error=permission_denied");
                 return;
             }
 
-            Part filePart = request.getPart("imageFile");
-            String imagePath = existingWork.getImagePath();
-            byte[] imageData = existingWork.getImageData();
-            String imageContentType = existingWork.getImageContentType();
+            // 截止日期验证
+            Competition competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
+            if (competition != null && competition.getSubmitDeadline() != null
+                    && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=deadline_passed");
+                return;
+            }
 
+            // 更新标题
+            String title = request.getParameter("title");
+            if (title != null && !title.trim().isEmpty()) {
+                existingWork.setTitle(title.trim());
+            }
+
+            // 更新描述
+            existingWork.setDescription(request.getParameter("description"));
+
+            // 处理新图片上传
+            Part filePart = request.getPart("imageFile");
             if (filePart != null && filePart.getSize() > 0) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String contentType = filePart.getContentType();
+                if (!FileUploadUtil.isAllowedType(contentType)) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=invalid_type");
+                    return;
+                }
+                if (!FileUploadUtil.isAllowedSize(filePart.getSize())) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=file_too_large");
+                    return;
+                }
+
+                // 删除旧图片
                 if (existingWork.getImagePath() != null) {
+                    String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
                     FileUploadUtil.deleteFile(uploadRealPath, existingWork.getImagePath());
                 }
-                imagePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath,
-                        existingWork.getCompetitionId(), existingWork.getTeamId());
 
-                // 读取新图片二进制数据
-                imageContentType = filePart.getContentType();
-                try (java.io.InputStream inputStream = filePart.getInputStream();
-                     java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
-                    imageData = outputStream.toByteArray();
-                } catch (java.io.IOException e) {
-                    e.printStackTrace();
-                }
+                // 保存新图片
+                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), team.getTeamId());
+                existingWork.setImagePath(imagePath);
+                existingWork.setImageData(null);
+                existingWork.setImageContentType(contentType);
             }
-
-            existingWork.setTitle(title.trim());
-            existingWork.setDescription(description != null ? description.trim() : null);
-            if (categoryIdStr != null && !categoryIdStr.isEmpty()) {
-                existingWork.setCategoryId(Integer.parseInt(categoryIdStr));
-            }
-            existingWork.setImagePath(imagePath);
-            existingWork.setImageData(imageData);
-            existingWork.setImageContentType(imageContentType);
 
             boolean success = workService.updateWork(existingWork);
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&msg=update_success");
+                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&msg=update_success");
             } else {
                 response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=update_failed");
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=update_error");
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/work");
         }
     }
 
-    /**
-     * 删除作品
-     */
+    // ==================== 删除作品 ====================
+
     private void deleteWork(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -488,7 +449,7 @@ public class WorkServlet extends HttpServlet {
 
         String idStr = request.getParameter("id");
         if (idStr == null) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+            response.sendRedirect(request.getContextPath() + "/work");
             return;
         }
 
@@ -496,22 +457,14 @@ public class WorkServlet extends HttpServlet {
             Integer workId = Integer.parseInt(idStr);
             Work work = workService.getWorkById(workId);
             if (work == null) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=work_not_found");
+                response.sendRedirect(request.getContextPath() + "/work?error=not_found");
                 return;
             }
 
-            Team team = teamService.getTeamById(work.getTeamId());
-            Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
-
+            // 权限验证：只有队长能删除
+            Team team = teamDAO.findById(work.getTeamId());
             if (team == null || !team.getLeaderId().equals(user.getUserId())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
-                return;
-            }
-
-            // 截止日期后禁用删除
-            if (competition != null && competition.getSubmitDeadline() != null
-                    && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=deadline_passed");
+                response.sendRedirect(request.getContextPath() + "/work?error=permission_denied");
                 return;
             }
 
@@ -522,59 +475,49 @@ public class WorkServlet extends HttpServlet {
 
             boolean success = workService.deleteWork(workId, work.getTeamId());
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&msg=delete_success");
+                response.sendRedirect(request.getContextPath() + "/work?msg=delete_success");
             } else {
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=delete_failed");
+                response.sendRedirect(request.getContextPath() + "/work?error=delete_failed");
             }
 
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=invalid_id");
+            response.sendRedirect(request.getContextPath() + "/work");
         }
     }
-
-    /**
-     * 点赞作品
-     */
     private void likeWork(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
-
         String workIdStr = request.getParameter("workId");
         if (workIdStr == null) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+            response.sendRedirect(request.getContextPath() + "/work");
             return;
         }
-
         try {
             Integer workId = Integer.parseInt(workIdStr);
             workService.likeWork(workId, user.getUserId());
-            response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId);
+            response.sendRedirect(request.getContextPath() + "/work");
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+            response.sendRedirect(request.getContextPath() + "/work");
         }
     }
 
-    /**
-     * 取消点赞
-     */
     private void unlikeWork(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
-
         String workIdStr = request.getParameter("workId");
         if (workIdStr == null) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+            response.sendRedirect(request.getContextPath() + "/work");
             return;
         }
-
         try {
             Integer workId = Integer.parseInt(workIdStr);
             workService.unlikeWork(workId, user.getUserId());
-            response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId);
+            response.sendRedirect(request.getContextPath() + "/work");
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/work?action=myWorks");
+            response.sendRedirect(request.getContextPath() + "/work");
         }
     }
+
 }

@@ -564,7 +564,7 @@
                         </div>
                     <% } %>
                     <%
-                        List<Work> works = (List<Work>) request.getAttribute("works");
+                        // works already declared above
                         boolean hasWorks = works != null && !works.isEmpty();
                     %>
 

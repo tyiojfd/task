@@ -69,4 +69,9 @@ public interface WorkService {
      * 检查用户是否已点赞
      */
     boolean isWorkLikedByUser(Integer workId, Integer userId);
+
+    /**
+     * 搜索当前用户所在队伍的作品（按作品标题或队伍名称搜索）
+     */
+    List<Work> searchWorksByUserTeams(Integer userId, String keyword);
 }
