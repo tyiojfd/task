@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="com.poster.model.Team" %>
@@ -23,8 +23,15 @@
     }
     @SuppressWarnings("unchecked")
     List<Team> teams = (List<Team>) request.getAttribute("teams");
+    @SuppressWarnings("unchecked")
+    java.util.Set<Integer> submittedTeamIds = (java.util.Set<Integer>) request.getAttribute("submittedTeamIds");
     Work editWork = (Work) request.getAttribute("work");
     boolean isEdit = (editWork != null);
+    String error = request.getParameter("error");
+    String msg = request.getParameter("msg");
+    String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
+    String previewClass = (isEdit && editWork.getImagePath() != null) ? "" : "d-none";
+    String previewImgSrc = (isEdit && editWork.getImagePath() != null) ? request.getContextPath() + "/uploads" + editWork.getImagePath() : "";
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -102,8 +109,17 @@
         <h2><i class="fas fa-plus-circle me-2" style="color:var(--primary)"></i>提交作品</h2>
         <a href="${pageContext.request.contextPath}/work" class="btn btn-cancel"><i class="fas fa-arrow-left me-1"></i>返回列表</a>
     </div>
+    <% if (msg != null) { %>
+        <div class="alert alert-success mt-3"><%= "submit_success".equals(msg) ? "作品提交成功！" : "update_success".equals(msg) ? "作品已更新" : msg %></div>
+    <% } %>
+    <% if (error != null) { %>
+        <div class="alert alert-danger mt-3"><%= "already_submitted".equals(error) ? "该队伍已提交过作品，每个队伍只能提交一次" : "permission_denied".equals(error) ? "没有操作权限" : "deadline_passed".equals(error) ? "提交已截止" : "no_team".equals(error) ? "请选择队伍" : "no_title".equals(error) ? "请输入作品名称" : "no_image".equals(error) ? "请上传图片" : "upload_failed".equals(error) ? "上传失败" : "submit_failed".equals(error) ? "提交失败，请重试" : error %></div>
+    <% } %>
     <form action="${pageContext.request.contextPath}/work" method="post" enctype="multipart/form-data" id="submitForm">
-        <input type="hidden" name="action" value="submit">
+        <input type="hidden" name="action" value="<%= isEdit ? "update" : "submit" %>">
+        <% if (isEdit) { %>
+        <input type="hidden" name="workId" value="<%= editWork.getWorkId() %>">
+        <% } %>
         <div class="row">
             <div class="col-lg-8">
                 <div class="form-card">
@@ -116,13 +132,18 @@
                         </div>
                     <% } else { %>
                         <% for (Team t : teams) { %>
-                        <label class="team-card">
-                            <input type="radio" name="teamId" value="<%= t.getTeamId() %>" style="display:none">
+                        <%
+                            boolean teamSubmitted = submittedTeamIds != null && submittedTeamIds.contains(t.getTeamId());
+                        %>
+                        <label class="team-card" style="<%= teamSubmitted ? "opacity:0.6;cursor:not-allowed;" : "" %>">
+                            <input type="radio" name="teamId" value="<%= t.getTeamId() %>" style="display:none" <%= teamSubmitted ? "disabled" : "" %>>
                             <div class="d-flex align-items-center">
                                 <div class="me-3"><i class="fas fa-users text-primary" style="font-size:1.5rem"></i></div>
                                 <div>
                                     <strong><%= t.getTeamName() %></strong>
-                                    <% if (t.getStatus() != null && t.getStatus() == 2) { %>
+                                    <% if (teamSubmitted) { %>
+                                        <span class="badge bg-secondary">已提交作品</span>
+                                    <% } else if (t.getStatus() != null && t.getStatus() == 2) { %>
                                         <span class="badge bg-success">已报名</span>
                                     <% } else { %>
                                         <span class="badge bg-warning text-dark">未报名</span>
@@ -137,11 +158,11 @@
                     <h5><i class="fas fa-info-circle me-2" style="color:var(--primary)"></i>作品信息</h5>
                     <div class="mb-3">
                         <label class="form-label">作品名称 <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="title" placeholder="请输入作品名称" required maxlength="100">
+                        <input type="text" class="form-control" name="title" placeholder="请输入作品名称" required maxlength="100" value="<%= isEdit && editWork.getTitle() != null ? editWork.getTitle() : "" %>">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">作品描述</label>
-                        <textarea class="form-control" name="description" placeholder="请输入作品描述（选填）" maxlength="500"></textarea>
+                        <textarea class="form-control" name="description" placeholder="请输入作品描述（选填）" maxlength="500"><%= isEdit && editWork.getDescription() != null ? editWork.getDescription() : "" %></textarea>
                     </div>
                 </div>
             </div>
@@ -150,22 +171,21 @@
                     <h5><i class="fas fa-image me-2" style="color:var(--primary)"></i>海报图片</h5>
                     <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageFile').click()">
                         <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png">
-                        <div id="uploadPlaceholder">
+                        <div id="uploadPlaceholder" class="<%= placeholderClass %>">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <p class="mt-2">点击上传海报图片</p>
+                            <p class="mt-2"><%= isEdit ? "点击更换海报图片（可选）" : "点击上传海报图片" %></p>
                             <small class="text-muted">支持 JPG/PNG，最大 10MB</small>
                         </div>
-                        <div id="previewContainer" class="preview-container d-none">
-                            <img id="previewImage" src="" alt="预览">
+                        <div id="previewContainer" class="preview-container <%= previewClass %>">
+                            <img id="previewImage" src="<%= previewImgSrc %>" alt="预览">
                             <button type="button" class="remove-image" id="removeImage">&times;</button>
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
         <div class="d-flex gap-2 justify-content-end mb-4">
             <a href="${pageContext.request.contextPath}/work" class="btn btn-cancel"><i class="fas fa-times me-1"></i>取消</a>
-            <button type="submit" class="btn btn-submit" id="submitBtn"><i class="fas fa-paper-plane me-1"></i>提交作品</button>
+            <button type="submit" class="btn btn-submit" id="submitBtn"><i class="fas fa-paper-plane me-1"></i><%= isEdit ? "保存修改" : "提交作品" %></button>
         </div>
     </form>
 </div>
@@ -196,8 +216,11 @@
         if (!title) { alert('请输入作品名称'); e.preventDefault(); return; }
         var team = document.querySelector('input[name="teamId"]:checked');
         if (!team) { alert('请选择队伍'); e.preventDefault(); return; }
-        var file = document.getElementById('imageFile').files[0];
-        if (!file) { alert('请上传图片'); e.preventDefault(); return; }
+        var isEditMode = <%= isEdit %>;
+        if (!isEditMode) {
+            var file = document.getElementById('imageFile').files[0];
+            if (!file) { alert('请上传图片'); e.preventDefault(); return; }
+        }
     });
     document.querySelectorAll('.team-card').forEach(function(c) {
         c.addEventListener('click', function() {

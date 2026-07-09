@@ -4,6 +4,7 @@ import com.poster.model.*;
 import com.poster.service.*;
 import com.poster.service.impl.*;
 import com.poster.util.FileUploadUtil;
+import java.util.*;
 import com.poster.dao.*;
 import com.poster.dao.impl.*;
 
@@ -12,7 +13,6 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
 
 @WebServlet("/work")
 @MultipartConfig(
@@ -201,7 +201,7 @@ public class WorkServlet extends HttpServlet {
             return;
         }
 
-        // 5. 处理文件上传
+        // 6. 处理文件上传
         Part filePart = request.getPart("imageFile");
         String imagePath = null;
         byte[] imageData = null;
@@ -219,7 +219,7 @@ public class WorkServlet extends HttpServlet {
             }
 
             // 保存到文件系统
-            String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+            String uploadRealPath = FileUploadUtil.getUploadBasePath();
             try {
                 imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), teamId);
             } catch (IOException e) {
@@ -232,7 +232,7 @@ public class WorkServlet extends HttpServlet {
             return;
         }
 
-        // 6. 构建作品对象
+        // 7. 构建作品对象
         Work work = new Work();
         work.setTeamId(teamId);
         work.setCompetitionId(team.getCompetitionId());
@@ -344,10 +344,11 @@ public class WorkServlet extends HttpServlet {
                     && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
                 response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=deadline_passed");
                 return;
+            }
             Integer competitionId = team.getCompetitionId();
 
             // 校验竞赛状态：必须为"进行中"且未过截止日期
-            Competition competition = competitionService.getCompetitionById(competitionId);
+            competition = competitionService.getCompetitionById(competitionId);
             if (competition != null) {
                 if (competition.getStatus() == null || competition.getStatus() != 2) {
                     request.setAttribute("error", "竞赛已结束或已取消，无法提交作品");
@@ -409,7 +410,7 @@ public class WorkServlet extends HttpServlet {
             }
 
             // 检查竞赛状态：已结束或已取消的竞赛不可修改作品
-            Competition competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
+            competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
             if (competition != null) {
                 if (competition.getStatus() == null || competition.getStatus() != 2) {
                     response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=competition_ended");
@@ -446,12 +447,12 @@ public class WorkServlet extends HttpServlet {
 
                 // 删除旧图片
                 if (existingWork.getImagePath() != null) {
-                    String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                    String uploadRealPath = FileUploadUtil.getUploadBasePath();
                     FileUploadUtil.deleteFile(uploadRealPath, existingWork.getImagePath());
                 }
 
                 // 保存新图片
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String uploadRealPath = FileUploadUtil.getUploadBasePath();
                 String imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), team.getTeamId());
                 existingWork.setImagePath(imagePath);
                 existingWork.setImageData(null);
@@ -496,25 +497,11 @@ public class WorkServlet extends HttpServlet {
             if (team == null || !team.getLeaderId().equals(user.getUserId())) {
                 response.sendRedirect(request.getContextPath() + "/work?error=permission_denied");
                 return;
-                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
-                return;
             }
 
-            // 检查竞赛状态：已结束/已取消不可删除，截止后也不可删除
-            if (competition != null) {
-                if (competition.getStatus() == null || competition.getStatus() != 2) {
-                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=competition_ended");
-                    return;
-                }
-                if (competition.getSubmitDeadline() != null
-                        && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=deadline_passed");
-                    return;
-                }
-            }
 
             if (work.getImagePath() != null) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String uploadRealPath = FileUploadUtil.getUploadBasePath();
                 FileUploadUtil.deleteFile(uploadRealPath, work.getImagePath());
             }
 

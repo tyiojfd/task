@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="com.poster.model.Team" %>
@@ -505,7 +505,8 @@
                                     statusClass = "bg-warning text-dark";
                                     statusText = "草稿";
                                 }
-                                String imgSrc = request.getContextPath() + "/image-data?workId=" + w.getWorkId();
+                                String imgUrl = w.getImagePath();
+                                String imgSrc = (imgUrl != null && !imgUrl.isEmpty()) ? request.getContextPath() + "/uploads" + imgUrl : "";
                             %>
                                 <div class="col-md-6">
                                     <div class="info-card p-0 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s;"
@@ -543,6 +544,12 @@
                                                 </span>
                                             </div>
                                         </div>
+                                            <div class="mt-2 text-end">
+                                                <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= w.getWorkId() %>"
+                                                   class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    <i class="fas fa-eye me-1"></i>查看详情
+                                                </a>
+                                            </div>
                                     </div>
                                 </div>
                             <% } %>
@@ -555,63 +562,6 @@
                             <% if (isLeader && team.getStatus() != null && team.getStatus() == 2) { %>
                                 <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary mt-2 rounded-3 px-4" style="background:var(--primary); border:none;">
                                     <i class="fas fa-plus me-1"></i>提交作品
-                                </a>
-                            <% } %>
-                        </div>
-                    <% } %>
-                    <%
-                        // works already declared above
-                        boolean hasWorks = works != null && !works.isEmpty();
-                    %>
-
-                    <% if (hasWorks) { %>
-                        <!-- 作品列表 -->
-                        <div class="row g-3">
-                            <% for (Work work : works) { %>
-                                <div class="col-md-6">
-                                    <div class="info-card">
-                                        <% if (work.getImagePath() != null) { %>
-                                            <img src="${pageContext.request.contextPath}/image-data?workId=<%= work.getWorkId() %>"
-                                                 alt="作品图片"
-                                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
-                                        <% } %>
-                                        <h6 class="mb-2"><%= work.getTitle() %></h6>
-                                        <p class="text-muted mb-2" style="font-size: 0.9rem;">
-                                            <%= work.getDescription() != null && work.getDescription().length() > 60
-                                                ? work.getDescription().substring(0, 60) + "..."
-                                                : work.getDescription() %>
-                                        </p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <%= work.getStatus() == 1 ? "草稿" : work.getStatus() == 2 ? "已提交" : "已评分" %>
-                                            </small>
-                                            <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>"
-                                               class="btn btn-sm btn-outline-primary">查看详情</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% } %>
-                        </div>
-
-                        <% if (isLeader) { %>
-                            <div class="text-center mt-3">
-                                <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= team.getTeamId() %>&competitionId=<%= team.getCompetitionId() %>"
-                                   class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> 提交新作品
-                                </a>
-                            </div>
-                        <% } %>
-                    <% } else { %>
-                        <!-- 空状态 -->
-                        <div class="info-card text-center py-5">
-                            <i class="fas fa-image fa-4x mb-3" style="color: #DFE6E9;"></i>
-                            <h5 class="text-muted">暂无作品</h5>
-                            <p class="text-muted">组队完成后即可提交参赛作品</p>
-
-                            <% if (isLeader && team.getStatus() != null && team.getStatus() >= 2) { %>
-                                <a href="${pageContext.request.contextPath}/work?action=add&teamId=<%= team.getTeamId() %>&competitionId=<%= team.getCompetitionId() %>"
-                                   class="btn btn-primary mt-3">
-                                    <i class="fas fa-plus"></i> 立即提交作品
                                 </a>
                             <% } %>
                         </div>

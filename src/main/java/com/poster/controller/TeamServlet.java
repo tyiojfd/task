@@ -265,6 +265,9 @@ public class TeamServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=system_error");
         }
     }
 
@@ -599,3 +602,4 @@ public class TeamServlet extends HttpServlet {
         return team;
     }
 }
+

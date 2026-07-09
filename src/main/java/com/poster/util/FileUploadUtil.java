@@ -21,10 +21,44 @@ public class FileUploadUtil {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024L; // 10MB
 
     /**
-     * 持久化存储相对路径（相对于webapp根目录）
-     * 文件保存在此目录下可避免项目重建时丢失
+     * 持久化存储相对路径（用于URL映射）
+     * 文件实际存储在外置目录中，避免Tomcat重启/重新部署导致丢失
      */
     public static final String STORAGE_DIR = "storage" + java.io.File.separator + "uploads";
+
+    /**
+     * 获取外置存储根目录（绝对路径）
+     * 文件存储在此目录下，Tomcat重新部署不会丢失
+     * 可通过系统属性 poster.storage.path 自定义，默认存储于 &#36;{user.home}/.poster-uploads/
+     * @return 外置存储目录的绝对路径
+     */
+    public static String getStorageBasePath() {
+        // 1. 优先使用系统属性（可在Tomcat启动参数中配置 -Dposter.storage.path=...）
+        String sysPath = System.getProperty("poster.storage.path");
+        if (sysPath != null && !sysPath.trim().isEmpty()) {
+            return sysPath.trim();
+        }
+        // 2. 默认存储到用户目录（不受Tomcat重新部署影响）
+        String homeDir = System.getProperty("user.home");
+        return homeDir + java.io.File.separator + ".poster-uploads";
+    }
+
+    /**
+     * 获取上传基础路径并确保目录存在
+     * @return 可写入的上传目录路径
+     */
+    public static String getUploadBasePath() {
+        String basePath = getStorageBasePath();
+        Path dir = Paths.get(basePath);
+        try {
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return basePath;
+    }
 
     /**
      * 校验文件类型是否允许
@@ -143,3 +177,5 @@ public class FileUploadUtil {
         return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
     }
 }
+
+
