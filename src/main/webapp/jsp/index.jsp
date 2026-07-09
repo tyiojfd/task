@@ -44,6 +44,15 @@
     }
 %>
 <%
+    boolean fromLandingEntry = "1".equals(request.getParameter("fromLanding"));
+    if (!fromLandingEntry && !Boolean.TRUE.equals(session.getAttribute("enteredFromLanding"))) {
+        response.sendRedirect(request.getContextPath() + "/");
+        return;
+    }
+    if (fromLandingEntry) {
+        session.setAttribute("enteredFromLanding", Boolean.TRUE);
+    }
+
     User sessionUser = (User) session.getAttribute("user");
     @SuppressWarnings("unchecked")
     List<Role> userRoles = (sessionUser != null) ? (List<Role>) session.getAttribute("roles") : null;
