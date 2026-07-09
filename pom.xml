@@ -107,7 +107,7 @@
                 <version>9.4.58.v20250814</version>
                 <configuration>
                     <webApp>
-                        <contextPath>/task</contextPath>
+                        <contextPath>/task_war_exploded</contextPath>
                     </webApp>
                     <httpConnector>
                         <port>8080</port>
