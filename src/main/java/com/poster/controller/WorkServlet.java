@@ -344,6 +344,22 @@ public class WorkServlet extends HttpServlet {
                     && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
                 response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=deadline_passed");
                 return;
+            Integer competitionId = team.getCompetitionId();
+
+            // 校验竞赛状态：必须为"进行中"且未过截止日期
+            Competition competition = competitionService.getCompetitionById(competitionId);
+            if (competition != null) {
+                if (competition.getStatus() == null || competition.getStatus() != 2) {
+                    request.setAttribute("error", "竞赛已结束或已取消，无法提交作品");
+                    showAddForm(request, response);
+                    return;
+                }
+                if (competition.getSubmitDeadline() != null
+                        && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+                    request.setAttribute("error", "提交已截止，无法提交作品");
+                    showAddForm(request, response);
+                    return;
+                }
             }
 
             request.setAttribute("work", work);
@@ -390,6 +406,20 @@ public class WorkServlet extends HttpServlet {
                     && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
                 response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=deadline_passed");
                 return;
+            }
+
+            // 检查竞赛状态：已结束或已取消的竞赛不可修改作品
+            Competition competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
+            if (competition != null) {
+                if (competition.getStatus() == null || competition.getStatus() != 2) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=competition_ended");
+                    return;
+                }
+                if (competition.getSubmitDeadline() != null
+                        && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=deadline_passed");
+                    return;
+                }
             }
 
             // 更新标题
@@ -466,6 +496,21 @@ public class WorkServlet extends HttpServlet {
             if (team == null || !team.getLeaderId().equals(user.getUserId())) {
                 response.sendRedirect(request.getContextPath() + "/work?error=permission_denied");
                 return;
+                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=permission_denied");
+                return;
+            }
+
+            // 检查竞赛状态：已结束/已取消不可删除，截止后也不可删除
+            if (competition != null) {
+                if (competition.getStatus() == null || competition.getStatus() != 2) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=competition_ended");
+                    return;
+                }
+                if (competition.getSubmitDeadline() != null
+                        && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=deadline_passed");
+                    return;
+                }
             }
 
             if (work.getImagePath() != null) {

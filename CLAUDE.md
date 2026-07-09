@@ -419,6 +419,26 @@
 - **代码量：** 4个文件，+27行，-5行
 - **编译状态：** BUILD SUCCESS
 
+**已完成：Bug修复 - 获奖名单导航栏 + 获奖管理500错误（完成人：葛至洲 / Claude 协助）**
+- ✅ 问题1：获奖名单页面导航栏偏左 → `award_list.jsp` 中 `me-auto` 改为 `ms-auto`（与其他页面统一右对齐）
+- ✅ 问题2：获奖管理页面500错误 → `award_manage.jsp` 中 `selectedCompetition.getTitle()` 改为 `getName()`（Competition实体类无getTitle方法）
+- **修改文件：** 2个JSP
+
+**已完成：Bug修复 - 队伍详情页500错误（完成人：葛至洲 / Claude 协助）**
+- ✅ 问题：`team_detail.jsp` 作品Tab中 `List<Work> works` 变量重复声明（第48行和第567行），JSP编译为Servlet时Java不允许同名变量 → 500错误
+- ✅ 修复：删除第566-622行冗余的作品展示代码块（上方已有完整实现）
+- **修改文件：** 1个JSP，-57行
+
+**已完成：安全修复 - 截止日期后禁止修改作品（完成人：葛至洲 / Claude 协助）**
+- ✅ 问题：`WorkServlet.updateWork()` 缺少竞赛截止日期检查，选手在比赛结束后仍可修改作品（`submitWork`和`deleteWork`均有此检查，属于遗漏）
+- ✅ 修复：`updateWork()` 队长权限校验后新增截止日期判断，截止后返回 `deadline_passed` 错误
+- **修改文件：** 1个Java，+7行
+
+**已完成：安全修复 - 新闻操作添加管理员权限校验（完成人：葛至洲 / Claude 协助）**
+- ✅ 问题：`NewsServlet` 的 `publishNews`/`updateNews`/`deleteNews`/`showEditPage`/`manageNews` 共5个方法均无管理员权限检查，普通用户可直接操作新闻
+- ✅ 修复：新增 `isAdmin()` 辅助方法（从Session角色列表判断），在上述5个方法入口添加管理员权限校验，非管理员重定向到首页
+- **修改文件：** 1个Java，+30行
+
 ---
 
 ## 团队组织结构
@@ -969,4 +989,4 @@ poster-competition-system/
 
 **最后更新时间：** 2026年7月8日
 **更新人：** 葛至洲
-**版本：** v1.9
+**版本：** v1.10

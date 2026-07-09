@@ -505,24 +505,20 @@
                                     statusClass = "bg-warning text-dark";
                                     statusText = "草稿";
                                 }
-                                String imagePath = w.getImagePath();
-                                boolean hasImage = imagePath != null && !imagePath.isEmpty();
+                                String imgSrc = request.getContextPath() + "/image-data?workId=" + w.getWorkId();
                             %>
                                 <div class="col-md-6">
-                                    <div class="info-card p-0 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;"
+                                    <div class="info-card p-0 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s;"
                                          onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(108,92,231,0.15)';"
                                          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 14px rgba(108,92,231,0.05)';">
                                         <!-- 作品图片 -->
-                                        <div style="height: 180px; background: linear-gradient(135deg, #E8ECF1, #DFE6E9); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                            <% if (hasImage) { %>
-                                                <img src="<%= request.getContextPath() + imagePath %>"
-                                                     alt="<%= w.getTitle() %>"
-                                                     style="width:100%; height:100%; object-fit:cover;"
-                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                <i class="fas fa-image fa-3x" style="color:#B2BEC3; display:none;"></i>
-                                            <% } else { %>
-                                                <i class="fas fa-image fa-3x" style="color:#B2BEC3;"></i>
-                                            <% } %>
+                                        <div style="height: 180px; background: linear-gradient(135deg, #E8ECF1, #DFE6E9); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;"
+                                             onclick="previewWorkImage('<%= imgSrc %>')" title="点击查看大图">
+                                            <img src="<%= imgSrc %>"
+                                                 alt="<%= w.getTitle() %>"
+                                                 style="width:100%; height:100%; object-fit:cover;"
+                                                 onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-icon').style.display='block';">
+                                            <i class="fas fa-image fa-3x fallback-icon" style="color:#B2BEC3; display:none;"></i>
                                         </div>
                                         <!-- 作品信息 -->
                                         <div class="p-3">
@@ -912,6 +908,25 @@
                 alert('邀请请求失败，请重试');
             });
         }
+        function previewWorkImage(src) {
+            document.getElementById('workPreviewImage').src = src;
+            new bootstrap.Modal(document.getElementById('workImageModal')).show();
+        }
     </script>
+
+    <!-- 作品图片预览弹窗 -->
+    <div class="modal fade" id="workImageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content" style="border:none; border-radius:16px; overflow:hidden; background:transparent;">
+                <div class="modal-body p-0 text-center">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                            style="z-index:1; background:rgba(0,0,0,0.5); border-radius:50%; width:36px; height:36px; opacity:0.9;"
+                            data-bs-dismiss="modal"></button>
+                    <img id="workPreviewImage" src="" alt="作品预览"
+                         style="max-width:100%; max-height:85vh; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
