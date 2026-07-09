@@ -15,11 +15,60 @@ const QUICK_LINKS = [
   { label: '获奖名单', href: CTX + '/award?action=list' },
 ]
 
-const FEATURES = [
-  { num: '01', title: '发布竞赛', desc: '管理员配置赛题、分类与时间' },
-  { num: '02', title: '组队报名', desc: '队长创建队伍并邀请成员' },
-  { num: '03', title: '作品提交', desc: '上传海报、描述与展示图' },
-  { num: '04', title: '评分获奖', desc: '评委评分，系统生成电子奖状' },
+const CARD_GROUPS = [
+  {
+    label: '赛事发布',
+    cards: [
+      { title: '赛题配置', desc: '灵活设定竞赛主题与参赛要求' },
+      { title: '分类管理', desc: '多级分类体系，精准匹配赛道' },
+      { title: '时间窗口', desc: '报名→提交→评审全流程时间线' },
+    ],
+  },
+  {
+    label: '组队报名',
+    cards: [
+      { title: '创建战队', desc: '队长发起，自定义队伍名称与简介' },
+      { title: '邀请队友', desc: '搜索用户，一键发送组队邀请' },
+      { title: '报名参赛', desc: '组队完成即可报名目标竞赛' },
+    ],
+  },
+  {
+    label: '创意提交',
+    cards: [
+      { title: '上传作品', desc: '支持多格式海报，拖拽即可上传' },
+      { title: '设计理念', desc: '附上创作故事与设计思路说明' },
+    ],
+  },
+  {
+    label: '专业评审',
+    cards: [
+      { title: '评委打分', desc: '多维度量化评分，公平公正' },
+      { title: '评语反馈', desc: '文字评价帮助选手成长提升' },
+    ],
+  },
+  {
+    label: '获奖公示',
+    cards: [
+      { title: '公布结果', desc: '优胜名单自动生成，全平台展示' },
+      { title: '荣誉表彰', desc: '金银铜奖分级，荣耀永久记录' },
+    ],
+  },
+  {
+    label: '电子奖状',
+    cards: [
+      { title: '证书生成', desc: '获奖自动生成精美电子证书' },
+      { title: '永久存档', desc: '随时查看下载，荣誉永不丢失' },
+    ],
+  },
+]
+
+const CARD_DIRS = [
+  { x: -44, y: -26, hue: 258 },
+  { x: 46, y: 4, hue: 222 },
+  { x: 0, y: -38, hue: 272 },
+  { x: 2, y: 36, hue: 195 },
+  { x: 0, y: 0, hue: 248 },
+  { x: 36, y: 28, hue: 235 },
 ]
 
 function useReducedMotion() {
@@ -62,10 +111,14 @@ export default function CinematicHero({ videoSrc }) {
 
     const setProgress = (progress) => {
       const duration = video.duration || 12
-      const planeWeightedProgress = progress < 0.58
-        ? progress * 1.18
-        : 0.684 + (progress - 0.58) * 0.58
-      const target = Math.min(duration * 0.95, Math.max(0, planeWeightedProgress * duration))
+      const sceneProgress = progress < 0.22
+        ? progress * 0.86
+        : progress < 0.52
+          ? 0.19 + (progress - 0.22) * 1.18
+          : progress < 0.78
+            ? 0.544 + (progress - 0.52) * 1.08
+            : 0.825 + (progress - 0.78) * 0.58
+      const target = Math.min(duration * 0.96, Math.max(0, sceneProgress * duration))
       const diff = target - video.currentTime
       if (Math.abs(diff) > 0.035) video.currentTime += diff * 0.42
     }
@@ -80,20 +133,40 @@ export default function CinematicHero({ videoSrc }) {
         setProgress(p)
         root.style.setProperty('--scroll-progress', p.toFixed(4))
 
-        const rotateY = gsap.utils.interpolate(-10, 10, Math.sin(p * Math.PI))
-        const rotateX = gsap.utils.interpolate(7, -8, p)
-        const zoomIn = gsap.utils.clamp(0, 1, (p - 0.12) / 0.22)
-        const zoomOut = gsap.utils.clamp(0, 1, (p - 0.68) / 0.22)
-        const zoomPhase = Math.max(0, zoomIn - zoomOut)
-        const scale = 1 + Math.sin(zoomPhase * Math.PI / 2) * 0.45
-        const shiftX = gsap.utils.interpolate(0, -7, Math.sin(p * Math.PI * 1.1))
-        const shiftY = gsap.utils.interpolate(0, 5, Math.sin(p * Math.PI))
+        const pageTurn = Math.sin(p * Math.PI)
+        const rotateY = gsap.utils.interpolate(-8, 8, p) + pageTurn * 4
+        const rotateX = gsap.utils.interpolate(5, -6, p)
+        const scale = 1
+        const shiftX = pageTurn * -2.4
+        const shiftY = pageTurn * 1.8
 
         root.style.setProperty('--scroll-rotate-x', `${rotateX.toFixed(2)}deg`)
         root.style.setProperty('--scroll-rotate-y', `${rotateY.toFixed(2)}deg`)
         root.style.setProperty('--scroll-scale', scale.toFixed(3))
+        const finalFocus = gsap.utils.clamp(0, 1, (p - 0.78) / 0.18)
+        const contentAlpha = 1 - finalFocus
+        const panelWidth = gsap.utils.interpolate(1120, 340, finalFocus)
+        const copyWidth = gsap.utils.interpolate(680, 0, finalFocus)
+        const secondaryWidth = gsap.utils.interpolate(118, 0, finalFocus)
+
+        CARD_GROUPS.forEach((_, gi) => {
+          const start = 0.04 + gi * 0.15
+          const intro = gsap.utils.clamp(0, 1, (p - start) / 0.05)
+          const fade = gsap.utils.clamp(0, 1, (p - start - 0.10) / 0.05)
+          const vis = intro * (1 - fade)
+          root.style.setProperty(`--group-${gi}-vis`, vis.toFixed(4))
+          root.style.setProperty(`--group-${gi}-x`, `${CARD_DIRS[gi].x}px`)
+          root.style.setProperty(`--group-${gi}-y`, `${CARD_DIRS[gi].y}px`)
+          root.style.setProperty(`--group-${gi}-hue`, CARD_DIRS[gi].hue)
+        })
+
         root.style.setProperty('--scroll-shift-x', `${shiftX.toFixed(2)}vw`)
         root.style.setProperty('--scroll-shift-y', `${shiftY.toFixed(2)}vh`)
+        root.style.setProperty('--final-focus', finalFocus.toFixed(4))
+        root.style.setProperty('--content-alpha', contentAlpha.toFixed(4))
+        root.style.setProperty('--panel-width', `${panelWidth.toFixed(1)}px`)
+        root.style.setProperty('--copy-width', `${copyWidth.toFixed(1)}px`)
+        root.style.setProperty('--secondary-width', `${secondaryWidth.toFixed(1)}px`)
       },
     })
 
@@ -188,8 +261,30 @@ export default function CinematicHero({ videoSrc }) {
           </div>
         </SpotlightCard>
 
+        <section className="feature-strip" aria-label="系统流程概览">
+          {CARD_GROUPS.map((group, gi) => (
+            <div className="feature-group" key={gi} style={{
+              '--group-vis': `var(--group-${gi}-vis)`,
+              '--group-x': `var(--group-${gi}-x)`,
+              '--group-y': `var(--group-${gi}-y)`,
+              '--group-hue': `var(--group-${gi}-hue)`,
+            }}>
+              <div className="feature-group__label">{group.label}</div>
+              <div className="feature-group__cards">
+                {group.cards.map((card, ci) => (
+                  <article className="feature-strip__item" key={ci}>
+                    <span>{(gi + 1).toString().padStart(2, '0')}.{ci + 1}</span>
+                    <h3>{card.title}</h3>
+                    <p>{card.desc}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+
         <div className="hero-info-panel">
-          <div>
+          <div className="hero-info-panel__copy">
             <p className="hero-info-panel__kicker">Creative Portfolio Hero</p>
             <h2>大学生海报设计竞赛系统</h2>
             <p>以动态作品集首页呈现竞赛系统：组队报名、作品提交、评委评分、获奖公示和电子奖状全流程在线完成。</p>
@@ -202,16 +297,6 @@ export default function CinematicHero({ videoSrc }) {
             <a href={CTX + '/competition?action=list'} className="hero-actions__secondary">浏览竞赛</a>
           </div>
         </div>
-      </section>
-
-      <section className="feature-strip" aria-label="系统流程概览">
-        {FEATURES.map((feature) => (
-          <article className="feature-strip__item" key={feature.num}>
-            <span>{feature.num}</span>
-            <h3>{feature.title}</h3>
-            <p>{feature.desc}</p>
-          </article>
-        ))}
       </section>
     </main>
   )
