@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="560" viewBox="0 0 400 560">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#001a0d"/>
+      <stop offset="100%" style="stop-color:#06d6a0"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#ffd166;stop-opacity:0.4"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="560" fill="url(#g)"/>
+  <ellipse cx="200" cy="280" rx="180" ry="220" fill="none" stroke="rgba(6,214,160,0.15)" stroke-width="1.5"/>
+  <ellipse cx="200" cy="280" rx="130" ry="160" fill="none" stroke="rgba(6,214,160,0.25)" stroke-width="1"/>
+  <ellipse cx="200" cy="280" rx="70" ry="90" fill="rgba(6,214,160,0.08)"/>
+  <text x="200" y="265" font-family="sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle">数字化</text>
+  <text x="200" y="295" font-family="sans-serif" font-size="18" font-weight="900" fill="rgba(6,214,160,0.9)" text-anchor="middle">评审系统</text>
+  <text x="40" y="420" font-family="sans-serif" font-size="13" fill="rgba(255,255,255,0.5)">评委在线评分 · 透明公正</text>
+  <rect x="40" y="450" width="40" height="2" fill="#06d6a0"/>
+  <rect x="90" y="450" width="20" height="2" fill="rgba(6,214,160,0.4)"/>
+  <text x="40" y="510" font-family="sans-serif" font-size="11" fill="rgba(6,214,160,0.4)">No.005 · JUDGE SYSTEM 2026</text>
+</svg>

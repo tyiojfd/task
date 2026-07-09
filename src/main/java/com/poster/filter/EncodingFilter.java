@@ -19,7 +19,9 @@ public class EncodingFilter implements Filter {
             throws IOException, ServletException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html;charset=UTF-8");
+        // ❌ 移除 setContentType — 否则会强制 JS/CSS/图片等静态资源也返回 text/html，
+        // 导致浏览器拒绝执行 ES module 脚本 (Strict MIME type checking)。
+        // Tomcat 的默认 Servlet 会根据文件扩展名自动设置正确的 Content-Type。
         chain.doFilter(request, response);
     }
 

@@ -1,0 +1,11 @@
+{
+  "framework": "jsp-servlet-with-react-landing",
+  "entry": "src/main/webapp/index.html",
+  "files": [
+    "src/main/webapp/index.html",
+    "src/main/webapp/jsp/**/*.jsp"
+  ],
+  "commentSyntax": "html",
+  "insertBefore": "</body>",
+  "cspChecked": true
+}

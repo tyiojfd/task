@@ -13,6 +13,7 @@
 
 ### 技术栈
 - **前端**：JSP + JavaScript + Bootstrap
+- **Landing 进入页**：React 18 + Vite 5 + GSAP（独立 SPA）
 - **后端**：Servlet + JSP
 - **数据库**：MySQL 8.0
 - **服务器**：Apache Tomcat 9.0（使用Java EE规范）
@@ -439,6 +440,23 @@
 - ✅ 修复：新增 `isAdmin()` 辅助方法（从Session角色列表判断），在上述5个方法入口添加管理员权限校验，非管理员重定向到首页
 - **修改文件：** 1个Java，+30行
 
+**已完成：数据库连接配置更新（完成人：洪振博 / Claude 协助）**
+- ✅ DBUtil.java：更新远程数据库连接信息
+  - 主机地址：143.110.133.32 → **120.26.46.0**
+  - 端口：3306（保持不变）
+  - 用户名：dev → **navicat_user**
+  - 密码：已更新为新密码
+- ✅ 数据库环境：切换到新的远程MySQL服务器（MySQL 8.0.46）
+- ✅ 配置验证：确认连接参数（useSSL=false、serverTimezone=UTC、characterEncoding=utf8、超时设置）
+- **修改文件：** 1个文件（DBUtil.java），第13-15行
+- **下一步：** 需在新数据库上执行schema.sql和init_data.sql完成数据初始化
+
+**已完成：数据库schema完整性确认（完成人：洪振博 / Claude 协助）**
+- ✅ user表字段确认：包含avatar字段（用户头像功能，2026-07-06添加）
+- ✅ work表字段确认：包含image_data(MEDIUMBLOB)和image_content_type字段（数据库BLOB方案，2026-07-08添加）
+- ✅ TeamServlet代码确认：作品加载代码已存在且位置正确（第233-234行加载works，第260行设置attribute）
+- **结论：** schema.sql已包含所有开发过程中添加的字段，可直接用于新数据库初始化，无需额外迁移脚本
+
 ---
 
 ## 团队组织结构
@@ -488,6 +506,44 @@
 - **数据访问：** ScoreDAO, CommentDAO, AwardDAO, CertificateDAO, NewsDAO
 - **涉及数据表：** score, comment, award, certificate, news（5张表）
 - **附加职责：** 系统集成测试、功能验证、Bug修复
+
+### 2026-07-09
+
+**已完成：Landing 进入页重设计（完成人：洪振博 / Claude 协助）**
+- ✅ 全新独立 React Landing Page 替换旧 6 屏滚动叙事
+- ✅ 视觉风格：亮色主题 Creative Portfolio Hero，参考 motionsites.ai
+- ✅ 核心组件（本地实现，零新依赖）：
+  - `AnimatedText` — 标题逐字进入动画
+  - `MagneticLink` — CTA 按钮磁吸鼠标效果
+  - `SpotlightCard` — 卡片光标光斑效果
+  - `CinematicHero` — 主 Hero：视频卡片 + 滚动驱动视频播放 + 3D 卡片视角变换
+- ✅ 动效系统（仅使用现有 GSAP 3.12.5）：
+  - 滚动驱动视频进度（ScrollTrigger scrub）
+  - 卡片 3D 旋转 + 缩放（中段峰值 scale 1.45，模拟飞机穿出视角）
+  - 鼠标移动视差（卡片 tilt、标题位移、CTA 磁吸、spotlight 光斑）
+  - 飞行线条 + 坐标点装饰
+- ✅ CSS 亮色主题：`#f5f5f7` 浅灰白背景，与 JSP 系统白色页面统一
+- ✅ 响应式适配：920px / 560px 断点
+- ✅ `prefers-reduced-motion` 全停动画
+- ✅ 语义化 HTML：`<main>`、`<section>`、`<header>`、`<nav>` + ARIA labels
+- ✅ 视频：H.264 编码 MP4，`aria-hidden="true"`，预加载
+- ✅ AuthFilter 放行 `/js/`、`/css/`、`/assets/` 路径
+- ✅ CTX 路径对接 JSP 系统：/index、/login、/register、/competition、/award
+- ✅ 清理：删除旧 GlassNav.jsx、ScrubPage.jsx，删除旧构建缓存
+
+**新增文件：**
+- `frontend/src/components/AnimatedText.jsx`
+- `frontend/src/components/MagneticLink.jsx`
+- `frontend/src/components/SpotlightCard.jsx`
+- `frontend/src/components/CinematicHero.jsx`
+- `frontend/src/LandingApp.jsx`（重写）
+- `frontend/src/styles/landing.css`（重写）
+- `frontend/src/styles/portfolio-overrides.css`（重写）
+- `src/main/webapp/js/landing/`
+- `src/main/webapp/css/landing/`
+- `src/main/webapp/assets/landing/video/portfolio-hero.mp4`（替换为飞机视频）
+
+**编译状态：** BUILD SUCCESS（Vite 5.2.0）
 
 ---
 
@@ -940,6 +996,22 @@ A:
 
 ```
 poster-competition-system/
+├── frontend/                       # React Landing 进入页（独立 SPA）
+│   ├── src/
+│   │   ├── main.jsx
+│   │   ├── LandingApp.jsx
+│   │   ├── context.js
+│   │   ├── components/
+│   │   │   ├── AnimatedText.jsx
+│   │   │   ├── CinematicHero.jsx
+│   │   │   ├── MagneticLink.jsx
+│   │   │   └── SpotlightCard.jsx
+│   │   └── styles/
+│   │       ├── landing.css
+│   │       └── portfolio-overrides.css
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
 ├── src/
 │   └── com/
 │       └── poster/
@@ -987,6 +1059,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月8日
-**更新人：** 葛至洲
-**版本：** v1.10
+**最后更新时间：** 2026年7月9日
+**更新人：** 洪振博 / Claude
+**版本：** v1.11
