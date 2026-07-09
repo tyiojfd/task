@@ -74,6 +74,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public User findById(Integer userId) {
+        if (userId == null) return null;
         String sql = "SELECT * FROM user WHERE user_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

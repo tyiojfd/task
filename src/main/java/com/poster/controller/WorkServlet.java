@@ -401,7 +401,7 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            // 截止日期验证
+            // 截止日期验证.
             Competition competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
             if (competition != null && competition.getSubmitDeadline() != null
                     && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {

@@ -267,7 +267,7 @@ public class TeamServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams");
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=system_error");
+            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=" + e.getClass().getSimpleName());
         }
     }
 
