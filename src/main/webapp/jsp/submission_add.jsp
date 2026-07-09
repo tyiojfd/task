@@ -32,6 +32,11 @@
     String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
     String previewClass = (isEdit && editWork.getImagePath() != null) ? "" : "d-none";
     String previewImgSrc = (isEdit && editWork.getImagePath() != null) ? request.getContextPath() + "/uploads" + editWork.getImagePath() : "";
+    String error = request.getParameter("error");
+    String msg = request.getParameter("msg");
+    String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
+    String previewClass = (isEdit && editWork.getImagePath() != null) ? "" : "d-none";
+    String previewImgSrc = (isEdit && editWork.getImagePath() != null) ? request.getContextPath() + "/" + com.poster.util.FileUploadUtil.STORAGE_DIR + editWork.getImagePath() : "";
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">

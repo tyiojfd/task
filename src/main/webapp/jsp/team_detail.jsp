@@ -506,6 +506,8 @@
                                     statusText = "草稿";
                                 }
                                 String imgUrl = w.getImagePath();
+                                String imgSrc = (imgUrl != null && !imgUrl.isEmpty()) ? request.getContextPath() + "/" + com.poster.util.FileUploadUtil.STORAGE_DIR + imgUrl : "";
+                                String imgUrl = w.getImagePath();
                                 String imgSrc = (imgUrl != null && !imgUrl.isEmpty()) ? request.getContextPath() + "/uploads" + imgUrl : "";
                             %>
                                 <div class="col-md-6">
