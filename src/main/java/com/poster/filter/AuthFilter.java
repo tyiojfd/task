@@ -117,7 +117,7 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/score")) {
-            return isJudge;
+            return isAdmin || isJudge;
         }
 
         if (relativePath.startsWith("/award")) {
