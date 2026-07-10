@@ -71,6 +71,14 @@ const CARD_DIRS = [
   { x: 36, y: 28, hue: 235 },
 ]
 
+const SEGMENT_COUNT = CARD_GROUPS.length
+const STEP_COUNT = CARD_GROUPS.length + 1
+const FINAL_STEP_INDEX = STEP_COUNT - 1
+const BURST_START = 0.02
+const CARD_REVEAL_START = 0.015
+const CARD_REVEAL_END = 0.075
+const CARD_EXIT_START = 0.99
+
 function useReducedMotion() {
   const getInitialPreference = () => {
     if (typeof window === 'undefined' || !window.matchMedia) return false
@@ -91,7 +99,7 @@ function useReducedMotion() {
   return reducedMotion
 }
 
-export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
+export default function CinematicHero({ videoSources, playbackRate = 16 }) {
   const rootRef = useRef(null)
   const cardRef = useRef(null)
   const videoRef = useRef(null)
@@ -100,8 +108,10 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
   const safeVideoSources = Array.isArray(videoSources) && videoSources.length > 0
     ? videoSources
     : ['./assets/landing/video/portfolio-hero.mp4']
-  const [activeVideoIndex, setActiveVideoIndex] = useState(0)
-  const activeVideoSrc = safeVideoSources[activeVideoIndex % safeVideoSources.length]
+  const [activeVideoSrc, setActiveVideoSrc] = useState(safeVideoSources[0])
+  const lastTriggeredSegmentRef = useRef(-1)
+  const hasTriggeredBurstRef = useRef(false)
+  const stepScrollRef = useRef({ index: 0, locked: false, unlockTimer: null })
 
   useEffect(() => {
     const video = videoRef.current
@@ -110,7 +120,7 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
     video.playbackRate = playbackRate
     video.currentTime = 0
 
-    if (reducedMotion) {
+    if (reducedMotion || !hasTriggeredBurstRef.current) {
       video.pause()
       return undefined
     }
@@ -125,70 +135,160 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
     return undefined
   }, [activeVideoSrc, playbackRate, reducedMotion])
 
+  const triggerAirplaneBurst = (segmentIndex) => {
+    if (segmentIndex < 0 || segmentIndex >= SEGMENT_COUNT) return
+    if (lastTriggeredSegmentRef.current === segmentIndex) return
+
+    lastTriggeredSegmentRef.current = segmentIndex
+    hasTriggeredBurstRef.current = true
+    const nextVideoSrc = safeVideoSources[segmentIndex % safeVideoSources.length]
+    setActiveVideoSrc(nextVideoSrc)
+
+    const video = videoRef.current
+    if (!video || reducedMotion) return
+
+    video.playbackRate = playbackRate
+    video.currentTime = 0
+    const playPromise = video.play()
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        // Muted inline autoplay is expected to work; ignore deferred playback.
+      })
+    }
+  }
+
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root || reducedMotion) return undefined
+
+    const goToSegment = (nextIndex) => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      const stableLocal = Math.min(0.82, CARD_REVEAL_END + 0.08)
+      const target = nextIndex >= FINAL_STEP_INDEX
+        ? maxScroll
+        : Math.round(maxScroll * ((nextIndex + stableLocal) / SEGMENT_COUNT))
+      window.scrollTo({ top: target, behavior: 'smooth' })
+    }
+
+    const handleWheel = (event) => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      if (maxScroll <= 0) return
+
+      event.preventDefault()
+      const state = stepScrollRef.current
+      if (state.locked) return
+
+      const direction = event.deltaY > 0 ? 1 : -1
+      const progress = window.scrollY / maxScroll
+      const rawIndex = Math.floor(progress * SEGMENT_COUNT)
+      const topGuarded = maxScroll <= 0 || window.scrollY < 12
+      const currentIndex = window.scrollY >= maxScroll - 4
+        ? FINAL_STEP_INDEX
+        : topGuarded
+          ? -1
+          : gsap.utils.clamp(0, SEGMENT_COUNT - 1, Math.floor(progress * SEGMENT_COUNT))
+      const nextIndex = direction > 0 && window.scrollY < 24
+        ? 0
+        : currentIndex >= FINAL_STEP_INDEX
+          ? (direction < 0 ? SEGMENT_COUNT - 1 : FINAL_STEP_INDEX)
+          : currentIndex >= SEGMENT_COUNT - 1 && direction > 0
+            ? FINAL_STEP_INDEX
+            : gsap.utils.clamp(0, FINAL_STEP_INDEX, currentIndex + direction)
+      if (nextIndex === currentIndex) return
+
+      state.index = nextIndex
+      state.locked = true
+      goToSegment(nextIndex)
+
+      if (state.unlockTimer) window.clearTimeout(state.unlockTimer)
+      state.unlockTimer = window.setTimeout(() => {
+        state.locked = false
+      }, 720)
+    }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+      if (stepScrollRef.current.unlockTimer) window.clearTimeout(stepScrollRef.current.unlockTimer)
+    }
+  }, [reducedMotion])
+
   useEffect(() => {
     const root = rootRef.current
     const card = cardRef.current
     const video = videoRef.current
-    if (!root || !card || !video) return
+    if (!root || !card || !video) return undefined
+
+    const setGroupVars = (activeIndex, visibility) => {
+      CARD_GROUPS.forEach((_, gi) => {
+        const active = gi === activeIndex
+        root.style.setProperty(`--group-${gi}-vis`, active ? visibility.toFixed(4) : '0')
+        root.style.setProperty(`--group-${gi}-active`, active ? '1' : '0')
+        root.style.setProperty(`--group-${gi}-hue`, CARD_DIRS[gi].hue)
+      })
+    }
+
+    setGroupVars(0, 0)
+    root.style.setProperty('--hero-title-alpha', '1')
 
     if (reducedMotion) {
       video.pause()
+      setGroupVars(0, 1)
+      root.style.setProperty('--hero-title-alpha', '.18')
       return undefined
-    }
-
-    const setProgress = (progress) => {
-      const duration = video.duration || 12
-      const sceneProgress = progress < 0.22
-        ? progress * 0.86
-        : progress < 0.52
-          ? 0.19 + (progress - 0.22) * 1.18
-          : progress < 0.78
-            ? 0.544 + (progress - 0.52) * 1.08
-            : 0.825 + (progress - 0.78) * 0.58
-      const target = Math.min(duration * 0.96, Math.max(0, sceneProgress * duration))
-      const diff = target - video.currentTime
-      if (Math.abs(diff) > 0.035) video.currentTime += diff * 0.42
     }
 
     const trigger = ScrollTrigger.create({
       trigger: root,
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 1.15,
+      scrub: true,
       onUpdate: (self) => {
         const p = self.progress
-        setProgress(p)
         root.style.setProperty('--scroll-progress', p.toFixed(4))
 
-        const pageTurn = Math.sin(p * Math.PI)
-        const rotateY = gsap.utils.interpolate(-8, 8, p) + pageTurn * 4
-        const rotateX = gsap.utils.interpolate(5, -6, p)
-        const scale = 1
-        const shiftX = pageTurn * -2.4
-        const shiftY = pageTurn * 1.8
+        const scaled = gsap.utils.clamp(0, SEGMENT_COUNT - 0.0001, p * SEGMENT_COUNT)
+        const segmentIndex = Math.floor(scaled)
+        const local = scaled - segmentIndex
+        stepScrollRef.current.index = segmentIndex
+
+        if (local < BURST_START * 0.5 && lastTriggeredSegmentRef.current === segmentIndex) {
+          lastTriggeredSegmentRef.current = -1
+        }
+        if (local >= BURST_START) {
+          triggerAirplaneBurst(segmentIndex)
+        }
+
+        const reveal = gsap.utils.clamp(0, 1, (local - CARD_REVEAL_START) / (CARD_REVEAL_END - CARD_REVEAL_START))
+        const exit = gsap.utils.clamp(0, 1, (local - CARD_EXIT_START) / (1 - CARD_EXIT_START))
+        const burstStarted = local >= BURST_START
+        const cardBase = burstStarted ? 0.45 : 0
+        const cardVisibility = Math.max(cardBase, reveal) * (1 - exit)
+        const burstProgress = gsap.utils.clamp(0, 1, (local - BURST_START) / (CARD_REVEAL_END - BURST_START))
+        const burstImpact = Math.sin(burstProgress * Math.PI)
+
+        setGroupVars(segmentIndex, cardVisibility)
+
+        const rotateY = gsap.utils.interpolate(-6, 1.2, reveal) + burstImpact * 5
+        const rotateX = gsap.utils.interpolate(4, 0.5, reveal) - burstImpact * 1.5
+        const shiftX = burstImpact * -1.2
+        const shiftY = burstImpact * 0.8
+        const titleAlpha = gsap.utils.clamp(0.12, 1, 1 - cardVisibility * 0.9)
 
         root.style.setProperty('--scroll-rotate-x', `${rotateX.toFixed(2)}deg`)
         root.style.setProperty('--scroll-rotate-y', `${rotateY.toFixed(2)}deg`)
-        root.style.setProperty('--scroll-scale', scale.toFixed(3))
-        const finalFocus = gsap.utils.clamp(0, 1, (p - 0.78) / 0.18)
+        root.style.setProperty('--scroll-scale', '1')
+        root.style.setProperty('--scroll-shift-x', `${shiftX.toFixed(2)}vw`)
+        root.style.setProperty('--scroll-shift-y', `${shiftY.toFixed(2)}vh`)
+        root.style.setProperty('--feature-pop', cardVisibility.toFixed(4))
+        root.style.setProperty('--hero-title-alpha', titleAlpha.toFixed(4))
+
+        const finalFocus = gsap.utils.clamp(0, 1, (p - 0.92) / 0.07)
         const contentAlpha = 1 - finalFocus
         const panelWidth = gsap.utils.interpolate(1120, 340, finalFocus)
         const copyWidth = gsap.utils.interpolate(680, 0, finalFocus)
         const secondaryWidth = gsap.utils.interpolate(118, 0, finalFocus)
 
-        CARD_GROUPS.forEach((_, gi) => {
-          const start = 0.04 + gi * 0.15
-          const intro = gsap.utils.clamp(0, 1, (p - start) / 0.05)
-          const fade = gsap.utils.clamp(0, 1, (p - start - 0.10) / 0.05)
-          const vis = intro * (1 - fade)
-          root.style.setProperty(`--group-${gi}-vis`, vis.toFixed(4))
-          root.style.setProperty(`--group-${gi}-x`, `${CARD_DIRS[gi].x}px`)
-          root.style.setProperty(`--group-${gi}-y`, `${CARD_DIRS[gi].y}px`)
-          root.style.setProperty(`--group-${gi}-hue`, CARD_DIRS[gi].hue)
-        })
-
-        root.style.setProperty('--scroll-shift-x', `${shiftX.toFixed(2)}vw`)
-        root.style.setProperty('--scroll-shift-y', `${shiftY.toFixed(2)}vh`)
         root.style.setProperty('--final-focus', finalFocus.toFixed(4))
         root.style.setProperty('--content-alpha', contentAlpha.toFixed(4))
         root.style.setProperty('--panel-width', `${panelWidth.toFixed(1)}px`)
@@ -198,7 +298,15 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
     })
 
     return () => trigger.kill()
-  }, [reducedMotion])
+  }, [reducedMotion, playbackRate, activeVideoSrc])
+
+  const handleVideoEnded = (event) => {
+    const video = event.currentTarget
+    video.pause()
+    if (Number.isFinite(video.duration) && video.duration > 0.2) {
+      video.currentTime = Math.max(0, video.duration - 0.08)
+    }
+  }
 
   useEffect(() => {
     const root = rootRef.current
@@ -230,10 +338,6 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
     }
   }, [reducedMotion])
 
-  const handleVideoEnded = () => {
-    setActiveVideoIndex((index) => (index + 1) % safeVideoSources.length)
-  }
-
   return (
     <main ref={rootRef} className="cinematic-root">
       <section className="cinematic-hero" aria-labelledby="landing-title">
@@ -247,7 +351,7 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
               <a key={link.label} href={link.href}>{link.label}</a>
             ))}
           </nav>
-          <a className="portfolio-nav__enter" href={CTX + '/index'}>进入系统</a>
+          <a className="portfolio-nav__enter" href={CTX + '/index?fromLanding=1'}>进入系统</a>
         </header>
 
         <div className="cinematic-stage" aria-hidden="true">
@@ -273,12 +377,12 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
             <div className="hero-video-card__shade" />
 
             <div className="hero-video-card__micro hero-video-card__micro--left">
-              <span>SCROLL TO SCRUB</span>
+              <span>SCROLL TO LAUNCH</span>
               <strong>2026</strong>
             </div>
             <div className="hero-video-card__micro hero-video-card__micro--right">
-              <span>CREATIVE PLATFORM</span>
-              <strong>SHAOXING / CN</strong>
+              <span>AIRPLANE BURST</span>
+              <strong>16X IMPACT</strong>
             </div>
 
             <div className="hero-title-block">
@@ -297,10 +401,9 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
         <section className="feature-strip" aria-label="系统流程概览">
           {CARD_GROUPS.map((group, gi) => (
             <div className="feature-group" key={gi} style={{
-              '--group-vis': `var(--group-${gi}-vis)`,
-              '--group-x': `var(--group-${gi}-x)`,
-              '--group-y': `var(--group-${gi}-y)`,
-              '--group-hue': `var(--group-${gi}-hue)`,
+              '--group-vis': `var(--group-${gi}-vis, 0)`,
+              '--group-active': `var(--group-${gi}-active, 0)`,
+              '--group-hue': `var(--group-${gi}-hue, ${CARD_DIRS[gi].hue})`,
             }}>
               <div className="feature-group__label">{group.label}</div>
               <div className="feature-group__cards">
@@ -323,7 +426,7 @@ export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
             <p>以动态作品集首页呈现竞赛系统：组队报名、作品提交、评委评分、获奖公示和电子奖状全流程在线完成。</p>
           </div>
           <div className="hero-actions" aria-label="主要操作">
-            <MagneticLink href={CTX + '/index'} className="hero-actions__primary">
+            <MagneticLink href={CTX + '/index?fromLanding=1'} className="hero-actions__primary">
               进入竞赛系统
               <span aria-hidden="true">→</span>
             </MagneticLink>
