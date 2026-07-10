@@ -36,3 +36,14 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Frontend ###
+node_modules/
+frontend/node_modules/
+src/main/webapp/assets/landing-build/
+
+### Local scratch files ###
+stdout.txt
+stderr.txt
+temp_*.java
+index_clean.jsp

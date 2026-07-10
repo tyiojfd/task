@@ -62,7 +62,8 @@ public class AuthFilter implements Filter {
      */
     private boolean isPublicResource(String relativePath) {
         if (relativePath.startsWith("/css/") || relativePath.startsWith("/js/")
-                || relativePath.startsWith("/images/") || relativePath.startsWith("/uploads/")) {
+                || relativePath.startsWith("/images/") || relativePath.startsWith("/uploads/")
+                || relativePath.startsWith("/assets/") || relativePath.equals("/index.html")) {
             return true;
         }
 
@@ -116,7 +117,7 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/score")) {
-            return isJudge;
+            return isAdmin || isJudge;
         }
 
         if (relativePath.startsWith("/award")) {

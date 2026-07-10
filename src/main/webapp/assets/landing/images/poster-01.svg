@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="560" viewBox="0 0 400 560">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0533"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#ffd166;stop-opacity:0.6"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="560" fill="url(#g1)"/>
+  <rect x="0" y="0" width="400" height="560" fill="url(#g2)" opacity="0.3"/>
+  <circle cx="200" cy="180" r="100" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+  <circle cx="200" cy="180" r="70" fill="none" stroke="rgba(255,107,107,0.4)" stroke-width="1.5"/>
+  <circle cx="200" cy="180" r="40" fill="rgba(255,107,107,0.2)"/>
+  <text x="200" y="175" font-family="sans-serif" font-size="32" font-weight="900" fill="white" text-anchor="middle">海报</text>
+  <text x="200" y="210" font-family="sans-serif" font-size="16" fill="rgba(255,255,255,0.6)" text-anchor="middle">POSTER</text>
+  <rect x="40" y="330" width="320" height="2" fill="rgba(255,255,255,0.1)"/>
+  <text x="40" y="370" font-family="sans-serif" font-size="22" font-weight="700" fill="white">大学生海报</text>
+  <text x="40" y="400" font-family="sans-serif" font-size="22" font-weight="700" fill="white">设计竞赛</text>
+  <text x="40" y="430" font-family="sans-serif" font-size="13" fill="rgba(255,255,255,0.5)">POSTER DESIGN COMPETITION 2026</text>
+  <rect x="40" y="460" width="80" height="3" fill="#ff6b6b" rx="2"/>
+  <text x="40" y="500" font-family="sans-serif" font-size="12" fill="rgba(255,255,255,0.4)">作品编号 · No.001</text>
+  <rect x="0" y="0" width="8" height="560" fill="#ff6b6b"/>
+</svg>
