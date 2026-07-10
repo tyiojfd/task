@@ -91,12 +91,39 @@ function useReducedMotion() {
   return reducedMotion
 }
 
-export default function CinematicHero({ videoSrc }) {
+export default function CinematicHero({ videoSources, playbackRate = 1.5 }) {
   const rootRef = useRef(null)
   const cardRef = useRef(null)
   const videoRef = useRef(null)
   const reducedMotion = useReducedMotion()
   const pointerRef = useRef({ x: 0, y: 0, tx: 0, ty: 0, raf: null })
+  const safeVideoSources = Array.isArray(videoSources) && videoSources.length > 0
+    ? videoSources
+    : ['./assets/landing/video/portfolio-hero.mp4']
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0)
+  const activeVideoSrc = safeVideoSources[activeVideoIndex % safeVideoSources.length]
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return undefined
+
+    video.playbackRate = playbackRate
+    video.currentTime = 0
+
+    if (reducedMotion) {
+      video.pause()
+      return undefined
+    }
+
+    const playPromise = video.play()
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        // Browsers can defer autoplay until the first user gesture.
+      })
+    }
+
+    return undefined
+  }, [activeVideoSrc, playbackRate, reducedMotion])
 
   useEffect(() => {
     const root = rootRef.current
@@ -203,6 +230,10 @@ export default function CinematicHero({ videoSrc }) {
     }
   }, [reducedMotion])
 
+  const handleVideoEnded = () => {
+    setActiveVideoIndex((index) => (index + 1) % safeVideoSources.length)
+  }
+
   return (
     <main ref={rootRef} className="cinematic-root">
       <section className="cinematic-hero" aria-labelledby="landing-title">
@@ -231,11 +262,13 @@ export default function CinematicHero({ videoSrc }) {
             <video
               ref={videoRef}
               className="hero-video-card__video"
-              src={videoSrc}
+              key={activeVideoSrc}
+              src={activeVideoSrc}
               muted
               playsInline
               preload="auto"
               aria-hidden="true"
+              onEnded={handleVideoEnded}
             />
             <div className="hero-video-card__shade" />
 
