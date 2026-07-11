@@ -237,8 +237,8 @@
         <section class="content-section quick-section">
             <a class="quick-card reveal" href="${pageContext.request.contextPath}/competition?action=list">
                 <span><%= compCount %></span>
-                <strong>竞赛大厅</strong>
-                <small>查看赛题与报名状态</small>
+                <strong><%= isAdmin ? "竞赛管理" : "竞赛大厅" %></strong>
+                <small><%= isAdmin ? "管理赛题与报名状态" : "查看赛题与报名状态" %></small>
             </a>
             <% if (isAdmin) { %>
                 <a class="quick-card reveal" href="${pageContext.request.contextPath}/admin/users">
@@ -295,7 +295,7 @@
                 <section>
                     <h3><%= isAdmin ? "后台入口" : (isJudge ? "评审入口" : "选赛与参赛") %></h3>
                     <a href="${pageContext.request.contextPath}/index">首页</a>
-                    <a href="${pageContext.request.contextPath}/competition?action=list">竞赛大厅</a>
+                    <a href="${pageContext.request.contextPath}/competition?action=list"><%= isAdmin ? "竞赛管理" : "竞赛大厅" %></a>
                     <% if (isAdmin) { %>
                         <a href="${pageContext.request.contextPath}/admin/users">用户管理</a>
                         <a href="${pageContext.request.contextPath}/certificate?action=list">证书管理</a>
@@ -333,7 +333,7 @@
                         <a href="${pageContext.request.contextPath}/score?action=list">评分工作台</a>
                         <a href="${pageContext.request.contextPath}/score?action=myScores">我的评分</a>
                         <a href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
-                    <% } else if (sessionUser != null) { %>
+                    <% } else if (isParticipant) { %>
                         <h3>我的参赛</h3>
                         <a href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a>
                         <a href="${pageContext.request.contextPath}/invitation">邀请通知</a>
@@ -350,7 +350,7 @@
                     <h3>公告与结果</h3>
                     <a href="${pageContext.request.contextPath}/news?action=list">公告中心</a>
                     <a href="${pageContext.request.contextPath}/award?action=list">获奖公示</a>
-                    <a href="<%= certificateHref %>">电子奖状</a>
+                    <a href="<%= certificateHref %>"><%= (isAdmin || isParticipant) ? "电子奖状" : "获奖公示" %></a>
                     <a href="${pageContext.request.contextPath}/competition?action=list">截止提醒</a>
                 </section>
                 <section>
@@ -375,6 +375,7 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="${pageContext.request.contextPath}/js/home.js?v=<%= assetVersion %>"></script>
 </body>
 </html>

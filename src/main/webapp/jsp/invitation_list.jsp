@@ -238,7 +238,7 @@
         <% if (error != null) { %>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>
-                <% if ("accept_failed".equals(error)) { %>接受邀请失败，队伍可能已满或您已在队伍中<% }
+                <% if ("accept_failed".equals(error)) { %>接受邀请失败：队伍可能已满、邀请已失效、您已在队伍/同竞赛其他队伍中，或当前账号不是可参赛账号。管理员和评委不可加入队伍。<% }
                    else if ("reject_failed".equals(error)) { %>拒绝邀请失败<% }
                    else if ("invalid_id".equals(error)) { %>无效的邀请ID<% }
                    else { %><%= error %><% } %>

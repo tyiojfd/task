@@ -53,6 +53,11 @@ public interface UserDAO {
     List<User> searchByRealName(String keyword);
 
     /**
+     * 搜索可邀请的参赛用户（队员/队长，排除管理员/评委）
+     */
+    List<User> searchInviteEligibleUsers(String keyword);
+
+    /**
      * 统计用户总数
      */
     int count();

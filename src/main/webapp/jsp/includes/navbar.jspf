@@ -49,7 +49,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-lg-center">
                 <li class="nav-item"><a class="nav-link <%= "home".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/index">首页</a></li>
-                <li class="nav-item"><a class="nav-link <%= "competitions".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/competition?action=list">竞赛大厅</a></li>
+                <li class="nav-item"><a class="nav-link <%= "competitions".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/competition?action=list"><%= navIsAdmin ? "竞赛管理" : "竞赛大厅" %></a></li>
                 <% if (navIsParticipant) { %>
                     <li class="nav-item"><a class="nav-link <%= "teams".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
                     <li class="nav-item"><a class="nav-link <%= "invitations".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
@@ -96,3 +96,21 @@
         </div>
     </div>
 </nav>
+<script>
+(function () {
+    document.addEventListener('click', function (event) {
+        if (window.bootstrap) return;
+        var toggle = event.target.closest('[data-bs-toggle="dropdown"]');
+        document.querySelectorAll('.dropdown-menu.show').forEach(function (menu) {
+            if (!toggle || menu !== toggle.nextElementSibling) menu.classList.remove('show');
+        });
+        if (toggle) {
+            event.preventDefault();
+            var menu = toggle.nextElementSibling;
+            if (menu && menu.classList.contains('dropdown-menu')) {
+                menu.classList.toggle('show');
+            }
+        }
+    });
+})();
+</script>

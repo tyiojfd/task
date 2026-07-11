@@ -84,18 +84,27 @@ public class UserServiceImpl implements UserService {
             return null; // 用户已禁用
         }
 
-        // 4. 如指定登录角色，则校验用户是否拥有该角色
+        // 4. 如指定登录角色，则校验用户是否属于该入口。普通入口只允许队员/队长。
         if (expectedRole != null && !expectedRole.trim().isEmpty()) {
             List<Role> roles = userRoleDAO.findRolesByUserId(user.getUserId());
-            boolean matched = false;
+            boolean isAdmin = false;
+            boolean isJudge = false;
+            boolean isParticipant = false;
+            boolean exactMatched = false;
+
             if (roles != null) {
                 for (Role role : roles) {
-                    if (expectedRole.equals(role.getRoleName())) {
-                        matched = true;
-                        break;
-                    }
+                    String roleName = role.getRoleName();
+                    if ("管理员".equals(roleName)) isAdmin = true;
+                    if ("评委".equals(roleName)) isJudge = true;
+                    if ("队员".equals(roleName) || "队长".equals(roleName)) isParticipant = true;
+                    if (expectedRole.equals(roleName)) exactMatched = true;
                 }
             }
+
+            boolean matched = "普通用户".equals(expectedRole)
+                    ? (isParticipant && !isAdmin && !isJudge)
+                    : exactMatched;
             if (!matched) {
                 return null;
             }

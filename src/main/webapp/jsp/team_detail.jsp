@@ -293,9 +293,26 @@
         <% } else if ("cancel_success".equals(msg)) { %>
             <div class="alert alert-info alert-dismissible fade show"><i class="fas fa-info-circle me-2"></i>已取消报名，队伍恢复为组建中状态。<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
-        <% String error = request.getParameter("error"); %>
-        <% if (error != null) { %>
-            <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><%= error %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <% String error = request.getParameter("error");
+           String errorText = null;
+           if ("invite_failed".equals(error)) {
+               errorText = "邀请失败：仅可邀请队员/队长账号，管理员和评委不可加入队伍；请确认对方未在本队或同竞赛其他队伍中，且队伍未满。";
+           } else if ("not_leader".equals(error)) {
+               errorText = "无权限操作该队伍，只有队长可以执行此操作。";
+           } else if ("delete_failed".equals(error)) {
+               errorText = "解散队伍失败，请确认您是队长且队伍状态允许解散。";
+           } else if ("remove_failed".equals(error)) {
+               errorText = "移除队员失败，请确认您是队长且不能移除队长本人。";
+           } else if ("register_failed".equals(error)) {
+               errorText = "报名失败，请检查队伍竞赛和子类信息是否完整。";
+           } else if ("cancel_failed".equals(error)) {
+               errorText = "取消报名失败，请确认您是队长且队伍当前已报名。";
+           } else if (error != null) {
+               errorText = "操作失败，请稍后重试。";
+           }
+        %>
+        <% if (errorText != null) { %>
+            <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><%= errorText %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
 
         <!-- ═══════════ 封面横幅 ═══════════ -->
@@ -699,12 +716,12 @@
                         <div class="input-group">
                             <span class="input-group-text" style="border-radius:10px 0 0 10px;"><i class="fas fa-search"></i></span>
                             <input type="text" class="form-control" id="userSearchInput"
-                                   placeholder="输入用户真实姓名..." style="border-radius:0 10px 10px 0;"
+                                   placeholder="输入姓名或用户名搜索可邀请用户..." style="border-radius:0 10px 10px 0;"
                                    oninput="searchUsers()">
                         </div>
                     </div>
                     <div id="userSearchResults" class="mt-3" style="max-height:300px; overflow-y:auto;">
-                        <p class="text-muted text-center py-3" id="searchHint">输入姓名开始搜索</p>
+                        <p class="text-muted text-center py-3" id="searchHint">输入姓名或用户名开始搜索，仅可邀请队员/队长账号</p>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -743,7 +760,7 @@
         // ── 邀请队员Modal ──
         function openInviteModal() {
             document.getElementById('userSearchInput').value = '';
-            document.getElementById('userSearchResults').innerHTML = '<p class="text-muted text-center py-3" id="searchHint">输入姓名开始搜索</p>';
+            document.getElementById('userSearchResults').innerHTML = '<p class="text-muted text-center py-3" id="searchHint">输入姓名或用户名开始搜索，仅可邀请队员/队长账号</p>';
             new bootstrap.Modal(document.getElementById('inviteMemberModal')).show();
         }
 
@@ -755,7 +772,7 @@
                 var resultsDiv = document.getElementById('userSearchResults');
 
                 if (keyword.length === 0) {
-                    resultsDiv.innerHTML = '<p class="text-muted text-center py-3" id="searchHint">输入姓名开始搜索</p>';
+                    resultsDiv.innerHTML = '<p class="text-muted text-center py-3" id="searchHint">输入姓名或用户名开始搜索，仅可邀请队员/队长账号</p>';
                     return;
                 }
 
@@ -767,7 +784,7 @@
                 .then(res => res.json())
                 .then(users => {
                     if (!users || users.length === 0) {
-                        resultsDiv.innerHTML = '<p class="text-muted text-center py-3"><i class="fas fa-search me-2"></i>未找到匹配用户</p>';
+                        resultsDiv.innerHTML = '<p class="text-muted text-center py-3"><i class="fas fa-search me-2"></i>未找到可邀请用户。仅队员/队长可被邀请，管理员和评委不可加入队伍。</p>';
                         return;
                     }
                     var html = '';

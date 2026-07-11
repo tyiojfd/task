@@ -278,7 +278,7 @@ public class AwardServlet extends HttpServlet {
                 request.getSession().setAttribute("message", "获奖设置成功！奖状已自动生成。");
             } else {
                 request.getSession().setAttribute("error",
-                        "获奖设置失败，请检查获奖等级（一等奖/二等奖/三等奖）或该作品是否已获奖");
+                        "获奖设置失败：请确认获奖等级正确、最终得分在0-100之间、作品已提交且属于当前竞赛，并且该作品尚未获奖");
             }
             response.sendRedirect(request.getContextPath()
                     + "/award?action=manage&competitionId=" + competitionId);

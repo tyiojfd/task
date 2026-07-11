@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Work" %>
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.Score" %>
+<%@ page import="com.poster.model.Competition" %>
 <%@ page import="com.poster.dao.WorkDAO" %>
 <%@ page import="com.poster.service.TeamService" %>
 <%@ page import="java.util.List" %>
@@ -20,6 +21,9 @@
 
     @SuppressWarnings("unchecked")
     List<Score> scores = (List<Score>) request.getAttribute("scores");
+    @SuppressWarnings("unchecked")
+    List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
+    Integer selectedCompetitionId = (Integer) request.getAttribute("selectedCompetitionId");
 
     Work targetWork = (Work) request.getAttribute("work");
     Team targetTeam = (Team) request.getAttribute("team");
@@ -295,9 +299,31 @@
     <% } else { %>
     <div class="page-header">
         <h2><i class="fas fa-list-check me-2"></i>我的评分记录</h2>
-        <a href="${pageContext.request.contextPath}/score?action=list" class="btn btn-outline-primary">
+        <a href="${pageContext.request.contextPath}/score?action=list<%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i>返回工作台
         </a>
+    </div>
+
+    <!-- 竞赛筛选 -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;">
+        <div class="card-body">
+            <form method="get" action="${pageContext.request.contextPath}/score" class="row g-3 align-items-end">
+                <input type="hidden" name="action" value="myScores">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold"><i class="fas fa-trophy me-1"></i>按竞赛查看评分记录</label>
+                    <select name="competitionId" class="form-select" onchange="this.form.submit()">
+                        <% if (competitions != null) {
+                            for (Competition comp : competitions) { %>
+                                <option value="<%= comp.getCompetitionId() %>" <%= selectedCompetitionId != null && selectedCompetitionId.equals(comp.getCompetitionId()) ? "selected" : "" %>><%= comp.getName() %></option>
+                        <%  }
+                           } %>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>筛选</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- 统计 -->
@@ -379,7 +405,7 @@
                     <td class="text-muted">--</td>
                     <td><%= s.getScoreTime() != null ? s.getScoreTime().format(dtf) : "未知" %></td>
                     <td>
-                        <a href="${pageContext.request.contextPath}/score?action=input&workId=<%= s.getWorkId() %>"
+                        <a href="${pageContext.request.contextPath}/score?action=input&workId=<%= s.getWorkId() %><%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>"
                            class="btn btn-sm btn-outline-primary" title="修改评分">
                             <i class="fas fa-edit"></i>
                         </a>

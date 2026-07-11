@@ -3,12 +3,15 @@ package com.poster.service.impl;
 import com.poster.dao.AwardDAO;
 import com.poster.dao.CertificateDAO;
 import com.poster.dao.NewsDAO;
+import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.AwardDAOImpl;
 import com.poster.dao.impl.CertificateDAOImpl;
 import com.poster.dao.impl.NewsDAOImpl;
+import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Award;
 import com.poster.model.Certificate;
 import com.poster.model.News;
+import com.poster.model.Work;
 import com.poster.service.AwardService;
 
 import java.time.LocalDateTime;
@@ -26,6 +29,7 @@ public class AwardServiceImpl implements AwardService {
     private AwardDAO awardDAO = new AwardDAOImpl();
     private CertificateDAO certificateDAO = new CertificateDAOImpl();
     private NewsDAO newsDAO = new NewsDAOImpl();
+    private WorkDAO workDAO = new WorkDAOImpl();
 
     @Override
     public boolean setAward(Award award) {
@@ -44,16 +48,30 @@ public class AwardServiceImpl implements AwardService {
             return false;
         }
 
-        // 3. 检查该作品是否已获奖（一个作品只能获奖一次）
+        // 3. 验证最终得分范围
+        if (award.getFinalScore().isNaN() || award.getFinalScore().isInfinite()
+                || award.getFinalScore() < 0 || award.getFinalScore() > 100) {
+            return false;
+        }
+
+        // 4. 验证作品必须存在、已提交，且属于当前竞赛
+        Work work = workDAO.findById(award.getWorkId());
+        if (work == null || work.getStatus() == null || work.getStatus() != 2
+                || work.getCompetitionId() == null
+                || !work.getCompetitionId().equals(award.getCompetitionId())) {
+            return false;
+        }
+
+        // 5. 检查该作品是否已获奖（一个作品只能获奖一次）
         Award existing = awardDAO.findByWorkId(award.getWorkId());
         if (existing != null) {
             return false;
         }
 
-        // 4. 插入获奖记录
+        // 6. 插入获奖记录
         boolean success = awardDAO.insert(award) > 0;
 
-        // 5. 自动生成电子奖状
+        // 7. 自动生成电子奖状
         if (success) {
             generateCertificate(award.getAwardId());
         }

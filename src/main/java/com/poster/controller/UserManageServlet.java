@@ -56,11 +56,20 @@ public class UserManageServlet extends HttpServlet {
             try {
                 int status = Integer.parseInt(statusStr);
                 if (status == 0 || status == 1) {
-                    success = userService.updateUserStatus(userId, status);
+                    if (status == 0 && wouldRemoveLastActiveAdmin(userId, null)) {
+                        success = false;
+                    } else {
+                        success = userService.updateUserStatus(userId, status);
+                    }
                 }
             } catch (NumberFormatException ignored) {}
         } else if (userId != null && "roles".equals(action)) {
-            success = userService.updateUserRoles(userId, request.getParameterValues("roleIds"));
+            String[] roleIds = request.getParameterValues("roleIds");
+            if (wouldRemoveLastActiveAdmin(userId, roleIds)) {
+                success = false;
+            } else {
+                success = userService.updateUserRoles(userId, roleIds);
+            }
         } else if (userId != null && "resetPwd".equals(action)) {
             String newPwd = request.getParameter("newPassword");
             User user = userService.getUserById(userId);
@@ -70,6 +79,52 @@ public class UserManageServlet extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/users?" + (success ? "ok=1" : "err=1"));
+    }
+
+    private boolean wouldRemoveLastActiveAdmin(Integer targetUserId, String[] newRoleIds) {
+        User target = userService.getUserById(targetUserId);
+        if (target == null) return false;
+
+        boolean targetCurrentlyAdmin = hasRole(userService.getUserRoles(targetUserId), "管理员");
+        if (!targetCurrentlyAdmin) return false;
+
+        boolean targetWillRemainAdmin = newRoleIds == null || hasAdminRoleId(newRoleIds);
+        if (newRoleIds != null && targetWillRemainAdmin) return false;
+
+        int activeAdminCount = 0;
+        List<User> users = userService.getAllUsers();
+        for (User user : users) {
+            if (user.getStatus() != null && user.getStatus() == 1
+                    && hasRole(userService.getUserRoles(user.getUserId()), "管理员")) {
+                activeAdminCount++;
+            }
+        }
+        return activeAdminCount <= 1;
+    }
+
+    private boolean hasAdminRoleId(String[] roleIds) {
+        if (roleIds == null) return false;
+        List<Role> allRoles = userService.getAllRoles();
+        Integer adminRoleId = null;
+        for (Role role : allRoles) {
+            if ("管理员".equals(role.getRoleName())) {
+                adminRoleId = role.getRoleId();
+                break;
+            }
+        }
+        if (adminRoleId == null) return false;
+        for (String roleId : roleIds) {
+            if (String.valueOf(adminRoleId).equals(roleId)) return true;
+        }
+        return false;
+    }
+
+    private boolean hasRole(List<Role> roles, String roleName) {
+        if (roles == null) return false;
+        for (Role role : roles) {
+            if (roleName.equals(role.getRoleName())) return true;
+        }
+        return false;
     }
 
     private boolean isAdmin(HttpServletRequest request) {

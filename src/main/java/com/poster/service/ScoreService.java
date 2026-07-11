@@ -16,9 +16,14 @@ public interface ScoreService {
     boolean addScore(Score score);
 
     /**
-     * 更新评分
+     * 更新评分（仅允许评分所属评委修改）
      */
-    boolean updateScore(Score score);
+    boolean updateScore(Score score, Integer judgeId);
+
+    /**
+     * 根据评分ID查询评分
+     */
+    Score getScoreById(Integer scoreId);
 
     /**
      * 根据作品ID查询所有评分
