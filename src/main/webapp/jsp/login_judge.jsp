@@ -39,7 +39,6 @@
             <% } %>
 
             <form action="${pageContext.request.contextPath}/login" method="post">
-                <input type="hidden" name="loginRole" value="评委">
                 <div class="mb-3">
                     <label for="username" class="form-label">评委账号</label>
                     <input type="text" class="form-control" id="username" name="username"

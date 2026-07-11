@@ -9,8 +9,6 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -39,6 +37,7 @@ public class LoginServlet extends HttpServlet {
         }
 
         String role = normalizeRole(request.getParameter("role"));
+        request.getSession().setAttribute("loginEntryRole", role == null ? "普通用户" : role);
         request.setAttribute("loginRole", role);
         forwardByRole(request, response, role);
     }
@@ -49,7 +48,12 @@ public class LoginServlet extends HttpServlet {
         // 1. 获取表单参数
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        String loginRole = normalizeRole(request.getParameter("loginRole"));
+        HttpSession entrySession = request.getSession(false);
+        String loginRole = null;
+        if (entrySession != null) {
+            loginRole = normalizeRole((String) entrySession.getAttribute("loginEntryRole"));
+        }
+        String expectedRole = loginRole == null ? "普通用户" : loginRole;
 
         // 2. 验证输入
         if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
@@ -59,8 +63,8 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // 3. 调用Service验证登录
-        User user = userService.login(username.trim(), password, loginRole);
+        // 3. 调用Service验证登录。普通登录入口默认只允许队员/队长，不能作为管理员/评委的通用入口。
+        User user = userService.login(username.trim(), password, expectedRole);
 
         if (user != null) {
             // 登录成功，设置Session
@@ -70,12 +74,13 @@ public class LoginServlet extends HttpServlet {
             // 加载用户角色
             List<Role> roles = userService.getUserRoles(user.getUserId());
             session.setAttribute("roles", roles);
+            session.removeAttribute("loginEntryRole");
 
             // 重定向到主页
             response.sendRedirect(request.getContextPath() + "/index");
         } else {
             request.setAttribute("error", loginRole == null
-                    ? "用户名或密码错误，或账号已被禁用"
+                    ? "普通登录入口仅支持队员/队长账号，请管理员或评委使用对应登录入口"
                     : "该账号不属于当前登录入口，或用户名/密码错误");
             request.setAttribute("username", username);
             request.setAttribute("loginRole", loginRole);
@@ -105,8 +110,9 @@ public class LoginServlet extends HttpServlet {
         if ("judge".equalsIgnoreCase(role) || "评委".equals(role)) {
             return "评委";
         }
-        if ("member".equalsIgnoreCase(role) || "队员".equals(role)) {
-            return "队员";
+        if ("member".equalsIgnoreCase(role) || "participant".equalsIgnoreCase(role)
+                || "普通用户".equals(role) || "队员".equals(role) || "队长".equals(role)) {
+            return "普通用户";
         }
         return null;
     }

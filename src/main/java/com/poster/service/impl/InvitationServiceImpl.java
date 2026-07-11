@@ -4,14 +4,17 @@ import com.poster.dao.InvitationDAO;
 import com.poster.dao.TeamDAO;
 import com.poster.dao.TeamMemberDAO;
 import com.poster.dao.CompetitionDAO;
+import com.poster.dao.UserRoleDAO;
 import com.poster.dao.impl.InvitationDAOImpl;
 import com.poster.dao.impl.TeamDAOImpl;
 import com.poster.dao.impl.TeamMemberDAOImpl;
 import com.poster.dao.impl.CompetitionDAOImpl;
+import com.poster.dao.impl.UserRoleDAOImpl;
 import com.poster.model.Invitation;
 import com.poster.model.Team;
 import com.poster.model.TeamMember;
 import com.poster.model.Competition;
+import com.poster.model.Role;
 import com.poster.service.InvitationService;
 
 import java.time.LocalDateTime;
@@ -28,6 +31,7 @@ public class InvitationServiceImpl implements InvitationService {
     private TeamDAO teamDAO = new TeamDAOImpl();
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
+    private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
 
     @Override
     public List<Invitation> getInvitationsForUser(Integer userId) {
@@ -35,6 +39,22 @@ public class InvitationServiceImpl implements InvitationService {
             return null;
         }
         return invitationDAO.findByInviteeId(userId);
+    }
+
+    private boolean isInviteEligibleParticipant(Integer userId) {
+        if (userId == null) return false;
+        List<Role> roles = userRoleDAO.findRolesByUserId(userId);
+        boolean isAdmin = false;
+        boolean isJudge = false;
+        boolean isParticipant = false;
+        if (roles != null) {
+            for (Role role : roles) {
+                if ("管理员".equals(role.getRoleName())) isAdmin = true;
+                if ("评委".equals(role.getRoleName())) isJudge = true;
+                if ("队员".equals(role.getRoleName()) || "队长".equals(role.getRoleName())) isParticipant = true;
+            }
+        }
+        return isParticipant && !isAdmin && !isJudge;
     }
 
     @Override
@@ -60,7 +80,12 @@ public class InvitationServiceImpl implements InvitationService {
             return false;
         }
 
-        // 5. 检查队伍是否存在且状态正常
+        // 5. 被邀请人必须仍是参赛方账号，防止历史脏邀请让管理员/评委加入队伍。
+        if (!isInviteEligibleParticipant(userId)) {
+            return false;
+        }
+
+        // 6. 检查队伍是否存在且状态正常
         Team team = teamDAO.findById(invitation.getTeamId());
         if (team == null || team.getStatus() == null || team.getStatus() == 0) {
             return false;

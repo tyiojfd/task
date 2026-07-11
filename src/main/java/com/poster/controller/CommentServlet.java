@@ -3,6 +3,7 @@ package com.poster.controller;
 import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Comment;
+import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.model.Work;
 import com.poster.service.CommentService;
@@ -28,6 +29,11 @@ public class CommentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (!isJudge(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "仅评委可访问评语功能");
+            return;
+        }
+
         String action = request.getParameter("action");
 
         if ("list".equals(action)) {
@@ -44,6 +50,11 @@ public class CommentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (!isJudge(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "仅评委可提交评语");
+            return;
+        }
+
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
 
@@ -112,7 +123,7 @@ public class CommentServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -132,7 +143,7 @@ public class CommentServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -167,7 +178,7 @@ public class CommentServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -205,7 +216,7 @@ public class CommentServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -229,5 +240,17 @@ public class CommentServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/score?action=list");
         }
+    }
+
+    private boolean isJudge(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) return false;
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles == null) return false;
+        for (Role role : roles) {
+            if ("评委".equals(role.getRoleName())) return true;
+        }
+        return false;
     }
 }

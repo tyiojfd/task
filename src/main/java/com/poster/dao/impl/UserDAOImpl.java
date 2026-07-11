@@ -157,6 +157,35 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public List<User> searchInviteEligibleUsers(String keyword) {
+        String sql = "SELECT DISTINCT u.* FROM user u " +
+                "JOIN user_role urp ON u.user_id = urp.user_id " +
+                "JOIN role rp ON urp.role_id = rp.role_id " +
+                "WHERE u.status = 1 " +
+                "AND (u.real_name LIKE ? OR u.username LIKE ?) " +
+                "AND rp.role_name IN ('队员', '队长') " +
+                "AND NOT EXISTS (" +
+                "  SELECT 1 FROM user_role urx " +
+                "  JOIN role rx ON urx.role_id = rx.role_id " +
+                "  WHERE urx.user_id = u.user_id AND rx.role_name IN ('管理员', '评委')" +
+                ") LIMIT 20";
+        List<User> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String pattern = "%" + keyword + "%";
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(extractUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
     public int count() {
         String sql = "SELECT COUNT(*) FROM user";
         try (Connection conn = DBUtil.getConnection();

@@ -4,14 +4,17 @@ import com.poster.dao.TeamDAO;
 import com.poster.dao.TeamMemberDAO;
 import com.poster.dao.InvitationDAO;
 import com.poster.dao.CompetitionDAO;
+import com.poster.dao.UserRoleDAO;
 import com.poster.dao.impl.TeamDAOImpl;
 import com.poster.dao.impl.TeamMemberDAOImpl;
 import com.poster.dao.impl.InvitationDAOImpl;
 import com.poster.dao.impl.CompetitionDAOImpl;
+import com.poster.dao.impl.UserRoleDAOImpl;
 import com.poster.model.Team;
 import com.poster.model.TeamMember;
 import com.poster.model.Invitation;
 import com.poster.model.Competition;
+import com.poster.model.Role;
 import com.poster.service.TeamService;
 
 import java.time.LocalDateTime;
@@ -28,6 +31,7 @@ public class TeamServiceImpl implements TeamService {
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private InvitationDAO invitationDAO = new InvitationDAOImpl();
     private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
+    private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
 
     @Override
     public boolean createTeam(Team team, Integer leaderId) {
@@ -182,6 +186,22 @@ public class TeamServiceImpl implements TeamService {
         return false;
     }
 
+    private boolean isInviteEligibleParticipant(Integer userId) {
+        if (userId == null) return false;
+        List<Role> roles = userRoleDAO.findRolesByUserId(userId);
+        boolean isAdmin = false;
+        boolean isJudge = false;
+        boolean isParticipant = false;
+        if (roles != null) {
+            for (Role role : roles) {
+                if ("管理员".equals(role.getRoleName())) isAdmin = true;
+                if ("评委".equals(role.getRoleName())) isJudge = true;
+                if ("队员".equals(role.getRoleName()) || "队长".equals(role.getRoleName())) isParticipant = true;
+            }
+        }
+        return isParticipant && !isAdmin && !isJudge;
+    }
+
     @Override
     public boolean inviteMember(Integer teamId, Integer inviterId, Integer inviteeId) {
         if (teamId == null || inviterId == null || inviteeId == null) {
@@ -194,6 +214,11 @@ public class TeamServiceImpl implements TeamService {
         }
 
         if (inviterId.equals(inviteeId)) {
+            return false;
+        }
+
+        // 被邀请人必须是参赛方账号（队员/队长），不能邀请管理员或评委。
+        if (!isInviteEligibleParticipant(inviteeId)) {
             return false;
         }
 

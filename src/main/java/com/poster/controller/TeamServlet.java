@@ -404,7 +404,7 @@ public class TeamServlet extends HttpServlet {
                 if (success) {
                     response.getWriter().write("{\"success\":true}");
                 } else {
-                    response.getWriter().write("{\"success\":false,\"message\":\"邀请失败，请检查是否已邀请过该用户或队伍已满\"}");
+                    response.getWriter().write("{\"success\":false,\"message\":\"邀请失败：仅可邀请队员/队长账号，管理员和评委不可加入队伍；请确认对方未在本队或同竞赛其他队伍中，且队伍未满。\"}");
                 }
                 return;
             }
@@ -541,7 +541,7 @@ public class TeamServlet extends HttpServlet {
             return;
         }
 
-        List<User> users = userDAO.searchByRealName(keyword.trim());
+        List<User> users = userDAO.searchInviteEligibleUsers(keyword.trim());
         User currentUser = (User) session.getAttribute("user");
 
         // 手动构建JSON数组

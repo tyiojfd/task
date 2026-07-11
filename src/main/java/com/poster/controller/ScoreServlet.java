@@ -1,8 +1,12 @@
 package com.poster.controller;
 
+import com.poster.dao.CompetitionDAO;
 import com.poster.dao.WorkDAO;
+import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Comment;
+import com.poster.model.Competition;
+import com.poster.model.Role;
 import com.poster.model.Score;
 import com.poster.model.User;
 import com.poster.model.Work;
@@ -30,11 +34,17 @@ public class ScoreServlet extends HttpServlet {
     private ScoreService scoreService = new ScoreServiceImpl();
     private CommentService commentService = new CommentServiceImpl();
     private WorkDAO workDAO = new WorkDAOImpl();
+    private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
     private TeamService teamService = new TeamServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (!isJudge(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "仅评委可访问评分功能");
+            return;
+        }
+
         String action = request.getParameter("action");
 
         if (action == null || "list".equals(action)) {
@@ -57,6 +67,11 @@ public class ScoreServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (!isJudge(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "仅评委可提交评分");
+            return;
+        }
+
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
 
@@ -76,11 +91,21 @@ public class ScoreServlet extends HttpServlet {
      */
     private void showScoringWorkspace(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // 获取所有作品（已提交状态 status=2）
-        List<Work> allWorks = workDAO.findAll();
-        // 过滤出已提交的作品
+        List<Competition> competitions = competitionDAO.findAll();
+        request.setAttribute("competitions", competitions);
+
+        Integer selectedCompetitionId = parseInteger(request.getParameter("competitionId"));
+        if (selectedCompetitionId == null && competitions != null && !competitions.isEmpty()) {
+            selectedCompetitionId = competitions.get(0).getCompetitionId();
+        }
+        request.setAttribute("selectedCompetitionId", selectedCompetitionId);
+
+        // 评分必须按竞赛查看，避免所有比赛作品混在一起。
+        List<Work> sourceWorks = selectedCompetitionId != null
+                ? workDAO.findByCompetitionId(selectedCompetitionId)
+                : java.util.Collections.emptyList();
         List<Work> submittedWorks = new java.util.ArrayList<>();
-        for (Work w : allWorks) {
+        for (Work w : sourceWorks) {
             if (w.getStatus() != null && w.getStatus() == 2) {
                 submittedWorks.add(w);
             }
@@ -91,7 +116,18 @@ public class ScoreServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");
-            List<Score> myScores = scoreService.getScoresByJudgeId(user.getUserId());
+            List<Score> allMyScores = scoreService.getScoresByJudgeId(user.getUserId());
+            List<Score> myScores = new java.util.ArrayList<>();
+            if (allMyScores != null) {
+                for (Score score : allMyScores) {
+                    for (Work work : submittedWorks) {
+                        if (score.getWorkId() != null && score.getWorkId().equals(work.getWorkId())) {
+                            myScores.add(score);
+                            break;
+                        }
+                    }
+                }
+            }
             request.setAttribute("myScores", myScores);
         }
 
@@ -112,11 +148,21 @@ public class ScoreServlet extends HttpServlet {
         try {
             Integer workId = Integer.parseInt(workIdStr);
             Work work = workDAO.findById(workId);
-            if (work == null) {
-                response.sendRedirect(request.getContextPath() + "/score?action=list");
+            Integer competitionId = parseInteger(request.getParameter("competitionId"));
+            if (work == null || work.getStatus() == null || work.getStatus() != 2) {
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
+            if (competitionId != null && !competitionId.equals(work.getCompetitionId())) {
+                response.sendRedirect(request.getContextPath() + "/score?action=list&competitionId=" + competitionId);
+                return;
+            }
+            if (competitionId == null) {
+                competitionId = work.getCompetitionId();
+            }
 
+            request.setAttribute("selectedCompetitionId", competitionId);
+            request.setAttribute("competitions", competitionDAO.findAll());
             request.setAttribute("work", work);
             request.setAttribute("team", teamService.getTeamById(work.getTeamId()));
 
@@ -156,13 +202,29 @@ public class ScoreServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         User user = (User) session.getAttribute("user");
-        List<Score> myScores = scoreService.getScoresByJudgeId(user.getUserId());
+        List<Competition> competitions = competitionDAO.findAll();
+        Integer selectedCompetitionId = parseInteger(request.getParameter("competitionId"));
+        if (selectedCompetitionId == null && competitions != null && !competitions.isEmpty()) {
+            selectedCompetitionId = competitions.get(0).getCompetitionId();
+        }
+        List<Score> allMyScores = scoreService.getScoresByJudgeId(user.getUserId());
+        List<Score> myScores = new java.util.ArrayList<>();
+        if (allMyScores != null) {
+            for (Score score : allMyScores) {
+                Work work = workDAO.findById(score.getWorkId());
+                if (selectedCompetitionId == null || (work != null && selectedCompetitionId.equals(work.getCompetitionId()))) {
+                    myScores.add(score);
+                }
+            }
+        }
 
+        request.setAttribute("competitions", competitions);
+        request.setAttribute("selectedCompetitionId", selectedCompetitionId);
         // 加载每个评分对应的作品和队伍信息
         request.setAttribute("myScores", myScores);
         request.setAttribute("workDAO", workDAO);
@@ -211,7 +273,7 @@ public class ScoreServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -219,7 +281,17 @@ public class ScoreServlet extends HttpServlet {
 
         try {
             Integer workId = Integer.parseInt(request.getParameter("workId"));
+            Integer competitionId = parseInteger(request.getParameter("competitionId"));
             Double scoreValue = Double.parseDouble(request.getParameter("score"));
+            Work work = workDAO.findById(workId);
+            if (work == null || work.getStatus() == null || work.getStatus() != 2
+                    || (competitionId != null && !competitionId.equals(work.getCompetitionId()))) {
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
+            if (competitionId == null) {
+                competitionId = work.getCompetitionId();
+            }
 
             Score score = new Score();
             score.setWorkId(workId);
@@ -230,12 +302,13 @@ public class ScoreServlet extends HttpServlet {
 
             if (success) {
                 request.getSession().setAttribute("message", "评分提交成功！");
-                response.sendRedirect(request.getContextPath() + "/score?action=list");
+                response.sendRedirect(request.getContextPath() + "/score?action=list&competitionId=" + competitionId);
             } else {
                 request.setAttribute("error", "评分提交失败，请检查分数范围（0-100）或是否已评分");
-                request.setAttribute("work", workDAO.findById(workId));
-                request.setAttribute("team", teamService.getTeamById(
-                        workDAO.findById(workId).getTeamId()));
+                request.setAttribute("selectedCompetitionId", competitionId);
+                request.setAttribute("competitions", competitionDAO.findAll());
+                request.setAttribute("work", work);
+                request.setAttribute("team", teamService.getTeamById(work.getTeamId()));
                 request.getRequestDispatcher("/jsp/score_input.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
@@ -251,23 +324,30 @@ public class ScoreServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         try {
             Integer scoreId = Integer.parseInt(request.getParameter("scoreId"));
+            Integer competitionId = parseInteger(request.getParameter("competitionId"));
             Double scoreValue = Double.parseDouble(request.getParameter("score"));
+            User user = (User) session.getAttribute("user");
+            Score existing = scoreService.getScoreById(scoreId);
+            if (existing == null || !user.getUserId().equals(existing.getJudgeId())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "只能修改自己的评分");
+                return;
+            }
 
             Score score = new Score();
             score.setScoreId(scoreId);
             score.setScore(scoreValue);
 
-            boolean success = scoreService.updateScore(score);
+            boolean success = scoreService.updateScore(score, user.getUserId());
 
             if (success) {
                 request.getSession().setAttribute("message", "评分更新成功！");
-                response.sendRedirect(request.getContextPath() + "/score?action=list");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
             } else {
                 request.setAttribute("error", "评分更新失败，请检查分数范围（0-100）");
                 response.sendRedirect(request.getContextPath() + "/score?action=list");
@@ -276,5 +356,30 @@ public class ScoreServlet extends HttpServlet {
             request.setAttribute("error", "请输入有效的分数");
             response.sendRedirect(request.getContextPath() + "/score?action=list");
         }
+    }
+
+    private Integer parseInteger(String value) {
+        if (value == null || value.trim().isEmpty()) return null;
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String competitionQuery(Integer competitionId) {
+        return competitionId == null ? "" : "&competitionId=" + competitionId;
+    }
+
+    private boolean isJudge(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) return false;
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles == null) return false;
+        for (Role role : roles) {
+            if ("评委".equals(role.getRoleName())) return true;
+        }
+        return false;
     }
 }

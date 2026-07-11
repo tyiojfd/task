@@ -58,12 +58,21 @@ public class ScoreDAOImpl implements ScoreDAO {
 
     @Override
     public int update(Score score) {
-        String sql = "UPDATE score SET score=? WHERE score_id=?";
+        String sql;
+        boolean restrictJudge = score.getJudgeId() != null;
+        if (restrictJudge) {
+            sql = "UPDATE score SET score=? WHERE score_id=? AND judge_id=?";
+        } else {
+            sql = "UPDATE score SET score=? WHERE score_id=?";
+        }
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setDouble(1, score.getScore());
             pstmt.setInt(2, score.getScoreId());
+            if (restrictJudge) {
+                pstmt.setInt(3, score.getJudgeId());
+            }
 
             return pstmt.executeUpdate();
         } catch (SQLException e) {

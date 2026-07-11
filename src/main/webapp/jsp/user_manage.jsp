@@ -31,19 +31,10 @@
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/index">🎨 海报竞赛系统</a>
-        <div class="collapse navbar-collapse show">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">首页</a></li>
-                <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/admin/users">用户管理</a></li>
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">${sessionUser.realName}</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">退出</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<%
+    request.setAttribute("activeNav", "users");
+%>
+<%@ include file="includes/navbar.jspf" %>
 
 <div class="page-header">
     <div class="container">
