@@ -25,16 +25,7 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // 只有从导航页明确进入时才展示系统首页；直接访问 /index 先回到导航页。
         HttpSession session = request.getSession(true);
-        boolean fromLanding = "1".equals(request.getParameter("fromLanding"));
-        if (!fromLanding && !Boolean.TRUE.equals(session.getAttribute("enteredFromLanding"))) {
-            response.sendRedirect(request.getContextPath() + "/");
-            return;
-        }
-        if (fromLanding) {
-            session.setAttribute("enteredFromLanding", Boolean.TRUE);
-        }
 
         // 获取当前登录用户（可能为null）
         User user = (session != null) ? (User) session.getAttribute("user") : null;

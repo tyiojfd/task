@@ -31,8 +31,10 @@ public class AuthFilter implements Filter {
         String contextPath = req.getContextPath();
         String relativePath = path.substring(contextPath.length());
 
+        String action = req.getParameter("action");
+
         // 公开资源，不需要登录
-        if (isPublicResource(relativePath)) {
+        if (isPublicResource(relativePath, action)) {
             chain.doFilter(request, response);
             return;
         }
@@ -49,7 +51,7 @@ public class AuthFilter implements Filter {
         @SuppressWarnings("unchecked")
         List<Role> roles = (List<Role>) session.getAttribute("roles");
 
-        if (!hasPermission(relativePath, req.getParameter("action"), roles)) {
+        if (!hasPermission(relativePath, action, roles)) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "无权限访问该功能");
             return;
         }
@@ -60,7 +62,7 @@ public class AuthFilter implements Filter {
     /**
      * 判断是否为公开资源（不需要登录即可访问）
      */
-    private boolean isPublicResource(String relativePath) {
+    private boolean isPublicResource(String relativePath, String action) {
         if (relativePath.startsWith("/css/") || relativePath.startsWith("/js/")
                 || relativePath.startsWith("/images/") || relativePath.startsWith("/uploads/")
                 || relativePath.startsWith("/assets/") || relativePath.equals("/index.html")) {
@@ -80,15 +82,19 @@ public class AuthFilter implements Filter {
             return true;
         }
 
-        // 新闻公开仅限列表和详情
-        if (relativePath.equals("/news") || relativePath.startsWith("/news?action=list")
-                || relativePath.startsWith("/news?action=detail")) {
-            return true;
+        // 新闻公开仅限列表和详情。URI 不包含 query string，必须使用 action 参数判断。
+        if (relativePath.equals("/news")) {
+            return action == null || "list".equals(action) || "detail".equals(action);
         }
 
-        // 获奖名单和奖状查看公开（无需登录）
-        if (relativePath.startsWith("/award") || relativePath.startsWith("/certificate")) {
-            return true;
+        // 获奖名单和获奖详情公开；获奖管理必须登录并由管理员访问。
+        if (relativePath.equals("/award")) {
+            return action == null || "list".equals(action) || "detail".equals(action);
+        }
+
+        // 奖状详情可公开查看；我的奖状和证书管理需要登录后再做角色校验。
+        if (relativePath.equals("/certificate")) {
+            return "view".equals(action);
         }
 
         return false;
@@ -100,7 +106,7 @@ public class AuthFilter implements Filter {
     private boolean hasPermission(String relativePath, String action, List<Role> roles) {
         boolean isAdmin = hasRole(roles, "管理员");
         boolean isJudge = hasRole(roles, "评委");
-        boolean isParticipant = !isAdmin && !isJudge;
+        boolean isParticipant = (hasRole(roles, "队员") || hasRole(roles, "队长")) && !isAdmin && !isJudge;
 
         if (relativePath.startsWith("/competition")) {
             if (action == null || "list".equals(action) || "detail".equals(action)) {
@@ -116,8 +122,8 @@ public class AuthFilter implements Filter {
             return isAdmin;
         }
 
-        if (relativePath.startsWith("/score")) {
-            return isAdmin || isJudge;
+        if (relativePath.startsWith("/score") || relativePath.startsWith("/comment")) {
+            return isJudge;
         }
 
         if (relativePath.startsWith("/award")) {
@@ -129,8 +135,20 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/certificate")) {
-            // 奖状查看公开
-            return true;
+            if ("view".equals(action)) {
+                return true;
+            }
+            if ("myCertificates".equals(action)) {
+                return isParticipant;
+            }
+            if ("list".equals(action)) {
+                return isAdmin;
+            }
+            return isAdmin;
+        }
+
+        if (relativePath.startsWith("/admin/")) {
+            return isAdmin;
         }
 
         if (relativePath.startsWith("/team") || relativePath.startsWith("/invitation")

@@ -121,7 +121,7 @@ public class CertificateServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -183,6 +183,11 @@ public class CertificateServlet extends HttpServlet {
      */
     private void showCertificateList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (!isAdmin(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "仅管理员可查看全部奖状");
+            return;
+        }
+
         List<Certificate> certificates = certificateService.getAllCertificates();
 
         java.util.Map<Integer, Award> awardMap = new java.util.HashMap<>();
@@ -204,5 +209,17 @@ public class CertificateServlet extends HttpServlet {
         request.setAttribute("workMap", workMap);
 
         request.getRequestDispatcher("/jsp/certificate_list.jsp").forward(request, response);
+    }
+
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) return false;
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles == null) return false;
+        for (Role role : roles) {
+            if ("管理员".equals(role.getRoleName())) return true;
+        }
+        return false;
     }
 }

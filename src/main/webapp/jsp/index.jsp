@@ -44,15 +44,6 @@
     }
 %>
 <%
-    boolean fromLandingEntry = "1".equals(request.getParameter("fromLanding"));
-    if (!fromLandingEntry && !Boolean.TRUE.equals(session.getAttribute("enteredFromLanding"))) {
-        response.sendRedirect(request.getContextPath() + "/");
-        return;
-    }
-    if (fromLandingEntry) {
-        session.setAttribute("enteredFromLanding", Boolean.TRUE);
-    }
-
     User sessionUser = (User) session.getAttribute("user");
     @SuppressWarnings("unchecked")
     List<Role> userRoles = (sessionUser != null) ? (List<Role>) session.getAttribute("roles") : null;
@@ -63,22 +54,25 @@
 
     boolean isAdmin = false;
     boolean isJudge = false;
+    boolean hasParticipantRole = false;
     if (userRoles != null) {
         for (Role role : userRoles) {
             if ("管理员".equals(role.getRoleName())) isAdmin = true;
             if ("评委".equals(role.getRoleName())) isJudge = true;
+            if ("队员".equals(role.getRoleName()) || "队长".equals(role.getRoleName())) hasParticipantRole = true;
         }
     }
+    boolean isParticipant = sessionUser != null && hasParticipantRole && !isAdmin && !isJudge;
 
     int compCount = globalStats != null && globalStats.get("compCount") != null ? globalStats.get("compCount") : (competitions != null ? competitions.size() : 0);
     int teamCount = globalStats != null && globalStats.get("teamCount") != null ? globalStats.get("teamCount") : 0;
     int workCount = globalStats != null && globalStats.get("workCount") != null ? globalStats.get("workCount") : 0;
     int activeCount = globalStats != null && globalStats.get("activeCount") != null ? globalStats.get("activeCount") : 0;
     String contextPath = request.getContextPath();
-    String teamHref = sessionUser != null && !isAdmin && !isJudge ? contextPath + "/team?action=myTeams" : contextPath + "/competition?action=list";
-    String workHref = sessionUser != null && !isAdmin && !isJudge ? contextPath + "/work?action=myWorks" : contextPath + "/competition?action=list";
+    String teamHref = isParticipant ? contextPath + "/team?action=myTeams" : contextPath + "/competition?action=list";
+    String workHref = isParticipant ? contextPath + "/work?action=myWorks" : contextPath + "/competition?action=list";
     String scoreHref = sessionUser != null && isJudge ? contextPath + "/score?action=list" : contextPath + "/award?action=list";
-    String certificateHref = isAdmin ? contextPath + "/certificate?action=list" : (sessionUser != null ? contextPath + "/certificate?action=myCertificates" : contextPath + "/award?action=list");
+    String certificateHref = isAdmin ? contextPath + "/certificate?action=list" : (isParticipant ? contextPath + "/certificate?action=myCertificates" : contextPath + "/award?action=list");
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     String assetVersion = "20260709-clear3";
     String[] fallbackCovers = {
@@ -104,38 +98,10 @@
     <link href="${pageContext.request.contextPath}/css/home.css?v=<%= assetVersion %>" rel="stylesheet">
 </head>
 <body class="home-page">
-    <nav class="glass-nav" aria-label="主导航">
-        <a class="brand" href="${pageContext.request.contextPath}/index">
-            <span class="brand-mark"><i class="fa-solid fa-palette"></i></span>
-            <span>POSTER ARENA</span>
-        </a>
-
-        <div class="nav-pill">
-            <a class="active" href="${pageContext.request.contextPath}/index">首页</a>
-            <a href="${pageContext.request.contextPath}/competition?action=list">赛事</a>
-            <a href="<%= teamHref %>">队伍</a>
-            <a href="<%= workHref %>">作品</a>
-            <a href="${pageContext.request.contextPath}/award?action=list">获奖</a>
-            <a href="${pageContext.request.contextPath}/news?action=list">公告</a>
-        </div>
-
-        <div class="nav-actions">
-            <% if (sessionUser != null && isAdmin) { %>
-                <a class="account-btn" href="${pageContext.request.contextPath}/competition?action=add"><i class="fa-solid fa-plus"></i> 发布竞赛</a>
-            <% } else if (sessionUser != null && isJudge) { %>
-                <a class="account-btn" href="${pageContext.request.contextPath}/score?action=list"><i class="fa-solid fa-star-half-stroke"></i> 评分</a>
-            <% } else if (sessionUser != null) { %>
-                <a class="account-btn" href="${pageContext.request.contextPath}/profile"><i class="fa-regular fa-user"></i> <%= html(displayName(sessionUser)) %></a>
-            <% } else { %>
-                <a class="account-btn" href="${pageContext.request.contextPath}/login"><i class="fa-regular fa-user"></i> 登录</a>
-            <% } %>
-            <% if (sessionUser == null) { %>
-                <a class="start-btn" href="${pageContext.request.contextPath}/register">注册参赛</a>
-            <% } else { %>
-                <a class="start-btn" href="${pageContext.request.contextPath}/competition?action=list">进入赛事</a>
-            <% } %>
-        </div>
-    </nav>
+    <%
+    request.setAttribute("activeNav", "home");
+%>
+<%@ include file="includes/navbar.jspf" %>
 
     <main>
         <section class="hero-carousel" aria-label="赛事推荐轮播">
@@ -146,7 +112,7 @@
                     <p>精选赛题、投稿截止、获奖公示集中呈现，直接进入竞赛详情报名。</p>
                     <div class="hero-links">
                         <a href="${pageContext.request.contextPath}/competition?action=list">浏览全部竞赛 <i class="fa-solid fa-arrow-right"></i></a>
-                        <% if (sessionUser != null && !isAdmin && !isJudge) { %>
+                        <% if (isParticipant) { %>
                             <a href="${pageContext.request.contextPath}/team?action=myTeams">我的参赛队伍</a>
                         <% } %>
                     </div>
@@ -274,16 +240,40 @@
                 <strong>竞赛大厅</strong>
                 <small>查看赛题与报名状态</small>
             </a>
-            <a class="quick-card reveal" href="<%= teamHref %>">
-                <span><%= teamCount %></span>
-                <strong>参赛队伍</strong>
-                <small>创建或管理你的队伍</small>
-            </a>
-            <a class="quick-card reveal" href="<%= workHref %>">
-                <span><%= workCount %></span>
-                <strong>作品提交</strong>
-                <small>进入作品管理入口</small>
-            </a>
+            <% if (isAdmin) { %>
+                <a class="quick-card reveal" href="${pageContext.request.contextPath}/admin/users">
+                    <span><%= teamCount %></span>
+                    <strong>用户与队伍</strong>
+                    <small>进入后台管理参赛数据</small>
+                </a>
+                <a class="quick-card reveal" href="${pageContext.request.contextPath}/award?action=manage">
+                    <span><%= workCount %></span>
+                    <strong>获奖管理</strong>
+                    <small>设置奖项并生成证书</small>
+                </a>
+            <% } else if (isJudge) { %>
+                <a class="quick-card reveal" href="${pageContext.request.contextPath}/score?action=list">
+                    <span><%= workCount %></span>
+                    <strong>评分工作台</strong>
+                    <small>查看待评作品并评分</small>
+                </a>
+                <a class="quick-card reveal" href="${pageContext.request.contextPath}/score?action=myScores">
+                    <span><%= activeCount %></span>
+                    <strong>我的评分</strong>
+                    <small>查看已提交评分记录</small>
+                </a>
+            <% } else { %>
+                <a class="quick-card reveal" href="<%= teamHref %>">
+                    <span><%= teamCount %></span>
+                    <strong>参赛队伍</strong>
+                    <small><%= isParticipant ? "创建或管理你的队伍" : "登录后创建或加入队伍" %></small>
+                </a>
+                <a class="quick-card reveal" href="<%= workHref %>">
+                    <span><%= workCount %></span>
+                    <strong>作品提交</strong>
+                    <small><%= isParticipant ? "进入作品管理入口" : "登录后提交参赛作品" %></small>
+                </a>
+            <% } %>
             <a class="quick-card reveal" href="<%= scoreHref %>">
                 <span><%= activeCount %></span>
                 <strong>评审与获奖</strong>
@@ -303,18 +293,28 @@
 
             <div class="footer-columns">
                 <section>
-                    <h3>选赛与参赛</h3>
+                    <h3><%= isAdmin ? "后台入口" : (isJudge ? "评审入口" : "选赛与参赛") %></h3>
                     <a href="${pageContext.request.contextPath}/index">首页</a>
                     <a href="${pageContext.request.contextPath}/competition?action=list">竞赛大厅</a>
-                    <a href="<%= teamHref %>">我的队伍</a>
-                    <a href="<%= workHref %>">作品提交</a>
+                    <% if (isAdmin) { %>
+                        <a href="${pageContext.request.contextPath}/admin/users">用户管理</a>
+                        <a href="${pageContext.request.contextPath}/certificate?action=list">证书管理</a>
+                    <% } else if (isJudge) { %>
+                        <a href="${pageContext.request.contextPath}/score?action=list">评分工作台</a>
+                        <a href="${pageContext.request.contextPath}/score?action=myScores">我的评分</a>
+                    <% } else { %>
+                        <a href="<%= teamHref %>">我的队伍</a>
+                        <a href="<%= workHref %>">作品提交</a>
+                    <% } %>
                     <a href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
                 </section>
                 <section>
                     <h3>账号</h3>
                     <% if (sessionUser != null) { %>
                         <a href="${pageContext.request.contextPath}/profile">个人中心</a>
-                        <a href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a>
+                        <% if (isParticipant) { %>
+                            <a href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a>
+                        <% } %>
                         <a href="${pageContext.request.contextPath}/logout">退出登录</a>
                     <% } else { %>
                         <a href="${pageContext.request.contextPath}/login">登录</a>
@@ -322,11 +322,29 @@
                     <% } %>
                 </section>
                 <section>
-                    <h3>赛事管理</h3>
-                    <a href="${pageContext.request.contextPath}/competition?action=list">赛事列表</a>
-                    <a href="<%= teamHref %>">队伍列表</a>
-                    <a href="<%= workHref %>">作品管理</a>
-                    <a href="${pageContext.request.contextPath}/score?action=list">评审评分</a>
+                    <% if (isAdmin) { %>
+                        <h3>后台管理</h3>
+                        <a href="${pageContext.request.contextPath}/admin/users">用户管理</a>
+                        <a href="${pageContext.request.contextPath}/competition?action=add">发布竞赛</a>
+                        <a href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a>
+                        <a href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a>
+                    <% } else if (isJudge) { %>
+                        <h3>评审工作</h3>
+                        <a href="${pageContext.request.contextPath}/score?action=list">评分工作台</a>
+                        <a href="${pageContext.request.contextPath}/score?action=myScores">我的评分</a>
+                        <a href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
+                    <% } else if (sessionUser != null) { %>
+                        <h3>我的参赛</h3>
+                        <a href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a>
+                        <a href="${pageContext.request.contextPath}/invitation">邀请通知</a>
+                        <a href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a>
+                        <a href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a>
+                    <% } else { %>
+                        <h3>参赛入口</h3>
+                        <a href="${pageContext.request.contextPath}/login">登录账号</a>
+                        <a href="${pageContext.request.contextPath}/register">注册参赛</a>
+                        <a href="${pageContext.request.contextPath}/competition?action=list">查看竞赛</a>
+                    <% } %>
                 </section>
                 <section>
                     <h3>公告与结果</h3>

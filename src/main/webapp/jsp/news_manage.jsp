@@ -57,41 +57,10 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
-                <i class="fas fa-paint-brush me-2"></i>海报竞赛系统
-            </a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">竞赛大厅</a></li>
-                    <% if (!isAdmin && !isJudge) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
-                    <% } %>
-                    <% if (isJudge) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
-                    <% } %>
-                    <% if (isAdmin) { %>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
-                        </ul>
-                    </li>
-                    <% } %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
-                    <% if (sessionUser != null) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
-                    <li class="nav-item"><a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">退出</a></li>
-                    <% } %>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <%
+    request.setAttribute("activeNav", "newsManage");
+%>
+<%@ include file="includes/navbar.jspf" %>
 
     <div class="container mt-4">
         <div class="page-header d-flex justify-content-between align-items-center">

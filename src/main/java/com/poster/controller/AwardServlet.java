@@ -83,40 +83,43 @@ public class AwardServlet extends HttpServlet {
     private void showAwardList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String competitionIdStr = request.getParameter("competitionId");
+        List<Award> awards;
 
         if (competitionIdStr != null && !competitionIdStr.isEmpty()) {
             try {
                 Integer competitionId = Integer.parseInt(competitionIdStr);
-                List<Award> awards = awardService.getAwardsByCompetitionId(competitionId);
-
-                // 加载每个获奖作品的信息
-                Map<Integer, Work> workMap = new HashMap<>();
-                Map<Integer, String> teamNameMap = new HashMap<>();
-                Map<Integer, Double> avgScoreMap = new HashMap<>();
-
-                for (Award award : awards) {
-                    Work work = workDAO.findById(award.getWorkId());
-                    if (work != null) {
-                        workMap.put(award.getWorkId(), work);
-                        teamNameMap.put(award.getWorkId(),
-                                teamService.getTeamById(work.getTeamId()) != null
-                                        ? teamService.getTeamById(work.getTeamId()).getTeamName()
-                                        : "未知队伍");
-                        Double avg = scoreService.getAverageScore(award.getWorkId());
-                        avgScoreMap.put(award.getWorkId(), avg != null ? avg : 0.0);
-                    }
-                }
-
-                request.setAttribute("awards", awards);
+                awards = awardService.getAwardsByCompetitionId(competitionId);
                 request.setAttribute("competition", competitionDAO.findById(competitionId));
-                request.setAttribute("workMap", workMap);
-                request.setAttribute("teamNameMap", teamNameMap);
-                request.setAttribute("avgScoreMap", avgScoreMap);
             } catch (NumberFormatException e) {
-                // ignore
+                awards = Collections.emptyList();
+            }
+        } else {
+            // 顶部导航进入获奖名单时展示全站获奖记录，而不是误报“暂无获奖信息”。
+            awards = new com.poster.dao.impl.AwardDAOImpl().findAll();
+        }
+
+        // 加载每个获奖作品的信息
+        Map<Integer, Work> workMap = new HashMap<>();
+        Map<Integer, String> teamNameMap = new HashMap<>();
+        Map<Integer, Double> avgScoreMap = new HashMap<>();
+
+        for (Award award : awards) {
+            Work work = workDAO.findById(award.getWorkId());
+            if (work != null) {
+                workMap.put(award.getWorkId(), work);
+                teamNameMap.put(award.getWorkId(),
+                        teamService.getTeamById(work.getTeamId()) != null
+                                ? teamService.getTeamById(work.getTeamId()).getTeamName()
+                                : "未知队伍");
+                Double avg = scoreService.getAverageScore(award.getWorkId());
+                avgScoreMap.put(award.getWorkId(), avg != null ? avg : 0.0);
             }
         }
 
+        request.setAttribute("awards", awards);
+        request.setAttribute("workMap", workMap);
+        request.setAttribute("teamNameMap", teamNameMap);
+        request.setAttribute("avgScoreMap", avgScoreMap);
         request.getRequestDispatcher("/jsp/award_list.jsp").forward(request, response);
     }
 
@@ -128,7 +131,7 @@ public class AwardServlet extends HttpServlet {
         // 检查管理员权限
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         if (!isAdmin(request)) {
@@ -246,7 +249,7 @@ public class AwardServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         if (!isAdmin(request)) {
@@ -292,7 +295,7 @@ public class AwardServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         if (!isAdmin(request)) {
@@ -332,7 +335,7 @@ public class AwardServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         if (!isAdmin(request)) {
