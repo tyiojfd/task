@@ -5,6 +5,7 @@ import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Award;
+import com.poster.model.Competition;
 import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.model.Work;
@@ -82,37 +83,66 @@ public class AwardServlet extends HttpServlet {
      */
     private void showAwardList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String competitionIdStr = request.getParameter("competitionId");
-        List<Award> awards;
+        // 1. 加载所有已结束的竞赛供下拉选择
+        List<Competition> endedCompetitions = competitionDAO.findByStatus(3);
+        request.setAttribute("endedCompetitions", endedCompetitions);
 
+        String competitionIdStr = request.getParameter("competitionId");
+        List<Award> awards = new ArrayList<>();
+        Competition selectedCompetition = null;
+
+        // 2. 解析请求的竞赛ID，或自动选第一个已结束竞赛
         if (competitionIdStr != null && !competitionIdStr.isEmpty()) {
             try {
                 Integer competitionId = Integer.parseInt(competitionIdStr);
-                awards = awardService.getAwardsByCompetitionId(competitionId);
-                request.setAttribute("competition", competitionDAO.findById(competitionId));
+                selectedCompetition = competitionDAO.findById(competitionId);
+                // 只显示已结束竞赛的获奖
+                if (selectedCompetition != null
+                        && selectedCompetition.getStatus() != null
+                        && selectedCompetition.getStatus() == 3) {
+                    awards = awardService.getAwardsByCompetitionId(competitionId);
+                }
             } catch (NumberFormatException e) {
-                awards = Collections.emptyList();
+                // 忽略非法ID
             }
-        } else {
-            // 顶部导航进入获奖名单时展示全站获奖记录，而不是误报“暂无获奖信息”。
-            awards = new com.poster.dao.impl.AwardDAOImpl().findAll();
         }
 
-        // 加载每个获奖作品的信息
+        // 3. 未指定竞赛或指定了非法ID：自动选择第一个已结束竞赛
+        if (awards.isEmpty() && selectedCompetition == null && !endedCompetitions.isEmpty()) {
+            selectedCompetition = endedCompetitions.get(0);
+            awards = awardService.getAwardsByCompetitionId(selectedCompetition.getCompetitionId());
+        }
+
+        request.setAttribute("competition", selectedCompetition);
+
+        // 4. 加载每个获奖作品的信息
         Map<Integer, Work> workMap = new HashMap<>();
         Map<Integer, String> teamNameMap = new HashMap<>();
         Map<Integer, Double> avgScoreMap = new HashMap<>();
 
-        for (Award award : awards) {
-            Work work = workDAO.findById(award.getWorkId());
-            if (work != null) {
-                workMap.put(award.getWorkId(), work);
-                teamNameMap.put(award.getWorkId(),
-                        teamService.getTeamById(work.getTeamId()) != null
-                                ? teamService.getTeamById(work.getTeamId()).getTeamName()
-                                : "未知队伍");
-                Double avg = scoreService.getAverageScore(award.getWorkId());
-                avgScoreMap.put(award.getWorkId(), avg != null ? avg : 0.0);
+        if (awards != null && !awards.isEmpty()) {
+            awards.sort(new Comparator<Award>() {
+                @Override
+                public int compare(Award a, Award b) {
+                    int levelCompare = Integer.compare(awardLevelRank(a.getAwardLevel()),
+                            awardLevelRank(b.getAwardLevel()));
+                    if (levelCompare != 0) return levelCompare;
+                    return Double.compare(b.getFinalScore() != null ? b.getFinalScore() : 0.0,
+                            a.getFinalScore() != null ? a.getFinalScore() : 0.0);
+                }
+            });
+
+            for (Award award : awards) {
+                Work work = workDAO.findById(award.getWorkId());
+                if (work != null) {
+                    workMap.put(award.getWorkId(), work);
+                    teamNameMap.put(award.getWorkId(),
+                            teamService.getTeamById(work.getTeamId()) != null
+                                    ? teamService.getTeamById(work.getTeamId()).getTeamName()
+                                    : "未知队伍");
+                    Double avg = scoreService.getAverageScore(award.getWorkId());
+                    avgScoreMap.put(award.getWorkId(), avg != null ? avg : 0.0);
+                }
             }
         }
 
@@ -224,6 +254,13 @@ public class AwardServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/award?action=list");
         }
+    }
+
+    private int awardLevelRank(String level) {
+        if ("一等奖".equals(level)) return 1;
+        if ("二等奖".equals(level)) return 2;
+        if ("三等奖".equals(level)) return 3;
+        return 99;
     }
 
     /**

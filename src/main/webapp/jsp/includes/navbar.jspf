@@ -53,13 +53,14 @@
                 <% if (navIsParticipant) { %>
                     <li class="nav-item"><a class="nav-link <%= "teams".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
                     <li class="nav-item"><a class="nav-link <%= "invitations".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
+                    <li class="nav-item"><a class="nav-link <%= "applications".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/application?action=myApplications">入队申请</a></li>
                     <li class="nav-item"><a class="nav-link <%= "works".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
                     <li class="nav-item"><a class="nav-link <%= "certificates".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a></li>
                 <% } %>
                 <% if (navIsJudge) { %>
                     <li class="nav-item"><a class="nav-link <%= "scores".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
                 <% } %>
-                <li class="nav-item"><a class="nav-link <%= "awards".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/award?action=list">获奖名单</a></li>
+                <li class="nav-item"><a class="nav-link <%= "awards".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/award?action=list">往届获奖</a></li>
                 <li class="nav-item"><a class="nav-link <%= "news".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
                 <% if (navIsAdmin) { %>
                     <li class="nav-item dropdown">

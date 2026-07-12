@@ -222,10 +222,26 @@ public class CompetitionServiceImpl implements CompetitionService {
         }
 
         List<Team> teams = teamDAO.findByCompetitionId(competitionId);
-        stats.put("teamCount", teams != null ? teams.size() : 0);
+        int registeredTeamCount = 0;
+        if (teams != null) {
+            for (Team team : teams) {
+                if (team.getStatus() != null && team.getStatus() == 2) {
+                    registeredTeamCount++;
+                }
+            }
+        }
+        stats.put("teamCount", registeredTeamCount);
 
-        int workCount = workDAO.countByCompetitionId(competitionId);
-        stats.put("workCount", workCount);
+        List<Work> works = workDAO.findByCompetitionId(competitionId);
+        int submittedWorkCount = 0;
+        if (works != null) {
+            for (Work work : works) {
+                if (work.getStatus() != null && work.getStatus() == 2) {
+                    submittedWorkCount++;
+                }
+            }
+        }
+        stats.put("workCount", submittedWorkCount);
 
         return stats;
     }

@@ -31,6 +31,51 @@ public class WorkServlet extends HttpServlet {
 
     private static final String UPLOAD_BASE = "uploads";
 
+    private boolean isCompetitionRunningAndOpen(Competition competition) {
+        return competition != null
+                && competition.getStatus() != null
+                && competition.getStatus() == 2
+                && (competition.getSubmitDeadline() == null
+                    || LocalDateTime.now().isBefore(competition.getSubmitDeadline()));
+    }
+
+    private boolean isCompetitionEnded(Competition competition) {
+        return competition != null && competition.getStatus() != null && competition.getStatus() == 3;
+    }
+
+    private boolean hasRole(HttpServletRequest request, String roleName) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        @SuppressWarnings("unchecked")
+        List<Role> roles = (List<Role>) session.getAttribute("roles");
+        if (roles == null) return false;
+        for (Role role : roles) {
+            if (roleName.equals(role.getRoleName())) return true;
+        }
+        return false;
+    }
+
+    private boolean isUserInCompetition(Integer userId, Integer competitionId) {
+        if (userId == null || competitionId == null) return false;
+        List<TeamMember> memberships = teamMemberDAO.findByUserId(userId);
+        for (TeamMember member : memberships) {
+            Team team = teamDAO.findById(member.getTeamId());
+            if (team != null && competitionId.equals(team.getCompetitionId())
+                    && team.getStatus() != null && team.getStatus() != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean canViewWork(HttpServletRequest request, User user, Work work) {
+        if (user == null || work == null) return false;
+        if (hasRole(request, "管理员") || hasRole(request, "评委")) return true;
+        if (teamService.isUserMemberOfTeam(user.getUserId(), work.getTeamId())) return true;
+        Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
+        return isCompetitionEnded(competition) && isUserInCompetition(user.getUserId(), work.getCompetitionId());
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -48,8 +93,10 @@ public class WorkServlet extends HttpServlet {
             showEditForm(request, response);
         } else if ("detail".equals(action)) {
             showDetail(request, response);
+        } else if ("competitionWorks".equals(action)) {
+            showCompetitionWorks(request, response);
         } else if ("delete".equals(action)) {
-            deleteWork(request, response);
+            response.sendRedirect(request.getContextPath() + "/work?error=delete_requires_post");
         } else {
             listWorks(request, response);
         }
@@ -74,6 +121,8 @@ public class WorkServlet extends HttpServlet {
             likeWork(request, response);
         } else if ("unlike".equals(action)) {
             unlikeWork(request, response);
+        } else if ("delete".equals(action)) {
+            deleteWork(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/work");
         }
@@ -145,10 +194,36 @@ public class WorkServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
 
-        // 显示当前用户创建的所有队伍（含未报名）
+        // 显示当前用户创建的队伍，并标记哪些队伍当前可提交作品
         List<Team> leaderTeams = teamService.getTeamsByLeaderId(user.getUserId());
+        Set<Integer> submittedTeamIds = new HashSet<>();
+        Set<Integer> ineligibleTeamIds = new HashSet<>();
+        Map<Integer, String> ineligibleReasonMap = new HashMap<>();
+
+        if (leaderTeams != null) {
+            for (Team team : leaderTeams) {
+                Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
+                if (team.getStatus() == null || team.getStatus() != 2) {
+                    ineligibleTeamIds.add(team.getTeamId());
+                    ineligibleReasonMap.put(team.getTeamId(), "队伍未报名");
+                } else if (!isCompetitionRunningAndOpen(competition)) {
+                    ineligibleTeamIds.add(team.getTeamId());
+                    ineligibleReasonMap.put(team.getTeamId(), "竞赛未进行或已截止");
+                }
+
+                List<Work> existingWorks = workService.getWorksByTeamIdAndCompetitionId(team.getTeamId(), team.getCompetitionId());
+                if (existingWorks != null && !existingWorks.isEmpty()) {
+                    submittedTeamIds.add(team.getTeamId());
+                    ineligibleTeamIds.add(team.getTeamId());
+                    ineligibleReasonMap.put(team.getTeamId(), "已提交作品");
+                }
+            }
+        }
 
         request.setAttribute("teams", leaderTeams);
+        request.setAttribute("submittedTeamIds", submittedTeamIds);
+        request.setAttribute("ineligibleTeamIds", ineligibleTeamIds);
+        request.setAttribute("ineligibleReasonMap", ineligibleReasonMap);
         request.getRequestDispatcher("/jsp/submission_add.jsp").forward(request, response);
     }
 
@@ -186,11 +261,19 @@ public class WorkServlet extends HttpServlet {
             return;
         }
 
-        // 3. 验证截止日期
+        // 3. 验证队伍报名状态、竞赛状态和截止日期
         Competition competition = competitionService.getCompetitionById(team.getCompetitionId());
-        if (competition != null && competition.getSubmitDeadline() != null
-                && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-            response.sendRedirect(request.getContextPath() + "/work?action=add&error=deadline_passed");
+        if (team.getStatus() == null || team.getStatus() != 2) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=team_not_registered");
+            return;
+        }
+        if (!isCompetitionRunningAndOpen(competition)) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=competition_not_open");
+            return;
+        }
+        List<Work> existingWorks = workService.getWorksByTeamIdAndCompetitionId(teamId, team.getCompetitionId());
+        if (existingWorks != null && !existingWorks.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/work?action=add&error=already_submitted");
             return;
         }
 
@@ -273,27 +356,16 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            // 权限验证：非本队成员不能查看
-            List<TeamMember> memberships = teamMemberDAO.findByUserId(user.getUserId());
-            boolean isMember = false;
-            boolean isLeader = false;
-            for (TeamMember m : memberships) {
-                if (m.getTeamId().equals(work.getTeamId())) {
-                    isMember = true;
-                    Team t = teamDAO.findById(m.getTeamId());
-                    if (t != null && t.getLeaderId().equals(user.getUserId())) {
-                        isLeader = true;
-                    }
-                    break;
-                }
-            }
-            if (!isMember) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权查看其他队伍的作品");
+            if (!canViewWork(request, user, work)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "比赛结束后才可查看其他队伍的作品");
                 return;
             }
 
             Team team = teamDAO.findById(work.getTeamId());
+            boolean isMember = teamService.isUserMemberOfTeam(user.getUserId(), work.getTeamId());
+            boolean isLeader = team != null && team.getLeaderId() != null && team.getLeaderId().equals(user.getUserId());
             Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
+            boolean canMutate = isLeader && isCompetitionRunningAndOpen(competition);
             int likeCount = workService.getLikeCount(workId);
             boolean liked = workService.isWorkLikedByUser(workId, user.getUserId());
 
@@ -302,7 +374,9 @@ public class WorkServlet extends HttpServlet {
             request.setAttribute("competition", competition);
             request.setAttribute("likeCount", likeCount);
             request.setAttribute("liked", liked);
-            request.setAttribute("isLeader", isLeader);
+            request.setAttribute("isLeader", canMutate);
+            request.setAttribute("isOwnTeam", isMember);
+            request.setAttribute("readOnlyView", !canMutate);
             request.getRequestDispatcher("/jsp/submission_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -338,29 +412,10 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            // 截止日期验证
             Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
-            if (competition != null && competition.getSubmitDeadline() != null
-                    && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=deadline_passed");
+            if (!isCompetitionRunningAndOpen(competition)) {
+                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=competition_not_open");
                 return;
-            }
-            Integer competitionId = team.getCompetitionId();
-
-            // 校验竞赛状态：必须为"进行中"且未过截止日期
-            competition = competitionService.getCompetitionById(competitionId);
-            if (competition != null) {
-                if (competition.getStatus() == null || competition.getStatus() != 2) {
-                    request.setAttribute("error", "竞赛已结束或已取消，无法提交作品");
-                    showAddForm(request, response);
-                    return;
-                }
-                if (competition.getSubmitDeadline() != null
-                        && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-                    request.setAttribute("error", "提交已截止，无法提交作品");
-                    showAddForm(request, response);
-                    return;
-                }
             }
 
             request.setAttribute("work", work);
@@ -409,18 +464,11 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            // 检查竞赛状态：已结束或已取消的竞赛不可修改作品
+            // 检查竞赛状态：已结束、已取消或截止后不可修改作品
             competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
-            if (competition != null) {
-                if (competition.getStatus() == null || competition.getStatus() != 2) {
-                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=competition_ended");
-                    return;
-                }
-                if (competition.getSubmitDeadline() != null
-                        && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
-                    response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=deadline_passed");
-                    return;
-                }
+            if (!isCompetitionRunningAndOpen(competition)) {
+                response.sendRedirect(request.getContextPath() + "/work?action=myWorks&error=competition_not_open");
+                return;
             }
 
             // 更新标题
@@ -471,6 +519,47 @@ public class WorkServlet extends HttpServlet {
         }
     }
 
+    private void showCompetitionWorks(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+        Integer competitionId;
+        try {
+            competitionId = Integer.parseInt(request.getParameter("competitionId"));
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/competition?action=list");
+            return;
+        }
+
+        Competition competition = competitionService.getCompetitionById(competitionId);
+        if (competition == null) {
+            response.sendRedirect(request.getContextPath() + "/competition?action=list&error=not_found");
+            return;
+        }
+
+        boolean privileged = hasRole(request, "管理员") || hasRole(request, "评委");
+        if (!privileged && (!isCompetitionEnded(competition) || !isUserInCompetition(user.getUserId(), competitionId))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "比赛结束后参赛者才可查看该比赛作品");
+            return;
+        }
+
+        List<Work> works = workService.getWorksByCompetitionId(competitionId);
+        Map<Integer, Team> teamMap = new HashMap<>();
+        Map<Integer, Integer> likeCountMap = new HashMap<>();
+        for (Work work : works) {
+            if (work.getStatus() != null && work.getStatus() == 2) {
+                Team team = teamDAO.findById(work.getTeamId());
+                if (team != null) teamMap.put(work.getTeamId(), team);
+                likeCountMap.put(work.getWorkId(), workService.getLikeCount(work.getWorkId()));
+            }
+        }
+        request.setAttribute("competition", competition);
+        request.setAttribute("works", works);
+        request.setAttribute("teamMap", teamMap);
+        request.setAttribute("likeCountMap", likeCountMap);
+        request.getRequestDispatcher("/jsp/competition_works.jsp").forward(request, response);
+    }
+
     // ==================== 删除作品 ====================
 
     private void deleteWork(HttpServletRequest request, HttpServletResponse response)
@@ -492,13 +581,17 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            // 权限验证：只有队长能删除
+            // 权限验证：只有队长能删除，且仅限竞赛进行中且未截止
             Team team = teamDAO.findById(work.getTeamId());
             if (team == null || !team.getLeaderId().equals(user.getUserId())) {
                 response.sendRedirect(request.getContextPath() + "/work?error=permission_denied");
                 return;
             }
-
+            Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
+            if (!isCompetitionRunningAndOpen(competition)) {
+                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=competition_not_open");
+                return;
+            }
 
             if (work.getImagePath() != null) {
                 String uploadRealPath = FileUploadUtil.getUploadBasePath();

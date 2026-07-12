@@ -4,20 +4,27 @@ import com.poster.dao.TeamDAO;
 import com.poster.dao.TeamMemberDAO;
 import com.poster.dao.InvitationDAO;
 import com.poster.dao.CompetitionDAO;
+import com.poster.dao.CategoryDAO;
 import com.poster.dao.UserRoleDAO;
+import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.TeamDAOImpl;
 import com.poster.dao.impl.TeamMemberDAOImpl;
 import com.poster.dao.impl.InvitationDAOImpl;
 import com.poster.dao.impl.CompetitionDAOImpl;
+import com.poster.dao.impl.CategoryDAOImpl;
 import com.poster.dao.impl.UserRoleDAOImpl;
+import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Team;
 import com.poster.model.TeamMember;
 import com.poster.model.Invitation;
 import com.poster.model.Competition;
+import com.poster.model.CompetitionCategory;
 import com.poster.model.Role;
+import com.poster.model.Work;
 import com.poster.service.TeamService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +38,9 @@ public class TeamServiceImpl implements TeamService {
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private InvitationDAO invitationDAO = new InvitationDAOImpl();
     private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
+    private CategoryDAO categoryDAO = new CategoryDAOImpl();
     private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
+    private WorkDAO workDAO = new WorkDAOImpl();
 
     @Override
     public boolean createTeam(Team team, Integer leaderId) {
@@ -43,6 +52,15 @@ public class TeamServiceImpl implements TeamService {
             return false;
         }
         if (team.getCategoryId() == null) {
+            return false;
+        }
+
+        Competition competition = competitionDAO.findById(team.getCompetitionId());
+        if (competition == null || competition.getStatus() == null || competition.getStatus() != 1) {
+            return false;
+        }
+        CompetitionCategory category = categoryDAO.findById(team.getCategoryId());
+        if (category == null || !team.getCompetitionId().equals(category.getCompetitionId())) {
             return false;
         }
 
@@ -83,6 +101,22 @@ public class TeamServiceImpl implements TeamService {
         if (team.getTeamName() == null || team.getTeamName().trim().isEmpty()) {
             return false;
         }
+        Team existing = teamDAO.findById(team.getTeamId());
+        if (existing == null) {
+            return false;
+        }
+        if (existing.getStatus() != null && existing.getStatus() == 2) {
+            team.setCompetitionId(existing.getCompetitionId());
+            team.setCategoryId(existing.getCategoryId());
+        } else {
+            Competition competition = competitionDAO.findById(team.getCompetitionId());
+            CompetitionCategory category = categoryDAO.findById(team.getCategoryId());
+            if (competition == null || competition.getStatus() == null || competition.getStatus() != 1
+                    || category == null || !team.getCompetitionId().equals(category.getCompetitionId())) {
+                return false;
+            }
+        }
+        team.setStatus(existing.getStatus());
         return teamDAO.update(team) > 0;
     }
 
@@ -95,6 +129,15 @@ public class TeamServiceImpl implements TeamService {
         // 验证是否为队长
         Team team = teamDAO.findById(teamId);
         if (team == null || !team.getLeaderId().equals(leaderId)) {
+            return false;
+        }
+
+        // 只有组建中的空队伍允许解散，避免删除已报名/已提交/已评分的历史数据
+        if (team.getStatus() == null || team.getStatus() != 1) {
+            return false;
+        }
+        List<Work> works = workDAO.findByTeamId(teamId);
+        if (works != null && !works.isEmpty()) {
             return false;
         }
 
@@ -222,9 +265,13 @@ public class TeamServiceImpl implements TeamService {
             return false;
         }
 
-        // 检查队伍是否存在
+        // 检查队伍是否存在且仍在组建中
         Team team = teamDAO.findById(teamId);
-        if (team == null) {
+        if (team == null || team.getStatus() == null || team.getStatus() != 1) {
+            return false;
+        }
+        Competition teamCompetition = competitionDAO.findById(team.getCompetitionId());
+        if (teamCompetition == null || teamCompetition.getStatus() == null || teamCompetition.getStatus() != 1) {
             return false;
         }
 
@@ -282,9 +329,10 @@ public class TeamServiceImpl implements TeamService {
             return false;
         }
 
-        // 验证是否为队长
+        // 验证是否为队长，且只有组建中队伍允许调整成员
         Team team = teamDAO.findById(teamId);
-        if (team == null || !team.getLeaderId().equals(leaderId)) {
+        if (team == null || !team.getLeaderId().equals(leaderId)
+                || team.getStatus() == null || team.getStatus() != 1) {
             return false;
         }
 
@@ -303,7 +351,13 @@ public class TeamServiceImpl implements TeamService {
         }
 
         Team team = teamDAO.findById(teamId);
-        if (team == null) {
+        if (team == null || team.getStatus() == null || team.getStatus() != 1) {
+            return false;
+        }
+        Competition competition = competitionDAO.findById(competitionId);
+        CompetitionCategory category = categoryDAO.findById(categoryId);
+        if (competition == null || competition.getStatus() == null || competition.getStatus() != 1
+                || category == null || !competitionId.equals(category.getCompetitionId())) {
             return false;
         }
 
@@ -331,8 +385,25 @@ public class TeamServiceImpl implements TeamService {
             return false;
         }
 
+        Competition competition = competitionDAO.findById(team.getCompetitionId());
+        if (competition == null || competition.getStatus() == null || competition.getStatus() != 1) {
+            return false;
+        }
+        List<Work> works = workDAO.findByTeamId(teamId);
+        if (works != null && !works.isEmpty()) {
+            return false;
+        }
+
         // 恢复为组建中状态
         team.setStatus(1);
         return teamDAO.update(team) > 0;
+    }
+
+    @Override
+    public List<Team> searchTeams(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return teamDAO.searchByTeamName(keyword.trim());
     }
 }

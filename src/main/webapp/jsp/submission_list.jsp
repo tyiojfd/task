@@ -131,7 +131,11 @@
                         </form>
                         <% if (isLeader) { %>
                             <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn-sm btn-edit"><i class="fas fa-edit"></i> 编辑</a>
-                            <a href="${pageContext.request.contextPath}/work?action=delete&id=<%= work.getWorkId() %>" class="btn-sm" style="background:#FFF0F0;color:#FF6B6B;" onclick="return confirm('确定删除？')"><i class="fas fa-trash"></i> 删除</a>
+                            <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0" onsubmit="return confirm('确定删除？')">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="id" value="<%= work.getWorkId() %>">
+                                <button type="submit" class="btn-sm" style="background:#FFF0F0;color:#FF6B6B;"><i class="fas fa-trash"></i> 删除</button>
+                            </form>
                         <% } %>
                         <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>" class="btn-sm" style="background:#F1F2F6;color:var(--gray);margin-left:auto;"><i class="fas fa-eye"></i> 查看</a>
                     </div>

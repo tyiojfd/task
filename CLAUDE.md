@@ -545,6 +545,40 @@
 
 **编译状态：** BUILD SUCCESS（Vite 5.2.0）
 
+### 2026-07-12
+
+**已完成：Bug修复 - 获奖名单改为往届获奖记录（完成人：洪振博 / Claude 协助）**
+- ✅ AwardServlet.showAwardList() 重写：只加载已结束竞赛（status=3）的获奖数据
+- ✅ 前端 award_list.jsp 全面改版：标题改为"往届获奖记录"，顶部增加竞赛选择下拉框
+- ✅ 所有导航/链接"获奖名单"→"往届获奖"统一更名（navbar.jspf, index.jsp）
+- **修改文件：** 4个文件（AwardServlet.java + award_list.jsp + navbar.jspf + index.jsp）
+
+**已完成：Bug修复 - 入队申请403错误（完成人：洪振博 / Claude 协助）**
+- ✅ AuthFilter.java：/application、/team、/invitation、/work 路径开放管理员访问（`isParticipant || isAdmin`）
+- ✅ 管理员不再因角色检查被拦截在这些路径外
+- **修改文件：** 2个文件（AuthFilter.java + navbar.jspf）
+
+**已完成：Bug修复 - 已结束比赛仍显示可提交作品（完成人：洪振博 / Claude 协助）**
+- ✅ TeamServlet.showTeamDetail()：新增传递 Competition 对象到 JSP
+- ✅ team_detail.jsp：根据竞赛状态（isCompetitionEnded）控制"提交作品"按钮显示
+  - 已结束竞赛 → 按钮替换为"竞赛已结束，作品提交已关闭"提示
+  - 已取消竞赛 → 隐藏按钮
+- ✅ team_detail.jsp 步骤指示器：步骤3显示"作品提交已截止（竞赛已结束）"
+- ✅ 服务端 WorkServlet.submitWork() 已有正确的截止日期+竞赛状态双重校验
+- **修改文件：** 2个文件（TeamServlet.java + team_detail.jsp）
+
+**已完成：新功能 - 搜索队伍并申请加入（完成人：洪振博 / Claude 协助）**
+- ✅ 仿照邀请队员的搜索模式实现反向流程：队员搜索队伍 → 申请加入
+- ✅ TeamDAO/TeamDAOImpl：新增 `searchByTeamName(String keyword)` 模糊搜索（`LIKE %keyword% LIMIT 20`）
+- ✅ TeamService/TeamServiceImpl：新增 `searchTeams(String keyword)` 方法
+- ✅ TeamServlet：新增 `searchTeam` action，返回 JSON（队名、竞赛名、成员数/上限、队长ID）
+- ✅ competition_detail.jsp：
+  - "创建队伍"旁新增"搜索并加入队伍"按钮
+  - Bootstrap Modal：搜索输入框 → AJAX 模糊搜索 → 结果列表 → "申请加入"按钮
+  - 仅在竞赛状态=1（报名中）且用户未参赛时显示
+- **修改文件：** 6个文件（3个Java后端 + 3个JSP/前端）
+- **编译状态：** BUILD SUCCESS，91个Java源文件零错误
+
 ---
 
 ## 开发规范
@@ -1059,6 +1093,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月9日
+**最后更新时间：** 2026年7月12日
 **更新人：** 洪振博 / Claude
-**版本：** v1.11
+**版本：** v1.12

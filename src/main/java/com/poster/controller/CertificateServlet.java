@@ -41,7 +41,7 @@ public class CertificateServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("view".equals(action)) {
-            // 查看奖状
+            // 查看奖状.
             showCertificate(request, response);
         } else if ("myCertificates".equals(action)) {
             // 我的奖状

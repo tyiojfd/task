@@ -23,6 +23,7 @@
     Integer likeCount = (Integer) request.getAttribute("likeCount");
     Boolean liked = (Boolean) request.getAttribute("liked");
     Boolean isLeader = (Boolean) request.getAttribute("isLeader");
+    Boolean readOnlyView = (Boolean) request.getAttribute("readOnlyView");
     if (work == null) { response.sendRedirect(request.getContextPath() + "/work?error=not_found"); return; }
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy\u5e74MM\u6708dd\u65e5 HH:mm");
     String imgUrl = (work.getImagePath() != null && !work.getImagePath().isEmpty()) ? request.getContextPath() + "/uploads" + work.getImagePath() : "";
@@ -109,7 +110,13 @@
                     <a href="<%= request.getContextPath() + "/uploads" + work.getImagePath() + "?download=true" %>" class="btn-action btn-outline" title="下载原图"><i class="fas fa-download me-1"></i>下载</a>
                     <% if (isLeader != null && isLeader) { %>
                         <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn-action btn-primary-custom"><i class="fas fa-edit me-1"></i>编辑</a>
-                        <a href="${pageContext.request.contextPath}/work?action=delete&id=<%= work.getWorkId() %>" class="btn-action btn-danger-custom" onclick="return confirm('确定删除？')"><i class="fas fa-trash me-1"></i>删除</a>
+                        <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0" onsubmit="return confirm('确定删除？')">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="<%= work.getWorkId() %>">
+                            <button type="submit" class="btn-action btn-danger-custom border-0"><i class="fas fa-trash me-1"></i>删除</button>
+                        </form>
+                    <% } else if (readOnlyView != null && readOnlyView) { %>
+                        <span class="text-muted small align-self-center"><i class="fas fa-lock me-1"></i>比赛已结束，作品仅供查看</span>
                     <% } %>
                 </div>
             </div>
