@@ -3,12 +3,23 @@
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
+<%@ page import="com.poster.model.CompetitionCategory" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Set" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     Competition competition = (Competition) request.getAttribute("competition");
     Boolean hasJoined = (Boolean) request.getAttribute("hasJoined");
     Team userTeam = (Team) request.getAttribute("userTeam");
+    @SuppressWarnings("unchecked")
+    List<CompetitionCategory> categories = (List<CompetitionCategory>) request.getAttribute("categories");
+    @SuppressWarnings("unchecked")
+    List<Team> availableTeams = (List<Team>) request.getAttribute("availableTeams");
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> teamMemberCounts = (Map<Integer, Integer>) request.getAttribute("teamMemberCounts");
+    @SuppressWarnings("unchecked")
+    Set<Integer> appliedTeamIds = (Set<Integer>) request.getAttribute("appliedTeamIds");
     User sessionUser = (User) session.getAttribute("user");
     if (hasJoined == null) hasJoined = false;
 
@@ -93,6 +104,17 @@
                         <span><%= competition.getMaxTeamSize() %>人</span>
                     </div>
 
+                    <% if (categories != null && !categories.isEmpty()) { %>
+                    <div class="info-row">
+                        <span class="info-label">竞赛方向：</span>
+                        <div class="mt-2">
+                            <% for (CompetitionCategory cat : categories) { %>
+                                <span class="badge bg-info text-dark me-2 mb-2"><%= cat.getCategoryName() %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% } %>
+
                     <div class="info-row">
                         <span class="info-label">创建时间：</span>
                         <span><%= competition.getCreateTime() != null ? competition.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未知" %></span>
@@ -124,12 +146,50 @@
                             <a href="${pageContext.request.contextPath}/work?action=myWorks" class="btn btn-success">查看作品</a>
                         <% } else { %>
                             <h5>参加此竞赛</h5>
-                            <p class="text-muted mb-3">参加竞赛需要创建或加入队伍</p>
-                            <a href="${pageContext.request.contextPath}/team?action=create&competitionId=<%= competition.getCompetitionId() %>"
-                               class="btn btn-primary me-2">创建队伍</a>
-                            <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-outline-primary">返回竞赛列表后选择参赛</a>
+                            <% if (competition.getStatus() != null && competition.getStatus() == 1) { %>
+                                <p class="text-muted mb-3">报名阶段可以创建队伍，或申请加入其他正在组建的队伍。</p>
+                                <a href="${pageContext.request.contextPath}/team?action=create&competitionId=<%= competition.getCompetitionId() %>"
+                                   class="btn btn-primary me-2">创建队伍</a>
+                                <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#joinTeamModal">
+                                    <i class="fas fa-search me-1"></i>搜索并加入队伍
+                                </button>
+                            <% } else { %>
+                                <p class="text-muted mb-0">当前竞赛不在报名阶段，不能创建或加入队伍。</p>
+                            <% } %>
                         <% } %>
                     </div>
+
+                    <% if (competition.getStatus() != null && competition.getStatus() == 3) { %>
+                    <div class="mt-4 p-3 border rounded bg-white">
+                        <h5><i class="fas fa-images me-2"></i>作品展厅</h5>
+                        <p class="text-muted mb-2">比赛已结束，参赛者可以查看本竞赛其他队伍的作品。</p>
+                        <a href="${pageContext.request.contextPath}/work?action=competitionWorks&competitionId=<%= competition.getCompetitionId() %>" class="btn btn-outline-primary">查看作品展厅</a>
+                    </div>
+                    <% } %>
+
+                    <% if (canParticipate && !hasJoined && competition.getStatus() != null && competition.getStatus() == 1 && availableTeams != null && !availableTeams.isEmpty()) { %>
+                    <div class="mt-4 p-3 border rounded bg-white">
+                        <h5><i class="fas fa-user-plus me-2"></i>申请加入队伍</h5>
+                        <p class="text-muted">以下队伍正在组建中，可以申请加入。</p>
+                        <% for (Team t : availableTeams) {
+                            int memberCount = teamMemberCounts != null && teamMemberCounts.get(t.getTeamId()) != null ? teamMemberCounts.get(t.getTeamId()) : 0;
+                            boolean applied = appliedTeamIds != null && appliedTeamIds.contains(t.getTeamId());
+                        %>
+                        <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2 flex-wrap gap-2">
+                            <div><strong><%= t.getTeamName() %></strong><span class="text-muted ms-2"><%= memberCount %>/<%= competition.getMaxTeamSize() %> 人</span></div>
+                            <% if (applied) { %>
+                                <button class="btn btn-sm btn-secondary" disabled>已申请</button>
+                            <% } else { %>
+                                <form method="post" action="${pageContext.request.contextPath}/application?action=apply" class="d-flex gap-2">
+                                    <input type="hidden" name="teamId" value="<%= t.getTeamId() %>">
+                                    <input type="text" name="message" class="form-control form-control-sm" placeholder="申请留言" maxlength="200">
+                                    <button class="btn btn-sm btn-primary" type="submit">申请加入</button>
+                                </form>
+                            <% } %>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
 
                     <div class="mt-4 d-flex gap-2">
                         <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-secondary">返回列表</a>
@@ -169,6 +229,60 @@
                 document.body.appendChild(form);
                 form.submit();
             }
+        }
+    </script>
+
+    <!-- ═══════════ 搜索并加入队伍 Modal ═══════════ -->
+    <div class="modal fade" id="joinTeamModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius:16px; border:none;">
+                <div class="modal-header" style="background:linear-gradient(135deg, var(--primary), #8B7CF6); color:white; border-radius:16px 16px 0 0;">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>搜索并加入队伍</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="teamSearchInput" placeholder="输入队伍名称搜索..." onkeyup="searchTeams()">
+                        <button class="btn btn-primary" onclick="searchTeams()"><i class="fas fa-search me-1"></i>搜索</button>
+                    </div>
+                    <div id="teamSearchResults" class="list-group" style="max-height:360px;overflow-y:auto">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-search fa-2x mb-2"></i>
+                            <p>输入队伍名称开始搜索</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function searchTeams() {
+            var keyword = document.getElementById('teamSearchInput').value.trim();
+            var container = document.getElementById('teamSearchResults');
+            if (!keyword) { container.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-search fa-2x mb-2"></i><p>输入队伍名称开始搜索</p></div>'; return; }
+            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '${pageContext.request.contextPath}/team?action=searchTeam&keyword=' + encodeURIComponent(keyword) + '&competitionId=<%= competition.getCompetitionId() %>');
+            xhr.onload = function() {
+                try {
+                    var teams = JSON.parse(xhr.responseText);
+                    if (!teams.length) { container.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-users-slash fa-2x mb-2"></i><p>未找到匹配的队伍</p></div>'; return; }
+                    var html = '';
+                    teams.forEach(function(t) {
+                        html += '<div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">';
+                        html += '<div><strong>' + t.teamName + '</strong><small class="text-muted ms-2">' + t.competitionName + '</small><br><small class="text-muted">' + t.memberCount + '/' + t.maxTeamSize + ' 人</small></div>';
+                        html += '<form method="post" action="${pageContext.request.contextPath}/application?action=apply" onsubmit="return confirm(\'确认申请加入「' + t.teamName + '」吗？\')">';
+                        html += '<input type="hidden" name="teamId" value="' + t.teamId + '">';
+                        html += '<input type="hidden" name="message" value="">';
+                        html += '<button class="btn btn-sm btn-primary" type="submit">申请加入</button>';
+                        html += '</form>';
+                        html += '</div>';
+                    });
+                    container.innerHTML = html;
+                } catch(e) { container.innerHTML = '<div class="text-center text-danger py-4">搜索出错，请重试</div>'; }
+            };
+            xhr.send();
         }
     </script>
 </body>

@@ -125,7 +125,7 @@
                     <p>从创作、提交到评审结果，所有作品沉淀为可浏览的校园创意档案。</p>
                     <div class="hero-links">
                         <a href="<%= workHref %>">查看作品入口 <i class="fa-solid fa-arrow-right"></i></a>
-                        <a href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
+                        <a href="${pageContext.request.contextPath}/award?action=list">往届获奖</a>
                     </div>
                 </div>
             </div>
@@ -203,7 +203,7 @@
                     <p class="kicker">POPULAR POSTERS</p>
                     <h2>往届热门海报</h2>
                 </div>
-                <a class="section-link" href="${pageContext.request.contextPath}/award?action=list">获奖名单 <i class="fa-solid fa-arrow-right"></i></a>
+                <a class="section-link" href="${pageContext.request.contextPath}/award?action=list">往届获奖 <i class="fa-solid fa-arrow-right"></i></a>
             </div>
 
             <div class="poster-gallery">
@@ -306,7 +306,7 @@
                         <a href="<%= teamHref %>">我的队伍</a>
                         <a href="<%= workHref %>">作品提交</a>
                     <% } %>
-                    <a href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
+                    <a href="${pageContext.request.contextPath}/award?action=list">往届获奖</a>
                 </section>
                 <section>
                     <h3>账号</h3>
@@ -332,7 +332,7 @@
                         <h3>评审工作</h3>
                         <a href="${pageContext.request.contextPath}/score?action=list">评分工作台</a>
                         <a href="${pageContext.request.contextPath}/score?action=myScores">我的评分</a>
-                        <a href="${pageContext.request.contextPath}/award?action=list">获奖名单</a>
+                        <a href="${pageContext.request.contextPath}/award?action=list">往届获奖</a>
                     <% } else if (isParticipant) { %>
                         <h3>我的参赛</h3>
                         <a href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a>

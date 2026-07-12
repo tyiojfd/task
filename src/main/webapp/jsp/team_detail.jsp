@@ -48,12 +48,18 @@
     List<Work> works = (List<Work>) request.getAttribute("works");
     @SuppressWarnings("unchecked")
     Map<Integer, Integer> likeCounts = (Map<Integer, Integer>) request.getAttribute("likeCounts");
+    Integer pendingApplicationCount = (Integer) request.getAttribute("pendingApplicationCount");
+    if (pendingApplicationCount == null) pendingApplicationCount = 0;
     Integer workCount = (Integer) request.getAttribute("workCount");
     Integer totalLikes = (Integer) request.getAttribute("totalLikes");
     Integer maxTeamSize = (Integer) request.getAttribute("maxTeamSize");
     if (workCount == null) workCount = 0;
     if (totalLikes == null) totalLikes = 0;
     if (maxTeamSize == null) maxTeamSize = 5;
+
+    Competition competition = (Competition) request.getAttribute("competition");
+    boolean isCompetitionEnded = competition != null && competition.getStatus() != null && competition.getStatus() == 3;
+    boolean isCompetitionCancelled = competition != null && competition.getStatus() != null && competition.getStatus() == 0;
 
     int memberCount = members != null ? members.size() : 0;
     boolean isLeader = team.getLeaderId().equals(sessionUser.getUserId());
@@ -540,10 +546,12 @@
                             <i class="fas fa-image fa-4x mb-3" style="color: #DFE6E9;"></i>
                             <h5 class="text-muted">暂无作品</h5>
                             <p class="text-muted">组队完成后即可提交参赛作品</p>
-                            <% if (isLeader && team.getStatus() != null && team.getStatus() == 2) { %>
+                            <% if (isLeader && team.getStatus() != null && team.getStatus() == 2 && !isCompetitionEnded && !isCompetitionCancelled) { %>
                                 <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary mt-2 rounded-3 px-4" style="background:var(--primary); border:none;">
                                     <i class="fas fa-plus me-1"></i>提交作品
                                 </a>
+                            <% } else if (isLeader && isCompetitionEnded) { %>
+                                <span class="badge bg-secondary mt-2 px-3 py-2 rounded-3">竞赛已结束，作品提交已关闭</span>
                             <% } %>
                         </div>
                     <% } %>
@@ -559,9 +567,14 @@
                             <button class="action-btn btn-edit" onclick="openEditModal()">
                                 <i class="fas fa-edit"></i>编辑队伍信息
                             </button>
+                            <% if (team.getStatus() != null && team.getStatus() == 1) { %>
                             <button class="action-btn btn-invite" onclick="openInviteModal()">
                                 <i class="fas fa-user-plus"></i>邀请队员
                             </button>
+                            <a class="action-btn btn-invite text-decoration-none" href="${pageContext.request.contextPath}/application?action=teamApplications&teamId=<%= team.getTeamId() %>">
+                                <i class="fas fa-user-check"></i>入队申请 <span class="badge bg-light text-dark"><%= pendingApplicationCount %></span>
+                            </a>
+                            <% } %>
                             <% if (team.getStatus() != null && team.getStatus() == 1) { %>
                                 <form action="${pageContext.request.contextPath}/team?action=register" method="post"
                                       onsubmit="return confirm('确认报名参赛？报名后队伍状态将变为已报名，不可更改。')">
@@ -583,11 +596,12 @@
                                 </form>
                             <% } %>
                             <hr>
-                            <a href="${pageContext.request.contextPath}/team?action=delete&id=<%= team.getTeamId() %>"
-                               class="action-btn btn-delete text-decoration-none"
-                               onclick="return confirm('⚠️ 确定要解散队伍「<%= team.getTeamName() %>」吗？\n\n此操作不可恢复，所有成员将被移除。')">
-                                <i class="fas fa-trash-alt"></i>解散队伍
-                            </a>
+                            <form action="${pageContext.request.contextPath}/team?action=delete&id=<%= team.getTeamId() %>" method="post"
+                                  onsubmit="return confirm('⚠️ 确定要解散队伍「<%= team.getTeamName() %>」吗？\n\n仅组建中且未提交作品的队伍可以解散，此操作不可恢复。')">
+                                <button type="submit" class="action-btn btn-delete w-100 border-0">
+                                    <i class="fas fa-trash-alt"></i>解散队伍
+                                </button>
+                            </form>
                         </div>
                     <% } else { %>
                         <p class="text-muted text-center py-3">
@@ -627,7 +641,9 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge rounded-pill" style="<%= step3Style %>">3</span>
-                            <small class="<%= step2Done ? "fw-bold" : "text-muted" %>">提交参赛作品</small>
+                            <small class="<%= step2Done && !isCompetitionEnded ? "fw-bold" : "text-muted" %>">
+                                <%= isCompetitionEnded ? "作品提交已截止（竞赛已结束）" : "提交参赛作品" %>
+                            </small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge rounded-pill" style="<%= step4Style %>">4</span>

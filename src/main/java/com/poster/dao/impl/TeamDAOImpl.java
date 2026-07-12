@@ -184,6 +184,24 @@ public class TeamDAOImpl implements TeamDAO {
     }
 
     @Override
+    public List<Team> searchByTeamName(String keyword) {
+        List<Team> teams = new ArrayList<>();
+        String sql = "SELECT * FROM team WHERE team_name LIKE ? LIMIT 20";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, "%" + keyword + "%");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    teams.add(extractTeamFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return teams;
+    }
+
+    @Override
     public int count() {
         String sql = "SELECT COUNT(*) FROM team";
         try (Connection conn = DBUtil.getConnection();

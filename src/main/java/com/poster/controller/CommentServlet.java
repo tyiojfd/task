@@ -1,8 +1,11 @@
 package com.poster.controller;
 
 import com.poster.dao.WorkDAO;
+import com.poster.dao.CompetitionDAO;
 import com.poster.dao.impl.WorkDAOImpl;
+import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.model.Comment;
+import com.poster.model.Competition;
 import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.model.Work;
@@ -25,6 +28,13 @@ public class CommentServlet extends HttpServlet {
 
     private CommentService commentService = new CommentServiceImpl();
     private WorkDAO workDAO = new WorkDAOImpl();
+    private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
+
+    private boolean isCompetitionRunning(Work work) {
+        if (work == null || work.getCompetitionId() == null) return false;
+        Competition competition = competitionDAO.findById(work.getCompetitionId());
+        return competition != null && competition.getStatus() != null && competition.getStatus() == 2;
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -152,6 +162,12 @@ public class CommentServlet extends HttpServlet {
         try {
             Integer workId = Integer.parseInt(request.getParameter("workId"));
             String commentText = request.getParameter("commentText");
+            Work work = workDAO.findById(workId);
+            if (!isCompetitionRunning(work)) {
+                request.getSession().setAttribute("error", "比赛已结束或未进行，不能再添加评语");
+                response.sendRedirect(request.getContextPath() + "/score?action=input&workId=" + workId);
+                return;
+            }
 
             Comment comment = new Comment();
             comment.setWorkId(workId);
@@ -186,6 +202,18 @@ public class CommentServlet extends HttpServlet {
             Integer commentId = Integer.parseInt(request.getParameter("commentId"));
             String commentText = request.getParameter("commentText");
             String workIdStr = request.getParameter("workId");
+            User user = (User) session.getAttribute("user");
+            Comment existing = commentService.getCommentById(commentId);
+            if (existing == null || !user.getUserId().equals(existing.getJudgeId())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "只能修改自己的评语");
+                return;
+            }
+            Work work = workDAO.findById(existing.getWorkId());
+            if (!isCompetitionRunning(work)) {
+                request.getSession().setAttribute("error", "比赛已结束或未进行，不能再修改评语");
+                response.sendRedirect(request.getContextPath() + "/score?action=input&workId=" + existing.getWorkId());
+                return;
+            }
 
             Comment comment = new Comment();
             comment.setCommentId(commentId);
@@ -223,6 +251,18 @@ public class CommentServlet extends HttpServlet {
         try {
             Integer commentId = Integer.parseInt(request.getParameter("commentId"));
             String workIdStr = request.getParameter("workId");
+            User user = (User) session.getAttribute("user");
+            Comment existing = commentService.getCommentById(commentId);
+            if (existing == null || !user.getUserId().equals(existing.getJudgeId())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "只能删除自己的评语");
+                return;
+            }
+            Work work = workDAO.findById(existing.getWorkId());
+            if (!isCompetitionRunning(work)) {
+                request.getSession().setAttribute("error", "比赛已结束或未进行，不能再删除评语");
+                response.sendRedirect(request.getContextPath() + "/score?action=input&workId=" + existing.getWorkId());
+                return;
+            }
 
             boolean success = commentService.deleteComment(commentId);
 

@@ -85,9 +85,13 @@ public class InvitationServiceImpl implements InvitationService {
             return false;
         }
 
-        // 6. 检查队伍是否存在且状态正常
+        // 6. 检查队伍是否存在且仍在组建中；报名后锁定成员
         Team team = teamDAO.findById(invitation.getTeamId());
-        if (team == null || team.getStatus() == null || team.getStatus() == 0) {
+        if (team == null || team.getStatus() == null || team.getStatus() != 1) {
+            return false;
+        }
+        Competition currentCompetition = competitionDAO.findById(team.getCompetitionId());
+        if (currentCompetition == null || currentCompetition.getStatus() == null || currentCompetition.getStatus() != 1) {
             return false;
         }
 

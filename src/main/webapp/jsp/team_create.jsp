@@ -26,6 +26,7 @@
     List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
     @SuppressWarnings("unchecked")
     List<CompetitionCategory> categories = (List<CompetitionCategory>) request.getAttribute("categories");
+    String selectedCompetitionId = (String) request.getAttribute("selectedCompetitionId");
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -285,13 +286,15 @@
                                     for (Competition comp : competitions) {
                                         String statusColor = comp.getStatus() == 1 ? "success" : comp.getStatus() == 2 ? "primary" : "secondary";
                                         String statusText = comp.getStatus() == 1 ? "报名中" : comp.getStatus() == 2 ? "进行中" : "已结束";
+                                        boolean selected = (selectedCompetitionId != null && selectedCompetitionId.equals(String.valueOf(comp.getCompetitionId())))
+                                                || (selectedCompetitionId == null && idx == 0);
                                         String[] iconColors = {"#6C5CE7", "#FD79A8", "#00CEC9", "#FDCB6E", "#E17055", "#74B9FF"};
                                         String iconColor = iconColors[idx % iconColors.length];
                                 %>
                                     <div class="col-md-6">
-                                        <label class="comp-select-card <%= idx == 0 ? "selected" : "" %>" for="comp_<%= comp.getCompetitionId() %>">
+                                        <label class="comp-select-card <%= selected ? "selected" : "" %>" for="comp_<%= comp.getCompetitionId() %>">
                                             <input type="radio" name="competitionId" id="comp_<%= comp.getCompetitionId() %>"
-                                                   value="<%= comp.getCompetitionId() %>" <%= idx == 0 ? "checked" : "" %>
+                                                   value="<%= comp.getCompetitionId() %>" <%= selected ? "checked" : "" %>
                                                    onchange="selectCompetition(this)">
                                             <span class="badge bg-<%= statusColor %> badge-status"><%= statusText %></span>
                                             <div class="comp-icon" style="background: <%= iconColor %>1A; color: <%= iconColor %>;">

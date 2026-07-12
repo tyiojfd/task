@@ -18,8 +18,11 @@ import com.poster.service.CompetitionService;
 import com.poster.service.impl.TeamServiceImpl;
 import com.poster.service.impl.CompetitionServiceImpl;
 import com.poster.service.WorkService;
+import com.poster.service.TeamApplicationService;
 import com.poster.service.impl.WorkServiceImpl;
+import com.poster.service.impl.TeamApplicationServiceImpl;
 import com.poster.model.Work;
+import com.poster.model.TeamApplication;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -41,6 +44,7 @@ public class TeamServlet extends HttpServlet {
     private TeamService teamService = new TeamServiceImpl();
     private CompetitionService competitionService = new CompetitionServiceImpl();
     private WorkService workService = new WorkServiceImpl();
+    private TeamApplicationService applicationService = new TeamApplicationServiceImpl();
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private UserDAO userDAO = new UserDAOImpl();
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
@@ -52,11 +56,20 @@ public class TeamServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("create".equals(action)) {
-            // 鍔犺浇绔炶禌鍒楄〃鍜屽瓙绫诲垪琛ㄤ緵閫夋嫨
-            List<Competition> competitions = competitionService.getAllCompetitions();
+            // 只加载报名中的竞赛供创建队伍
+            List<Competition> allCompetitions = competitionService.getAllCompetitions();
+            List<Competition> competitions = new ArrayList<>();
+            if (allCompetitions != null) {
+                for (Competition competition : allCompetitions) {
+                    if (competition.getStatus() != null && competition.getStatus() == 1) {
+                        competitions.add(competition);
+                    }
+                }
+            }
             List<CompetitionCategory> categories = categoryDAO.findAll();
             request.setAttribute("competitions", competitions);
             request.setAttribute("categories", categories);
+            request.setAttribute("selectedCompetitionId", request.getParameter("competitionId"));
             request.getRequestDispatcher("/jsp/team_create.jsp").forward(request, response);
         } else if ("detail".equals(action)) {
             showTeamDetail(request, response);
@@ -88,6 +101,8 @@ public class TeamServlet extends HttpServlet {
             cancelRegistration(request, response);
         } else if ("searchUser".equals(action)) {
             searchUserForInvite(request, response);
+        } else if ("searchTeam".equals(action)) {
+            searchTeamForJoin(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams");
         }
@@ -249,6 +264,7 @@ public class TeamServlet extends HttpServlet {
 
 
             request.setAttribute("team", team);
+            request.setAttribute("competition", competition);
             request.setAttribute("competitionName", competitionName);
             request.setAttribute("maxTeamSize", maxTeamSize);
             request.setAttribute("categoryName", categoryName);
@@ -260,6 +276,9 @@ public class TeamServlet extends HttpServlet {
             request.setAttribute("works", works);
             request.setAttribute("likeCounts", likeCounts);
             request.setAttribute("workCount", workCount);
+            List<TeamApplication> pendingApplications = applicationService.getPendingApplicationsByTeamId(teamId);
+            request.setAttribute("pendingApplications", pendingApplications);
+            request.setAttribute("pendingApplicationCount", pendingApplications != null ? pendingApplications.size() : 0);
             request.setAttribute("totalLikes", totalLikes);
             request.getRequestDispatcher("/jsp/team_detail.jsp").forward(request, response);
 
@@ -557,6 +576,69 @@ public class TeamServlet extends HttpServlet {
             json.append("\"userId\":").append(u.getUserId()).append(",");
             json.append("\"realName\":\"").append(escapeJson(u.getRealName())).append("\",");
             json.append("\"username\":\"").append(escapeJson(u.getUsername())).append("\"");
+            json.append("}");
+            first = false;
+        }
+        json.append("]");
+
+        response.getWriter().write(json.toString());
+    }
+
+    /**
+     * 搜索队伍（用于入队申请弹窗，按队名模糊匹配）
+     */
+    private void searchTeamForJoin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("[]");
+            return;
+        }
+
+        String keyword = request.getParameter("keyword");
+        String competitionIdStr = request.getParameter("competitionId");
+        response.setContentType("application/json;charset=UTF-8");
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            response.getWriter().write("[]");
+            return;
+        }
+
+        List<Team> teams = teamService.searchTeams(keyword.trim());
+        Integer competitionId = null;
+        if (competitionIdStr != null && !competitionIdStr.isEmpty()) {
+            try {
+                competitionId = Integer.parseInt(competitionIdStr);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        // 构建JSON：含队名、竞赛名、成员数、最大人数
+        StringBuilder json = new StringBuilder("[");
+        boolean first = true;
+        for (Team t : teams) {
+            // 如果指定了竞赛ID，则只返回该竞赛的队伍（状态为组建中）
+            if (competitionId != null && !competitionId.equals(t.getCompetitionId())) {
+                continue;
+            }
+            // 只显示组建中的队伍
+            if (t.getStatus() == null || t.getStatus() != 1) {
+                continue;
+            }
+            Competition comp = competitionService.getCompetitionById(t.getCompetitionId());
+            int memberCount = teamMemberDAO.countByTeamId(t.getTeamId());
+            Integer maxSize = (comp != null && comp.getMaxTeamSize() != null && comp.getMaxTeamSize() > 0)
+                    ? comp.getMaxTeamSize() : 5;
+
+            if (!first) json.append(",");
+            json.append("{");
+            json.append("\"teamId\":").append(t.getTeamId()).append(",");
+            json.append("\"teamName\":\"").append(escapeJson(t.getTeamName())).append("\",");
+            json.append("\"competitionName\":\"").append(escapeJson(comp != null ? comp.getName() : "未知竞赛")).append("\",");
+            json.append("\"memberCount\":").append(memberCount).append(",");
+            json.append("\"maxTeamSize\":").append(maxSize).append(",");
+            json.append("\"leaderId\":").append(t.getLeaderId() != null ? t.getLeaderId() : 0);
             json.append("}");
             first = false;
         }

@@ -105,6 +105,14 @@ public class WorkServiceImpl implements WorkService {
     }
 
     @Override
+    public List<Work> getWorksByTeamIdAndCompetitionId(Integer teamId, Integer competitionId) {
+        if (teamId == null || competitionId == null) {
+            return new ArrayList<>();
+        }
+        return workDAO.findByTeamIdAndCompetitionId(teamId, competitionId);
+    }
+
+    @Override
     public boolean likeWork(Integer workId, Integer userId) {
         if (workId == null || userId == null) {
             return false;

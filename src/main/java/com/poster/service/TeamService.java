@@ -79,4 +79,9 @@ public interface TeamService {
      * 取消报名（将队伍状态从已报名恢复为组建中）
      */
     boolean cancelRegistration(Integer teamId, Integer leaderId);
+
+    /**
+     * 根据队名模糊搜索队伍
+     */
+    List<Team> searchTeams(String keyword);
 }

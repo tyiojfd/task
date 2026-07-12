@@ -25,6 +25,11 @@
     List<Team> teams = (List<Team>) request.getAttribute("teams");
     @SuppressWarnings("unchecked")
     java.util.Set<Integer> submittedTeamIds = (java.util.Set<Integer>) request.getAttribute("submittedTeamIds");
+    @SuppressWarnings("unchecked")
+    java.util.Set<Integer> ineligibleTeamIds = (java.util.Set<Integer>) request.getAttribute("ineligibleTeamIds");
+    @SuppressWarnings("unchecked")
+    java.util.Map<Integer, String> ineligibleReasonMap = (java.util.Map<Integer, String>) request.getAttribute("ineligibleReasonMap");
+    Team editTeam = (Team) request.getAttribute("team");
     Work editWork = (Work) request.getAttribute("work");
     boolean isEdit = (editWork != null);
     String error = request.getParameter("error");
@@ -96,30 +101,42 @@
         <div class="row">
             <div class="col-lg-8">
                 <div class="form-card">
-                    <h5><i class="fas fa-users me-2" style="color:var(--primary)"></i>选择队伍</h5>
-                    <% if (teams == null || teams.isEmpty()) { %>
+                    <h5><i class="fas fa-users me-2" style="color:var(--primary)"></i><%= isEdit ? "所属队伍" : "选择队伍" %></h5>
+                    <% if (isEdit) { %>
+                        <div class="team-card selected" style="cursor:default;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3"><i class="fas fa-users text-primary" style="font-size:1.5rem"></i></div>
+                                <div>
+                                    <strong><%= editTeam != null ? editTeam.getTeamName() : "原队伍" %></strong>
+                                    <span class="badge bg-info">编辑时不可更换队伍</span>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else if (teams == null || teams.isEmpty()) { %>
                         <div class="text-center py-4">
                             <i class="fas fa-info-circle" style="font-size:2rem;color:#B2BEC3"></i>
-                            <p class="text-muted mt-2">你还没有创建队伍，请先创建队伍。</p>
+                            <p class="text-muted mt-2">你还没有可提交作品的队伍，请先创建并报名队伍。</p>
                             <a href="${pageContext.request.contextPath}/team?action=create" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>创建队伍</a>
                         </div>
                     <% } else { %>
                         <% for (Team t : teams) { %>
                         <%
                             boolean teamSubmitted = submittedTeamIds != null && submittedTeamIds.contains(t.getTeamId());
+                            boolean ineligible = ineligibleTeamIds != null && ineligibleTeamIds.contains(t.getTeamId());
+                            String reason = ineligibleReasonMap != null ? ineligibleReasonMap.get(t.getTeamId()) : null;
                         %>
-                        <label class="team-card" style="<%= teamSubmitted ? "opacity:0.6;cursor:not-allowed;" : "" %>">
-                            <input type="radio" name="teamId" value="<%= t.getTeamId() %>" style="display:none" <%= teamSubmitted ? "disabled" : "" %>>
+                        <label class="team-card" style="<%= ineligible ? "opacity:0.6;cursor:not-allowed;" : "" %>">
+                            <input type="radio" name="teamId" value="<%= t.getTeamId() %>" style="display:none" <%= ineligible ? "disabled" : "" %>>
                             <div class="d-flex align-items-center">
                                 <div class="me-3"><i class="fas fa-users text-primary" style="font-size:1.5rem"></i></div>
                                 <div>
                                     <strong><%= t.getTeamName() %></strong>
                                     <% if (teamSubmitted) { %>
                                         <span class="badge bg-secondary">已提交作品</span>
-                                    <% } else if (t.getStatus() != null && t.getStatus() == 2) { %>
-                                        <span class="badge bg-success">已报名</span>
+                                    <% } else if (t.getStatus() != null && t.getStatus() == 2 && !ineligible) { %>
+                                        <span class="badge bg-success">可提交</span>
                                     <% } else { %>
-                                        <span class="badge bg-warning text-dark">未报名</span>
+                                        <span class="badge bg-warning text-dark"><%= reason != null ? reason : "不可提交" %></span>
                                     <% } %>
                                 </div>
                             </div>
@@ -187,10 +204,10 @@
     document.getElementById('submitForm').addEventListener('submit', function(e) {
         var title = document.querySelector('input[name="title"]').value.trim();
         if (!title) { alert('请输入作品名称'); e.preventDefault(); return; }
-        var team = document.querySelector('input[name="teamId"]:checked');
-        if (!team) { alert('请选择队伍'); e.preventDefault(); return; }
         var isEditMode = <%= isEdit %>;
         if (!isEditMode) {
+            var team = document.querySelector('input[name="teamId"]:checked');
+            if (!team) { alert('请选择可提交作品的队伍'); e.preventDefault(); return; }
             var file = document.getElementById('imageFile').files[0];
             if (!file) { alert('请上传图片'); e.preventDefault(); return; }
         }

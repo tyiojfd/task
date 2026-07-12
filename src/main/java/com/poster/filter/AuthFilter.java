@@ -82,6 +82,11 @@ public class AuthFilter implements Filter {
             return true;
         }
 
+        // 竞赛大厅和详情公开浏览，管理操作仍需管理员权限。
+        if (relativePath.equals("/competition")) {
+            return action == null || "list".equals(action) || "detail".equals(action);
+        }
+
         // 新闻公开仅限列表和详情。URI 不包含 query string，必须使用 action 参数判断。
         if (relativePath.equals("/news")) {
             return action == null || "list".equals(action) || "detail".equals(action);
@@ -152,8 +157,8 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/team") || relativePath.startsWith("/invitation")
-                || relativePath.startsWith("/work")) {
-            return isParticipant;
+                || relativePath.startsWith("/application") || relativePath.startsWith("/work")) {
+            return isParticipant || isAdmin;
         }
 
         if (relativePath.startsWith("/profile")) {
