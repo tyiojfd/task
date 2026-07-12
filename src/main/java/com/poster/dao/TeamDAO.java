@@ -51,6 +51,11 @@ public interface TeamDAO {
     List<Team> findByStatus(Integer status);
 
     /**
+     * 根据队名模糊搜索队伍
+     */
+    List<Team> searchByTeamName(String keyword);
+
+    /**
      * 统计队伍总数
      */
     int count();

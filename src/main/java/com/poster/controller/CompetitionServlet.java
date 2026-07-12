@@ -4,12 +4,15 @@ import com.poster.model.Competition;
 import com.poster.model.User;
 import com.poster.model.Team;
 import com.poster.model.CompetitionCategory;
+import com.poster.model.TeamApplication;
 import com.poster.dao.CategoryDAO;
 import com.poster.dao.impl.CategoryDAOImpl;
 import com.poster.service.CompetitionService;
 import com.poster.service.TeamService;
 import com.poster.service.impl.CompetitionServiceImpl;
 import com.poster.service.impl.TeamServiceImpl;
+import com.poster.service.TeamApplicationService;
+import com.poster.service.impl.TeamApplicationServiceImpl;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -28,6 +31,7 @@ public class CompetitionServlet extends HttpServlet {
 
     private CompetitionService competitionService = new CompetitionServiceImpl();
     private TeamService teamService = new TeamServiceImpl();
+    private TeamApplicationService applicationService = new TeamApplicationServiceImpl();
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
 
     @Override
@@ -98,22 +102,18 @@ public class CompetitionServlet extends HttpServlet {
 
         List<Competition> competitions = competitionService.searchCompetitions(keyword, year, status);
 
-        // 级联筛选：子类统一从关联竞赛获取
-        if (yearStr == null && (keyword == null || keyword.trim().isEmpty())) {
-            Map<String, Integer> globalStats = new java.util.HashMap<>();
-            int totalComps = competitionService.getAllCompetitions().size();
-            int totalTeams = 0;
-            int totalWorks = 0;
-            for (Competition c : competitions) {
-                Map<String, Integer> s = competitionService.getCompetitionStats(c.getCompetitionId());
-                totalTeams += s.getOrDefault("teamCount", 0);
-                totalWorks += s.getOrDefault("workCount", 0);
-            }
-            globalStats.put("compCount", totalComps);
-            globalStats.put("teamCount", totalTeams);
-            globalStats.put("workCount", totalWorks);
-            request.setAttribute("globalStats", globalStats);
+        Map<String, Integer> globalStats = new java.util.HashMap<>();
+        int totalTeams = 0;
+        int totalWorks = 0;
+        for (Competition c : competitions) {
+            Map<String, Integer> s = competitionService.getCompetitionStats(c.getCompetitionId());
+            totalTeams += s.getOrDefault("teamCount", 0);
+            totalWorks += s.getOrDefault("workCount", 0);
         }
+        globalStats.put("compCount", competitions != null ? competitions.size() : 0);
+        globalStats.put("teamCount", totalTeams);
+        globalStats.put("workCount", totalWorks);
+        request.setAttribute("globalStats", globalStats);
 
         request.setAttribute("competitions", competitions);
         request.setAttribute("keyword", keyword);
@@ -145,9 +145,34 @@ public class CompetitionServlet extends HttpServlet {
                     hasJoined = (userTeam != null);
                 }
 
-                // 获取竞赛统计
+                // 获取竞赛统计、竞赛方向、可申请队伍
                 Map<String, Integer> stats = competitionService.getCompetitionStats(competitionId);
+                List<CompetitionCategory> categories = categoryDAO.findByCompetitionId(competitionId);
+                List<Team> availableTeams = new java.util.ArrayList<>();
+                java.util.Map<Integer, Integer> teamMemberCounts = new java.util.HashMap<>();
+                java.util.Set<Integer> appliedTeamIds = new java.util.HashSet<>();
+
+                if (competition != null && competition.getStatus() != null && competition.getStatus() == 1) {
+                    List<Team> competitionTeams = teamService.getTeamsByCompetitionId(competitionId);
+                    if (competitionTeams != null) {
+                        for (Team team : competitionTeams) {
+                            if (team.getStatus() != null && team.getStatus() == 1) {
+                                availableTeams.add(team);
+                                int memberCount = new com.poster.dao.impl.TeamMemberDAOImpl().countByTeamId(team.getTeamId());
+                                teamMemberCounts.put(team.getTeamId(), memberCount);
+                                if (user != null && applicationService.getPendingApplication(team.getTeamId(), user.getUserId()) != null) {
+                                    appliedTeamIds.add(team.getTeamId());
+                                }
+                            }
+                        }
+                    }
+                }
+
                 request.setAttribute("stats", stats);
+                request.setAttribute("categories", categories);
+                request.setAttribute("availableTeams", availableTeams);
+                request.setAttribute("teamMemberCounts", teamMemberCounts);
+                request.setAttribute("appliedTeamIds", appliedTeamIds);
 
                 request.setAttribute("competition", competition);
                 request.setAttribute("hasJoined", hasJoined);

@@ -285,7 +285,8 @@ public class ScoreServlet extends HttpServlet {
             Double scoreValue = Double.parseDouble(request.getParameter("score"));
             Work work = workDAO.findById(workId);
             if (work == null || work.getStatus() == null || work.getStatus() != 2
-                    || (competitionId != null && !competitionId.equals(work.getCompetitionId()))) {
+                    || (competitionId != null && !competitionId.equals(work.getCompetitionId()))
+                    || !isCompetitionRunning(work)) {
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
@@ -338,6 +339,11 @@ public class ScoreServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "只能修改自己的评分");
                 return;
             }
+            Work work = workDAO.findById(existing.getWorkId());
+            if (!isCompetitionRunning(work)) {
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
 
             Score score = new Score();
             score.setScoreId(scoreId);
@@ -369,6 +375,12 @@ public class ScoreServlet extends HttpServlet {
 
     private String competitionQuery(Integer competitionId) {
         return competitionId == null ? "" : "&competitionId=" + competitionId;
+    }
+
+    private boolean isCompetitionRunning(Work work) {
+        if (work == null || work.getCompetitionId() == null) return false;
+        Competition competition = competitionDAO.findById(work.getCompetitionId());
+        return competition != null && competition.getStatus() != null && competition.getStatus() == 2;
     }
 
     private boolean isJudge(HttpServletRequest request) {

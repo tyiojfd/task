@@ -41,6 +41,11 @@ public interface WorkService {
     List<Work> getWorksByCompetitionId(Integer competitionId);
 
     /**
+     * 根据队伍ID和竞赛ID查询作品
+     */
+    List<Work> getWorksByTeamIdAndCompetitionId(Integer teamId, Integer competitionId);
+
+    /**
      * 根据用户ID查询作品（用户所在队伍的所有作品）
      */
     List<Work> getWorksByUserId(Integer userId);
