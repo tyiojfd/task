@@ -79,6 +79,7 @@ public class CategoryDAOImpl implements CategoryDAO {
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            if (categoryId == null) return null;
             pstmt.setInt(1, categoryId);
 
             try (ResultSet rs = pstmt.executeQuery()) {

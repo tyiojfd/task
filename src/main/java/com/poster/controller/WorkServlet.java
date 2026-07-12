@@ -219,7 +219,7 @@ public class WorkServlet extends HttpServlet {
             }
 
             // 保存到文件系统
-            String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+            String uploadRealPath = FileUploadUtil.getUploadBasePath();
             try {
                 imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), teamId);
             } catch (IOException e) {
@@ -401,7 +401,7 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            // 截止日期验证
+            // 截止日期验证.
             Competition competition = competitionService.getCompetitionById(existingWork.getCompetitionId());
             if (competition != null && competition.getSubmitDeadline() != null
                     && LocalDateTime.now().isAfter(competition.getSubmitDeadline())) {
@@ -447,12 +447,12 @@ public class WorkServlet extends HttpServlet {
 
                 // 删除旧图片
                 if (existingWork.getImagePath() != null) {
-                    String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                    String uploadRealPath = FileUploadUtil.getUploadBasePath();
                     FileUploadUtil.deleteFile(uploadRealPath, existingWork.getImagePath());
                 }
 
                 // 保存新图片
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String uploadRealPath = FileUploadUtil.getUploadBasePath();
                 String imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), team.getTeamId());
                 existingWork.setImagePath(imagePath);
                 existingWork.setImageData(null);
@@ -501,7 +501,7 @@ public class WorkServlet extends HttpServlet {
 
 
             if (work.getImagePath() != null) {
-                String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+                String uploadRealPath = FileUploadUtil.getUploadBasePath();
                 FileUploadUtil.deleteFile(uploadRealPath, work.getImagePath());
             }
 

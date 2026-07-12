@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="com.poster.model.Team" %>
@@ -27,6 +27,11 @@
     java.util.Set<Integer> submittedTeamIds = (java.util.Set<Integer>) request.getAttribute("submittedTeamIds");
     Work editWork = (Work) request.getAttribute("work");
     boolean isEdit = (editWork != null);
+    String error = request.getParameter("error");
+    String msg = request.getParameter("msg");
+    String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
+    String previewClass = (isEdit && editWork.getImagePath() != null) ? "" : "d-none";
+    String previewImgSrc = (isEdit && editWork.getImagePath() != null) ? request.getContextPath() + "/uploads" + editWork.getImagePath() : "";
     String error = request.getParameter("error");
     String msg = request.getParameter("msg");
     String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
@@ -68,42 +73,10 @@
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/index">🎨 海报竞赛系统</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">首页</a></li>
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/competition?action=list">竞赛大厅</a></li>
-                <% if (sessionUser != null) { %>
-                    <% if (!isAdmin && !isJudge) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/work">已提交的作品</a></li>
-                    <% } %>
-                    <% if (isAdmin) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/competition?action=add">发布竞赛</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/admin/users">用户管理</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
-                    <% } %>
-                    <% if (isJudge) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
-                    <% } %>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-circle"></i> <%= sessionUser.getRealName() %></a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user-edit me-2"></i>个人信息</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
-                        </ul>
-                    </li>
-                <% } %>
-            </ul>
-        </div>
-    </div>
-</nav>
+<%
+    request.setAttribute("activeNav", "works");
+%>
+<%@ include file="includes/navbar.jspf" %>
 <div class="container">
     <div class="page-header">
         <h2><i class="fas fa-plus-circle me-2" style="color:var(--primary)"></i>提交作品</h2>

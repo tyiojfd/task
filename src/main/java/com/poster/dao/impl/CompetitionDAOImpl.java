@@ -86,6 +86,7 @@ public class CompetitionDAOImpl implements CompetitionDAO {
 
     @Override
     public Competition findById(Integer competitionId) {
+        if (competitionId == null) return null;
         String sql = "SELECT * FROM competition WHERE competition_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

@@ -34,7 +34,11 @@ public class NewsServlet extends HttpServlet {
             // 新闻详情
             showNewsDetail(request, response);
         } else if ("publish".equals(action)) {
-            // 跳转到发布页面
+            // 跳转到发布页面（管理员功能）
+            if (!isAdmin(request)) {
+                response.sendRedirect(request.getContextPath() + "/index");
+                return;
+            }
             request.getRequestDispatcher("/jsp/news_add.jsp").forward(request, response);
         } else if ("edit".equals(action)) {
             // 跳转到编辑页面

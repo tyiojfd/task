@@ -1,0 +1,116 @@
+<%@ page pageEncoding="UTF-8" %>
+<%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
+<%@ page import="java.util.List" %>
+<%!
+    private String navHtml(String value) {
+        if (value == null) return "";
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+%>
+<%
+    User navUser = (User) session.getAttribute("user");
+    @SuppressWarnings("unchecked")
+    List<Role> navRoles = navUser != null ? (List<Role>) session.getAttribute("roles") : null;
+
+    boolean navIsAdmin = false;
+    boolean navIsJudge = false;
+    if (navRoles != null) {
+        for (Role navRole : navRoles) {
+            if ("管理员".equals(navRole.getRoleName())) navIsAdmin = true;
+            if ("评委".equals(navRole.getRoleName())) navIsJudge = true;
+        }
+    }
+    boolean navHasParticipantRole = false;
+    if (navRoles != null) {
+        for (Role navRole : navRoles) {
+            if ("队员".equals(navRole.getRoleName()) || "队长".equals(navRole.getRoleName())) {
+                navHasParticipantRole = true;
+                break;
+            }
+        }
+    }
+    boolean navIsParticipant = navUser != null && navHasParticipantRole && !navIsAdmin && !navIsJudge;
+    String navActive = (String) request.getAttribute("activeNav");
+    if (navActive == null) navActive = "";
+    String navDisplayName = navUser == null ? "" : (navUser.getRealName() != null && !navUser.getRealName().trim().isEmpty()
+            ? navUser.getRealName() : navUser.getUsername());
+%>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top app-navbar">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/index">🎨 海报竞赛系统</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="切换导航">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <li class="nav-item"><a class="nav-link <%= "home".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/index">首页</a></li>
+                <li class="nav-item"><a class="nav-link <%= "competitions".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/competition?action=list"><%= navIsAdmin ? "竞赛管理" : "竞赛大厅" %></a></li>
+                <% if (navIsParticipant) { %>
+                    <li class="nav-item"><a class="nav-link <%= "teams".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
+                    <li class="nav-item"><a class="nav-link <%= "invitations".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
+                    <li class="nav-item"><a class="nav-link <%= "works".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
+                    <li class="nav-item"><a class="nav-link <%= "certificates".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a></li>
+                <% } %>
+                <% if (navIsJudge) { %>
+                    <li class="nav-item"><a class="nav-link <%= "scores".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
+                <% } %>
+                <li class="nav-item"><a class="nav-link <%= "awards".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/award?action=list">获奖名单</a></li>
+                <li class="nav-item"><a class="nav-link <%= "news".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
+                <% if (navIsAdmin) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <%= ("users".equals(navActive) || "awardManage".equals(navActive) || "newsManage".equals(navActive) || "certManage".equals(navActive)) ? "active" : "" %>" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/admin/users">用户管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=add">发布竞赛</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/certificate?action=list">证书管理</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
+                        </ul>
+                    </li>
+                <% } %>
+                <% if (navUser != null) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <%= "profile".equals(navActive) ? "active" : "" %>" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i><%= navHtml(navDisplayName) %>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
+                            <% if (navIsParticipant) { %>
+                                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a></li>
+                            <% } %>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">退出登录</a></li>
+                        </ul>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/login">登录</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-primary text-white ms-lg-2 px-3" href="${pageContext.request.contextPath}/register">注册</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</nav>
+<script>
+(function () {
+    document.addEventListener('click', function (event) {
+        if (window.bootstrap) return;
+        var toggle = event.target.closest('[data-bs-toggle="dropdown"]');
+        document.querySelectorAll('.dropdown-menu.show').forEach(function (menu) {
+            if (!toggle || menu !== toggle.nextElementSibling) menu.classList.remove('show');
+        });
+        if (toggle) {
+            event.preventDefault();
+            var menu = toggle.nextElementSibling;
+            if (menu && menu.classList.contains('dropdown-menu')) {
+                menu.classList.toggle('show');
+            }
+        }
+    });
+})();
+</script>

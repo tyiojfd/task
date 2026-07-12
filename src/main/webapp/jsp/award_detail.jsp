@@ -64,46 +64,10 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
-            <i class="fas fa-palette"></i>海报竞赛系统
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index"><i class="fas fa-home"></i> 首页</a></li>
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/competition?action=list"><i class="fas fa-trophy"></i> 竞赛大厅</a></li>
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/award?action=list"><i class="fas fa-medal"></i> 获奖名单</a></li>
-                <% if (isAdmin) { %>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-crown"></i> 管理</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=add"><i class="fas fa-plus-circle"></i> 发布竞赛</a></li>
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage"><i class="fas fa-medal"></i> 获奖管理</a></li>
-                    </ul>
-                </li>
-                <% } %>
-            </ul>
-            <ul class="navbar-nav">
-                <% if (sessionUser != null) { %>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle"></i> <%= sessionUser.getUsername() %>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="fas fa-cog"></i> 个人中心</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> 退出登录</a></li>
-                    </ul>
-                </li>
-                <% } %>
-            </ul>
-        </div>
-    </div>
-</nav>
+<%
+    request.setAttribute("activeNav", "awards");
+%>
+<%@ include file="includes/navbar.jspf" %>
 
 <div class="container">
     <div class="page-header">

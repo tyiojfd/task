@@ -74,7 +74,7 @@ public class FileUploadServlet extends HttpServlet {
             }
 
             // 保存文件
-            String uploadRealPath = getServletContext().getRealPath("/" + FileUploadUtil.STORAGE_DIR);
+            String uploadRealPath = FileUploadUtil.getUploadBasePath();
             String relativePath = "/uploads" + FileUploadUtil.saveFile(filePart, uploadRealPath, competitionId, teamId);
 
             json.addProperty("success", true);
@@ -91,3 +91,4 @@ public class FileUploadServlet extends HttpServlet {
         out.print(json.toString());
     }
 }
+

@@ -22,7 +22,8 @@ public class ScoreServiceImpl implements ScoreService {
     @Override
     public boolean addScore(Score score) {
         // 1. 验证评分范围（0-100）
-        if (score.getScore() == null || score.getScore() < 0 || score.getScore() > 100) {
+        if (score.getScore() == null || score.getScore().isNaN() || score.getScore().isInfinite()
+                || score.getScore() < 0 || score.getScore() > 100) {
             return false;
         }
 
@@ -41,19 +42,29 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     @Override
-    public boolean updateScore(Score score) {
+    public boolean updateScore(Score score, Integer judgeId) {
         // 1. 验证评分范围（0-100）
-        if (score.getScore() == null || score.getScore() < 0 || score.getScore() > 100) {
+        if (score.getScore() == null || score.getScore().isNaN() || score.getScore().isInfinite()
+                || score.getScore() < 0 || score.getScore() > 100) {
             return false;
         }
 
         // 2. 验证必要字段
-        if (score.getScoreId() == null) {
+        if (score.getScoreId() == null || judgeId == null) {
             return false;
         }
 
-        // 3. 调用DAO更新数据库
+        // 3. 仅允许评分所属评委更新
+        score.setJudgeId(judgeId);
         return scoreDAO.update(score) > 0;
+    }
+
+    @Override
+    public Score getScoreById(Integer scoreId) {
+        if (scoreId == null) {
+            return null;
+        }
+        return scoreDAO.findById(scoreId);
     }
 
     @Override

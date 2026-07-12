@@ -5,6 +5,7 @@
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.Score" %>
 <%@ page import="com.poster.model.Comment" %>
+<%@ page import="com.poster.model.Competition" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
@@ -18,6 +19,9 @@
     List<Work> works = (List<Work>) request.getAttribute("works");
     @SuppressWarnings("unchecked")
     List<Score> myScores = (List<Score>) request.getAttribute("myScores");
+    @SuppressWarnings("unchecked")
+    List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
+    Integer selectedCompetitionId = (Integer) request.getAttribute("selectedCompetitionId");
 
     Work targetWork = (Work) request.getAttribute("work");
     Team targetTeam = (Team) request.getAttribute("team");
@@ -176,51 +180,10 @@
 <body>
 
 <!-- 导航栏 -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/index">🎨 海报竞赛系统</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/index">竞赛大厅</a></li>
-                <% if (sessionUser != null) { %>
-                    <% if (!isAdmin && !isJudge) { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
-                    <% } %>
-                    <% if (isJudge) { %>
-                    <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/score?action=list">评分管理</a></li>
-                    <% } %>
-                    <% if (isAdmin) { %>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">管理中心</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/competition?action=list">竞赛管理</a></li>
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/award?action=manage">获奖管理</a></li>
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/news?action=manage">新闻管理</a></li>
-                        </ul>
-                    </li>
-                    <% } %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><%= sessionUser.getRealName() %></a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">个人中心</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/logout">退出登录</a></li>
-                        </ul>
-                    </li>
-                <% } else { %>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a></li>
-                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/login">登录</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-primary text-white ms-2" href="${pageContext.request.contextPath}/register">注册</a></li>
-                <% } %>
-            </ul>
-        </div>
-    </div>
-</nav>
+<%
+    request.setAttribute("activeNav", "scores");
+%>
+<%@ include file="includes/navbar.jspf" %>
 
 <div class="container">
 
@@ -228,12 +191,38 @@
     <div class="page-header">
         <h2><i class="fas fa-star me-2"></i>评分工作台</h2>
         <div>
-            <a href="${pageContext.request.contextPath}/score?action=myScores" class="btn btn-outline-primary me-2">
+            <a href="${pageContext.request.contextPath}/score?action=myScores<%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>" class="btn btn-outline-primary me-2">
                 <i class="fas fa-list-check me-1"></i>我的评分记录
             </a>
-            <a href="${pageContext.request.contextPath}/score?action=list" class="btn btn-primary">
+            <a href="${pageContext.request.contextPath}/score?action=list<%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>" class="btn btn-primary">
                 <i class="fas fa-th-list me-1"></i>待评作品列表
             </a>
+        </div>
+    </div>
+
+    <!-- 竞赛选择 -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;">
+        <div class="card-body">
+            <form method="get" action="${pageContext.request.contextPath}/score" class="row g-3 align-items-end">
+                <input type="hidden" name="action" value="list">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold"><i class="fas fa-trophy me-1"></i>选择要评审的竞赛</label>
+                    <select name="competitionId" class="form-select" onchange="this.form.submit()">
+                        <% if (competitions != null && !competitions.isEmpty()) {
+                            for (Competition comp : competitions) { %>
+                                <option value="<%= comp.getCompetitionId() %>" <%= selectedCompetitionId != null && selectedCompetitionId.equals(comp.getCompetitionId()) ? "selected" : "" %>>
+                                    <%= comp.getName() %>
+                                </option>
+                        <%  }
+                           } else { %>
+                            <option value="">暂无竞赛</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>查看该竞赛作品</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -336,6 +325,9 @@
                 <form action="${pageContext.request.contextPath}/score" method="post" onsubmit="return validateScore()">
                     <input type="hidden" name="action" value="<%= (hasScored != null && hasScored) ? "update" : "submit" %>">
                     <input type="hidden" name="workId" value="<%= targetWork.getWorkId() %>">
+                    <% if (selectedCompetitionId != null) { %>
+                    <input type="hidden" name="competitionId" value="<%= selectedCompetitionId %>">
+                    <% } %>
                     <% if (hasScored != null && hasScored && existingScore != null) { %>
                     <input type="hidden" name="scoreId" value="<%= existingScore.getScoreId() %>">
                     <% } %>
@@ -373,7 +365,7 @@
                             <i class="fas fa-paper-plane me-1"></i>提交评分
                             <% } %>
                         </button>
-                        <a href="${pageContext.request.contextPath}/score?action=list" class="btn btn-outline-secondary btn-lg">
+                        <a href="${pageContext.request.contextPath}/score?action=list<%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-arrow-left me-1"></i>返回列表
                         </a>
                     </div>
@@ -415,18 +407,18 @@
                         <i class="fas fa-paper-plane me-1"></i>
                         <%= myComment != null ? "更新评语" : "提交评语" %>
                     </button>
-                    <% if (myComment != null) { %>
-                    <form action="${pageContext.request.contextPath}/comment" method="post" style="display:inline;">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="commentId" value="<%= myComment.getCommentId() %>">
-                        <input type="hidden" name="workId" value="<%= targetWork.getWorkId() %>">
-                        <button type="submit" class="btn btn-outline-danger ms-2"
-                                onclick="return confirm('确定要删除此评语吗？')">
-                            <i class="fas fa-trash me-1"></i>删除评语
-                        </button>
-                    </form>
-                    <% } %>
                 </form>
+                <% if (myComment != null) { %>
+                <form action="${pageContext.request.contextPath}/comment" method="post" class="mb-4">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="commentId" value="<%= myComment.getCommentId() %>">
+                    <input type="hidden" name="workId" value="<%= targetWork.getWorkId() %>">
+                    <button type="submit" class="btn btn-outline-danger"
+                            onclick="return confirm('确定要删除此评语吗？')">
+                        <i class="fas fa-trash me-1"></i>删除评语
+                    </button>
+                </form>
+                <% } %>
 
                 <!-- 所有评语列表 -->
                 <% if (comments != null && !comments.isEmpty()) { %>
@@ -481,7 +473,7 @@
         %>
         <div class="col-md-6">
             <div class="work-card <%= scored ? "scored" : "unscored" %>"
-                 onclick="location.href='${pageContext.request.contextPath}/score?action=input&workId=<%= w.getWorkId() %>'">
+                 onclick="location.href='${pageContext.request.contextPath}/score?action=input&workId=<%= w.getWorkId() %><%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>'">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="work-title"><%= w.getTitle() %></div>

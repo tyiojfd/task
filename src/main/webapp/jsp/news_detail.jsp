@@ -65,28 +65,10 @@
 </head>
 <body>
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/index">
-                <i class="fas fa-paint-brush me-2"></i>海报竞赛系统
-            </a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/index">首页</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/news?action=list">新闻公告</a>
-                    </li>
-                    <% if (sessionUser != null) { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="${pageContext.request.contextPath}/profile">个人中心</a>
-                        </li>
-                    <% } %>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <%
+    request.setAttribute("activeNav", "news");
+%>
+<%@ include file="includes/navbar.jspf" %>
 
     <div class="container mt-4 detail-container">
         <!-- 返回按钮 -->
