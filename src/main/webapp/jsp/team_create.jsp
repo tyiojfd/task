@@ -223,8 +223,6 @@
             border-radius: 16px;
             box-shadow: var(--card-shadow);
             padding: 1.5rem;
-            position: sticky;
-            top: 1rem;
         }
         .preview-card .team-preview-avatar {
             width: 64px; height: 64px;
