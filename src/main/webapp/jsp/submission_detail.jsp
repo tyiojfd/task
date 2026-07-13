@@ -32,6 +32,7 @@
     if (work == null) { response.sendRedirect(request.getContextPath() + "/work?error=not_found"); return; }
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy\u5e74MM\u6708dd\u65e5 HH:mm");
     String imgUrl = request.getContextPath() + "/image-data?workId=" + work.getWorkId() + "&type=original";
+    String downloadImgUrl = imgUrl + "&download=true";
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -86,7 +87,7 @@
                     <img src="<%= imgUrl %>" alt="<%= HtmlEscaper.escape(work.getTitle()) %>" class="detail-image" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#imageModal">
                     <div class="img-overlay-icons">
                         <a href="javascript:void(0)" onclick="showFullImage()" title="查看大图"><i class="fas fa-expand"></i></a>
-                        <a href="<%= imgUrl %>" title="下载图片"><i class="fas fa-download"></i></a>
+                        <a href="<%= downloadImgUrl %>" title="下载图片"><i class="fas fa-download"></i></a>
                     </div>
                 </div>
             </div>
@@ -133,7 +134,7 @@
                         <input type="hidden" name="platform" value="link">
                         <button type="submit" class="btn-action" style="background:#EAF7F0;color:#198754;"><i class="fas fa-share-alt me-1"></i>分享</button>
                     </form>
-                    <a href="<%= imgUrl %>" class="btn-action btn-outline" title="下载原图"><i class="fas fa-download me-1"></i>下载</a>
+                    <a href="<%= downloadImgUrl %>" class="btn-action btn-outline" title="下载原图"><i class="fas fa-download me-1"></i>下载</a>
                     <% if (isLeader != null && isLeader) { %>
                         <form action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data" style="margin:0;display:flex;gap:.35rem;align-items:center;">
                             <input type="hidden" name="competitionId" value="<%= work.getCompetitionId() %>">
@@ -164,7 +165,7 @@
             <div class="modal-header border-0" style="padding:0.75rem 1rem;">
                 <span style="color:white;font-weight:600;"><i class="fas fa-image me-2"></i>作品大图</span>
                 <div class="d-flex gap-2">
-                    <a href="<%= imgUrl %>" class="btn btn-sm btn-light"><i class="fas fa-download me-1"></i>下载</a>
+                    <a href="<%= downloadImgUrl %>" class="btn btn-sm btn-light"><i class="fas fa-download me-1"></i>下载</a>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>

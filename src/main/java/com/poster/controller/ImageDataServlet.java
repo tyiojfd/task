@@ -17,6 +17,7 @@ import com.poster.service.impl.CompetitionServiceImpl;
 import com.poster.service.impl.TeamServiceImpl;
 import com.poster.service.impl.WorkServiceImpl;
 import com.poster.util.WorkAccessPolicy;
+import com.poster.util.DownloadHeaderPolicy;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -90,6 +91,13 @@ public class ImageDataServlet extends HttpServlet {
             response.setContentType(contentType != null ? contentType : "image/jpeg");
             response.setContentLength(imageData.length);
             response.setHeader("Cache-Control", "private, max-age=3600");
+            if ("true".equalsIgnoreCase(request.getParameter("download"))) {
+                String downloadName = work.getImagePath();
+                if (downloadName == null || downloadName.trim().isEmpty()) {
+                    downloadName = "work-" + work.getWorkId() + ".jpg";
+                }
+                response.setHeader("Content-Disposition", DownloadHeaderPolicy.attachment(downloadName));
+            }
             response.setHeader("X-Image-Variant", "thumb".equalsIgnoreCase(type) ? "thumb" : "original");
 
             // 写入图片数据
