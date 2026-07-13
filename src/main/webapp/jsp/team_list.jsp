@@ -6,6 +6,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -354,7 +355,7 @@
                         boolean isMyTeam = myRole != null && myRole == 1;
                         List<TeamMember> members = teamMembers != null ? teamMembers.get(team.getTeamId()) : null;
                 %>
-                    <div class="col-lg-4 col-md-6 team-item" data-name="<%= team.getTeamName().toLowerCase() %> <%= compName.toLowerCase() %>">
+                    <div class="col-lg-4 col-md-6 team-item" data-name="<%= HtmlEscaper.escape(team.getTeamName().toLowerCase()) %> <%= HtmlEscaper.escape(compName.toLowerCase()) %>">
                         <div class="card team-grid-card" onclick="window.location.href='${pageContext.request.contextPath}/team?action=detail&id=<%= team.getTeamId() %>'">
                             <div class="team-card-cover" style="background: linear-gradient(135deg, <%= colors[0] %> 0%, <%= colors[1] %> 100%);">
                                 <span class="badge bg-<%= statusClass %> team-badge-status" style="font-size:0.75rem"><%= statusText %></span>
@@ -364,7 +365,7 @@
                             </div>
                             <div class="team-card-body">
                                 <h5>
-                                    <%= team.getTeamName() %>
+                                    <%= HtmlEscaper.escape(team.getTeamName()) %>
                                     <% if (isMyTeam) { %>
                                         <span class="badge rounded-pill" style="background:var(--primary); font-size:0.65rem;">队长</span>
                                     <% } else { %>
@@ -372,7 +373,7 @@
                                     <% } %>
                                 </h5>
                                 <p class="text-muted small mb-2">
-                                    <i class="fas fa-trophy me-1" style="color:<%= colors[0] %>"></i><%= compName %>
+                                    <i class="fas fa-trophy me-1" style="color:<%= colors[0] %>"></i><%= HtmlEscaper.escape(compName) %>
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="member-avatars">
@@ -387,9 +388,9 @@
                                             <% String ava = userAvatars != null ? userAvatars.get(m.getUserId()) : null; %>
                                             <% if (ava != null && !ava.isEmpty()) { %>
                                                 <img src="<%= request.getContextPath() + ava %>"
-                                                     class="member-avatar-sm" style="object-fit:cover;" title="<%= name %>">
+                                                     class="member-avatar-sm" style="object-fit:cover;" title="<%= HtmlEscaper.escape(name) %>">
                                             <% } else { %>
-                                                <span class="member-avatar-sm" style="background:<%= avatarColors[shown % 4] %>" title="<%= name %>"><%= initial %></span>
+                                                <span class="member-avatar-sm" style="background:<%= avatarColors[shown % 4] %>" title="<%= HtmlEscaper.escape(name) %>"><%= HtmlEscaper.escape(initial) %></span>
                                             <% } %>
                                         <%      shown++;
                                             }

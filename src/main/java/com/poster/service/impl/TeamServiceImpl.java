@@ -44,6 +44,9 @@ public class TeamServiceImpl implements TeamService {
 
     @Override
     public boolean createTeam(Team team, Integer leaderId) {
+        if (team == null || leaderId == null) {
+            return false;
+        }
         // 验证必填字段
         if (team.getTeamName() == null || team.getTeamName().trim().isEmpty()) {
             return false;
@@ -90,7 +93,13 @@ public class TeamServiceImpl implements TeamService {
         leaderMember.setRole(1); // 1-队长
         leaderMember.setJoinTime(LocalDateTime.now());
 
-        return teamMemberDAO.insert(leaderMember) > 0;
+        if (teamMemberDAO.insert(leaderMember) > 0) {
+            return true;
+        }
+
+        // 队伍和队长成员记录必须成对存在，避免出现“看得见但无法管理”的孤儿队伍。
+        teamDAO.deleteById(team.getTeamId());
+        return false;
     }
 
     @Override
@@ -155,7 +164,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public List<Team> getTeamsByLeaderId(Integer leaderId) {
         if (leaderId == null) {
-            return null;
+            return new ArrayList<>();
         }
         return teamDAO.findByLeaderId(leaderId);
     }
@@ -163,7 +172,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public List<Team> getTeamsByCompetitionId(Integer competitionId) {
         if (competitionId == null) {
-            return null;
+            return new ArrayList<>();
         }
         return teamDAO.findByCompetitionId(competitionId);
     }
@@ -171,7 +180,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public List<Team> getTeamsByUserId(Integer userId) {
         if (userId == null) {
-            return null;
+            return new ArrayList<>();
         }
         List<TeamMember> memberships = teamMemberDAO.findByUserId(userId);
         java.util.ArrayList<Team> teams = new java.util.ArrayList<>();

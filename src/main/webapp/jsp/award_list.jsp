@@ -8,6 +8,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.LinkedHashMap" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
 
@@ -124,7 +125,7 @@
                     boolean isSelected = ec.getCompetitionId().equals(selectedCompId);
                 %>
                 <option value="<%= ec.getCompetitionId() %>" <%= isSelected ? "selected" : "" %>>
-                    <%= ec.getYear() != null ? ec.getYear() + "年 " : "" %><%= ec.getName() %>
+                    <%= ec.getYear() != null ? ec.getYear() + "年 " : "" %><%= HtmlEscaper.escape(ec.getName()) %>
                 </option>
                 <% } %>
             </select>
@@ -136,7 +137,7 @@
         <section class="mb-5">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div>
-                    <h4 class="fw-bold mb-1"><i class="fas fa-flag text-primary me-2"></i><%= competition.getName() %></h4>
+                    <h4 class="fw-bold mb-1"><i class="fas fa-flag text-primary me-2"></i><%= HtmlEscaper.escape(competition.getName()) %></h4>
                     <small class="text-muted"><%= competition.getYear() != null ? competition.getYear() + " 年" : "" %> 获奖作品</small>
                 </div>
                 <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/work?action=competitionWorks&competitionId=<%= competition.getCompetitionId() %>">
@@ -162,13 +163,13 @@
                         <div class="d-flex align-items-center mb-3">
                             <div class="award-rank <%= rankClass %> me-3"><%= rank %></div>
                             <div>
-                                <div class="fw-bold fs-5"><%= work != null ? work.getTitle() : "作品#" + award.getWorkId() %></div>
-                                <small class="text-muted"><i class="fas fa-users"></i> <%= teamName %></small>
+                                <div class="fw-bold fs-5"><%= HtmlEscaper.escape(work != null ? work.getTitle() : "作品#" + award.getWorkId()) %></div>
+                                <small class="text-muted"><i class="fas fa-users"></i> <%= HtmlEscaper.escape(teamName) %></small>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge <%= "一等奖".equals(award.getAwardLevel()) ? "bg-warning text-dark" : ("二等奖".equals(award.getAwardLevel()) ? "bg-secondary" : "bg-danger") %> fs-6">
-                                <i class="fas fa-trophy"></i> <%= award.getAwardLevel() %>
+                                <i class="fas fa-trophy"></i> <%= HtmlEscaper.escape(award.getAwardLevel()) %>
                             </span>
                             <span class="text-muted"><%= String.format("%.1f", award.getFinalScore()) %> 分</span>
                         </div>

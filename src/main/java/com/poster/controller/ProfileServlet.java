@@ -3,16 +3,17 @@ package com.poster.controller;
 import com.poster.model.User;
 import com.poster.service.UserService;
 import com.poster.service.impl.UserServiceImpl;
+import com.poster.util.AvatarStorage;
+import com.poster.util.UploadPathResolver;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
 
 /**
  * 个人中心Servlet
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class ProfileServlet extends HttpServlet {
 
     private UserService userService = new UserServiceImpl();
+    private final AvatarStorage avatarStorage = new AvatarStorage();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -110,17 +112,25 @@ public class ProfileServlet extends HttpServlet {
                     } else if (avatarPart.getSize() > 2 * 1024 * 1024) {
                         request.setAttribute("error", "头像文件不能超过2MB");
                     } else {
-                        String avatarPath = saveAvatar(avatarPart, request);
-                        // 删除旧头像
-                        if (freshUser.getAvatar() != null && !freshUser.getAvatar().isEmpty()) {
-                            String oldPath = getServletContext().getRealPath(freshUser.getAvatar());
-                            try { new File(oldPath).delete(); } catch (Exception ignored) {}
+                        String oldAvatarPath = freshUser.getAvatar();
+                        String avatarPath;
+                        try (InputStream input = avatarPart.getInputStream()) {
+                            avatarPath = avatarStorage.save(
+                                    input,
+                                    avatarPart.getSubmittedFileName(),
+                                    contentType,
+                                    avatarPart.getSize()
+                            );
                         }
+
                         freshUser.setAvatar(avatarPath);
                         if (userService.updateUser(freshUser)) {
                             session.setAttribute("user", freshUser);
+                            deleteOldAvatar(oldAvatarPath, avatarPath);
                             request.setAttribute("success", "头像更新成功");
                         } else {
+                            // 数据库更新失败时删除刚写入的新文件，避免产生孤儿文件。
+                            avatarStorage.delete(avatarPath);
                             request.setAttribute("error", "头像更新失败");
                         }
                     }
@@ -134,25 +144,31 @@ public class ProfileServlet extends HttpServlet {
         request.getRequestDispatcher("/jsp/profile.jsp").forward(request, response);
     }
 
-    /**
-     * 保存头像文件
-     */
-    private String saveAvatar(Part avatarPart, HttpServletRequest request) throws IOException {
-        String uploadDir = getServletContext().getRealPath("/uploads/avatars");
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
+    private void deleteOldAvatar(String oldAvatarPath, String newAvatarPath) {
+        if (oldAvatarPath == null || oldAvatarPath.trim().isEmpty()
+                || oldAvatarPath.equals(newAvatarPath)) {
+            return;
         }
 
-        String originalName = avatarPart.getSubmittedFileName();
-        String ext = "";
-        if (originalName != null && originalName.contains(".")) {
-            ext = originalName.substring(originalName.lastIndexOf("."));
+        // 新版本头像存储在外置目录。
+        try {
+            avatarStorage.delete(oldAvatarPath);
+        } catch (Exception ignored) {
+            // 旧数据可能不是新版本的头像路径，继续尝试兼容旧的 webapp 文件。
         }
-        String fileName = "avatar_" + UUID.randomUUID().toString().substring(0, 8) + ext;
-        Path filePath = uploadPath.resolve(fileName);
-        avatarPart.write(filePath.toString());
 
-        return "/uploads/avatars/" + fileName;
+        // 兼容旧版本已经写入 webapp/uploads/avatars 的头像。
+        String uploadsBase = getServletContext().getRealPath("/uploads");
+        if (uploadsBase != null && oldAvatarPath.startsWith("/uploads/")) {
+            try {
+                String relativePath = oldAvatarPath.substring("/uploads".length());
+                Path legacyPath = UploadPathResolver.resolve(Paths.get(uploadsBase), relativePath);
+                if (legacyPath != null) {
+                    Files.deleteIfExists(legacyPath);
+                }
+            } catch (IOException ignored) {
+                // 清理失败不应影响已经成功的资料更新。
+            }
+        }
     }
 }

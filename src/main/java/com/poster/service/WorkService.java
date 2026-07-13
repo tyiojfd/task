@@ -71,6 +71,11 @@ public interface WorkService {
     int getLikeCount(Integer workId);
 
     /**
+     * 获取作品分享次数
+     */
+    int getShareCount(Integer workId);
+
+    /**
      * 检查用户是否已点赞
      */
     boolean isWorkLikedByUser(Integer workId, Integer userId);

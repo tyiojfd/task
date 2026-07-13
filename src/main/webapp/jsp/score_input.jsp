@@ -6,6 +6,7 @@
 <%@ page import="com.poster.model.Score" %>
 <%@ page import="com.poster.model.Comment" %>
 <%@ page import="com.poster.model.Competition" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
@@ -277,15 +278,15 @@
                 <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>作品信息</h5>
                 <div class="mb-3">
                     <div class="info-label">作品名称</div>
-                    <div class="info-value"><%= targetWork.getTitle() %></div>
+                    <div class="info-value"><%= HtmlEscaper.escape(targetWork.getTitle()) %></div>
                 </div>
                 <div class="mb-3">
                     <div class="info-label">作品描述</div>
-                    <div class="info-value" style="font-weight:400;"><%= targetWork.getDescription() != null ? targetWork.getDescription() : "暂无描述" %></div>
+                    <div class="info-value" style="font-weight:400;"><%= HtmlEscaper.escape(targetWork.getDescription() != null ? targetWork.getDescription() : "暂无描述") %></div>
                 </div>
                 <div class="mb-3">
                     <div class="info-label">所属队伍</div>
-                    <div class="info-value"><%= targetTeam != null ? targetTeam.getTeamName() : "未知队伍" %></div>
+                    <div class="info-value"><%= HtmlEscaper.escape(targetTeam != null ? targetTeam.getTeamName() : "未知队伍") %></div>
                 </div>
                 <div class="mb-3">
                     <div class="info-label">提交时间</div>
@@ -401,7 +402,7 @@
                             <%= myComment != null ? "编辑我的评语" : "添加评语" %>
                         </label>
                         <textarea class="form-control" name="commentText" rows="3"
-                                  placeholder="请输入您的评语..." required><%= myComment != null ? myComment.getCommentText() : "" %></textarea>
+                                  placeholder="请输入您的评语..." required><%= HtmlEscaper.escape(myComment != null ? myComment.getCommentText() : "") %></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-paper-plane me-1"></i>
@@ -436,7 +437,7 @@
                             <%= c.getCommentTime() != null ? c.getCommentTime().format(dtf) : "" %>
                         </small>
                     </div>
-                    <p class="mb-0"><%= c.getCommentText() %></p>
+                    <p class="mb-0"><%= HtmlEscaper.escape(c.getCommentText()) %></p>
                 </div>
                 <% } %>
                 <% } else { %>
@@ -476,7 +477,7 @@
                  onclick="location.href='${pageContext.request.contextPath}/score?action=input&workId=<%= w.getWorkId() %><%= selectedCompetitionId != null ? "&competitionId=" + selectedCompetitionId : "" %>'">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="work-title"><%= w.getTitle() %></div>
+                        <div class="work-title"><%= HtmlEscaper.escape(w.getTitle()) %></div>
                         <div class="work-meta">
                             <i class="fas fa-users me-1"></i>队伍ID: <%= w.getTeamId() %>
                             <span class="mx-2">|</span>
@@ -497,7 +498,7 @@
                 </div>
                 <% if (w.getDescription() != null && !w.getDescription().isEmpty()) { %>
                 <div class="mt-2" style="font-size:0.85rem;color:var(--gray);">
-                    <%= w.getDescription().length() > 80 ? w.getDescription().substring(0, 80) + "..." : w.getDescription() %>
+                    <%= HtmlEscaper.escape(w.getDescription().length() > 80 ? w.getDescription().substring(0, 80) + "..." : w.getDescription()) %>
                 </div>
                 <% } %>
             </div>

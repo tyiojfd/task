@@ -36,6 +36,11 @@ public interface WorkFileDAO {
     WorkFile findById(Integer fileId);
 
     /**
+     * 根据存储路径查询文件，供下载接口进行对象权限校验。
+     */
+    WorkFile findByFilePath(String filePath);
+
+    /**
      * 根据作品ID查询所有文件
      */
     List<WorkFile> findByWorkId(Integer workId);

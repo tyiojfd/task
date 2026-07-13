@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 登录与角色权限验证过滤器（需在web.xml中配置，确保在EncodingFilter之后执行）
@@ -64,7 +65,7 @@ public class AuthFilter implements Filter {
      */
     private boolean isPublicResource(String relativePath, String action) {
         if (relativePath.startsWith("/css/") || relativePath.startsWith("/js/")
-                || relativePath.startsWith("/images/") || relativePath.startsWith("/uploads/")
+                || relativePath.startsWith("/images/") || isPublicUpload(relativePath)
                 || relativePath.startsWith("/assets/") || relativePath.equals("/index.html")) {
             return true;
         }
@@ -99,10 +100,21 @@ public class AuthFilter implements Filter {
 
         // 奖状详情可公开查看；我的奖状和证书管理需要登录后再做角色校验。
         if (relativePath.equals("/certificate")) {
-            return "view".equals(action);
+            return "view".equals(action) || "download".equals(action);
         }
 
         return false;
+    }
+
+    private boolean isPublicUpload(String relativePath) {
+        if (relativePath == null) {
+            return false;
+        }
+        String lowerPath = relativePath.toLowerCase(Locale.ROOT);
+        if (lowerPath.matches("/uploads/avatars/[^/]+\\.(jpg|jpeg|png|gif|webp)")) {
+            return true;
+        }
+        return lowerPath.matches("/uploads/competition_[0-9]+/cover\\.(jpg|jpeg|png)");
     }
 
     /**
@@ -111,7 +123,9 @@ public class AuthFilter implements Filter {
     private boolean hasPermission(String relativePath, String action, List<Role> roles) {
         boolean isAdmin = hasRole(roles, "管理员");
         boolean isJudge = hasRole(roles, "评委");
-        boolean isParticipant = (hasRole(roles, "队员") || hasRole(roles, "队长")) && !isAdmin && !isJudge;
+        // 角色可以叠加：评委账号如果同时拥有参与者角色，仍可访问自己负责的队伍。
+        // 具体队伍的负责人身份由 Team.leaderId/TeamMember.role 再次校验，不能只靠全局角色判断。
+        boolean isParticipant = (hasRole(roles, "队员") || hasRole(roles, "队长")) && !isAdmin;
 
         if (relativePath.startsWith("/competition")) {
             if (action == null || "list".equals(action) || "detail".equals(action)) {
@@ -140,7 +154,7 @@ public class AuthFilter implements Filter {
         }
 
         if (relativePath.startsWith("/certificate")) {
-            if ("view".equals(action)) {
+            if ("view".equals(action) || "download".equals(action)) {
                 return true;
             }
             if ("myCertificates".equals(action)) {
@@ -161,11 +175,19 @@ public class AuthFilter implements Filter {
             return isParticipant || isAdmin;
         }
 
+        // 这些接口会在Servlet内部基于作品/队伍/竞赛再次做对象级鉴权，
+        // 过滤器只负责确保调用者已登录且具备基础角色，否则图片和附件永远到不了业务校验。
+        if (relativePath.equals("/image-data") || relativePath.equals("/upload")
+                || relativePath.startsWith("/uploads/")) {
+            return isParticipant || isJudge || isAdmin;
+        }
+
         if (relativePath.startsWith("/profile")) {
             return true;
         }
 
-        return true;
+        // 未明确列入权限矩阵的新Servlet默认拒绝，避免新增接口意外绕过授权。
+        return false;
     }
 
     private boolean hasRole(List<Role> roles, String roleName) {

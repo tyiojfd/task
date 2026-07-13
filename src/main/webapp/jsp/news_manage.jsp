@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     @SuppressWarnings("unchecked")
     List<News> newsList = (List<News>) request.getAttribute("newsList");
@@ -93,7 +94,7 @@
                                     <td><%= news.getNewsId() %></td>
                                     <td>
                                         <a href="${pageContext.request.contextPath}/news?action=detail&id=<%= news.getNewsId() %>" class="text-decoration-none">
-                                            <%= news.getTitle() %>
+                                            <%= HtmlEscaper.escape(news.getTitle()) %>
                                         </a>
                                     </td>
                                     <td>
@@ -120,7 +121,9 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <button type="button" class="btn btn-outline-danger btn-action"
-                                                    title="删除" onclick="confirmDelete(<%= news.getNewsId() %>, '<%= news.getTitle() %>')">
+                                                    title="删除" data-news-id="<%= news.getNewsId() %>"
+                                                    data-news-title="<%= HtmlEscaper.escape(news.getTitle()) %>"
+                                                    onclick="confirmDeleteFromButton(this)">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
@@ -153,6 +156,10 @@
                 document.getElementById('deleteId').value = newsId;
                 document.getElementById('deleteForm').submit();
             }
+        }
+
+        function confirmDeleteFromButton(button) {
+            confirmDelete(button.dataset.newsId, button.dataset.newsTitle || '该新闻');
         }
     </script>
 </body>

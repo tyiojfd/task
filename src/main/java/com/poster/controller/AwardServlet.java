@@ -174,12 +174,17 @@ public class AwardServlet extends HttpServlet {
         if (competitionIdStr != null && !competitionIdStr.isEmpty()) {
             try {
                 Integer competitionId = Integer.parseInt(competitionIdStr);
+                Competition selectedCompetition = competitionDAO.findById(competitionId);
+                if (selectedCompetition == null || !Integer.valueOf(3).equals(selectedCompetition.getStatus())) {
+                    response.sendRedirect(request.getContextPath() + "/award?action=manage");
+                    return;
+                }
                 // 加载该竞赛下所有已提交的作品
                 List<Work> allWorks = workDAO.findAll();
                 List<Work> competitionWorks = new ArrayList<>();
                 for (Work w : allWorks) {
                     if (w.getCompetitionId() != null && w.getCompetitionId().equals(competitionId)
-                            && w.getStatus() != null && w.getStatus() == 2) {
+                            && w.getStatus() != null && (w.getStatus() == 2 || w.getStatus() == 3)) {
                         competitionWorks.add(w);
                     }
                 }
@@ -203,7 +208,7 @@ public class AwardServlet extends HttpServlet {
                                     : "未知队伍");
                 }
 
-                request.setAttribute("competition", competitionDAO.findById(competitionId));
+                request.setAttribute("competition", selectedCompetition);
                 request.setAttribute("works", competitionWorks);
                 request.setAttribute("existingAwards", existingAwards);
                 request.setAttribute("awardedWorkIds", awardedWorkIds);
@@ -215,7 +220,7 @@ public class AwardServlet extends HttpServlet {
         }
 
         // 加载所有竞赛列表供选择
-        request.setAttribute("competitions", competitionDAO.findAll());
+        request.setAttribute("competitions", competitionDAO.findByStatus(3));
 
         request.getRequestDispatcher("/jsp/award_manage.jsp").forward(request, response);
     }

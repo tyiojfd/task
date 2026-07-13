@@ -4,6 +4,8 @@ import com.poster.model.*;
 import com.poster.service.*;
 import com.poster.service.impl.*;
 import com.poster.util.FileUploadUtil;
+import com.poster.util.WorkAccessPolicy;
+import com.poster.util.SharePolicy;
 import java.util.*;
 import com.poster.dao.*;
 import com.poster.dao.impl.*;
@@ -39,6 +41,7 @@ public class WorkServlet extends HttpServlet {
     private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private TeamDAO teamDAO = new TeamDAOImpl();
     private UserDAO userDAO = new UserDAOImpl();
+    private WorkFileDAO workFileDAO = new WorkFileDAOImpl();
 
     private static final String UPLOAD_BASE = "uploads";
     private static final int THUMBNAIL_MAX_WIDTH = 300;
@@ -134,10 +137,13 @@ public class WorkServlet extends HttpServlet {
 
     private boolean canViewWork(HttpServletRequest request, User user, Work work) {
         if (user == null || work == null) return false;
-        if (hasRole(request, "管理员") || hasRole(request, "评委")) return true;
-        if (teamService.isUserMemberOfTeam(user.getUserId(), work.getTeamId())) return true;
+        boolean administrator = hasRole(request, "管理员");
+        boolean judge = hasRole(request, "评委");
+        boolean teamMember = teamService.isUserMemberOfTeam(user.getUserId(), work.getTeamId());
         Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
-        return isCompetitionEnded(competition) && isUserInCompetition(user.getUserId(), work.getCompetitionId());
+        boolean ended = isCompetitionEnded(competition);
+        boolean participantInCompetition = isUserInCompetition(user.getUserId(), work.getCompetitionId());
+        return WorkAccessPolicy.canView(administrator, judge, teamMember, ended, participantInCompetition);
     }
 
     @Override
@@ -185,6 +191,8 @@ public class WorkServlet extends HttpServlet {
             likeWork(request, response);
         } else if ("unlike".equals(action)) {
             unlikeWork(request, response);
+        } else if ("share".equals(action)) {
+            shareWork(request, response);
         } else if ("delete".equals(action)) {
             deleteWork(request, response);
         } else {
@@ -211,6 +219,7 @@ public class WorkServlet extends HttpServlet {
         Map<Integer, Team> teamMap = new HashMap<>();
         Map<Integer, Competition> compMap = new HashMap<>();
         Map<Integer, Integer> likeCountMap = new HashMap<>();
+        Map<Integer, Integer> shareCountMap = new HashMap<>();
         Map<Integer, Boolean> likedMap = new HashMap<>();
         List<Integer> userTeamIds = new ArrayList<>();
 
@@ -238,6 +247,7 @@ public class WorkServlet extends HttpServlet {
                 if (c != null) compMap.put(work.getCompetitionId(), c);
             }
             likeCountMap.put(work.getWorkId(), workService.getLikeCount(work.getWorkId()));
+            shareCountMap.put(work.getWorkId(), workService.getShareCount(work.getWorkId()));
             likedMap.put(work.getWorkId(), workService.isWorkLikedByUser(work.getWorkId(), user.getUserId()));
         }
 
@@ -245,6 +255,7 @@ public class WorkServlet extends HttpServlet {
         request.setAttribute("teamMap", teamMap);
         request.setAttribute("compMap", compMap);
         request.setAttribute("likeCountMap", likeCountMap);
+        request.setAttribute("shareCountMap", shareCountMap);
         request.setAttribute("likedMap", likedMap);
         request.setAttribute("leaderTeamIds", leaderTeamIds);
         request.setAttribute("keyword", keyword);
@@ -351,6 +362,7 @@ public class WorkServlet extends HttpServlet {
         // 6. 处理文件上传
         Part filePart = request.getPart("imageFile");
         String imagePath = null;
+        String uploadRealPath = FileUploadUtil.getUploadBasePath();
         byte[] imageData = null;
         String imageContentType = null;
         byte[] thumbnailData = null;
@@ -367,18 +379,14 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            imageData = readPartBytes(filePart);
-            imageContentType = contentType;
-            thumbnailData = createThumbnail(imageData);
-            thumbnailContentType = THUMBNAIL_CONTENT_TYPE;
-
-            // 保存到文件系统
-            String uploadRealPath = FileUploadUtil.getUploadBasePath();
             try {
+                imageData = readPartBytes(filePart);
+                imageContentType = contentType;
+                thumbnailData = createThumbnail(imageData);
+                thumbnailContentType = THUMBNAIL_CONTENT_TYPE;
                 imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), teamId);
             } catch (IOException e) {
-                e.printStackTrace();
-                response.sendRedirect(request.getContextPath() + "/work?action=add&error=upload_failed");
+                response.sendRedirect(request.getContextPath() + "/work?action=add&error=invalid_image");
                 return;
             }
         } else {
@@ -404,6 +412,7 @@ public class WorkServlet extends HttpServlet {
         if (success) {
             response.sendRedirect(request.getContextPath() + "/work?msg=submit_success");
         } else {
+            FileUploadUtil.deleteFile(uploadRealPath, imagePath);
             response.sendRedirect(request.getContextPath() + "/work?action=add&error=submit_failed");
         }
     }
@@ -440,16 +449,19 @@ public class WorkServlet extends HttpServlet {
             Competition competition = competitionService.getCompetitionById(work.getCompetitionId());
             boolean canMutate = isLeader && isCompetitionRunningAndOpen(competition);
             int likeCount = workService.getLikeCount(workId);
+            int shareCount = workService.getShareCount(workId);
             boolean liked = workService.isWorkLikedByUser(workId, user.getUserId());
 
             request.setAttribute("work", work);
             request.setAttribute("team", team);
             request.setAttribute("competition", competition);
             request.setAttribute("likeCount", likeCount);
+            request.setAttribute("shareCount", shareCount);
             request.setAttribute("liked", liked);
             request.setAttribute("isLeader", canMutate);
             request.setAttribute("isOwnTeam", isMember);
             request.setAttribute("readOnlyView", !canMutate);
+            request.setAttribute("attachments", workFileDAO.findByWorkId(workId));
             request.getRequestDispatcher("/jsp/submission_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -555,7 +567,9 @@ public class WorkServlet extends HttpServlet {
 
             // 处理新图片上传
             Part filePart = request.getPart("imageFile");
+            String newImagePath = null;
             if (filePart != null && filePart.getSize() > 0) {
+                String oldImagePath = existingWork.getImagePath();
                 String contentType = filePart.getContentType();
                 if (!FileUploadUtil.isAllowedType(contentType)) {
                     response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=invalid_type");
@@ -566,23 +580,31 @@ public class WorkServlet extends HttpServlet {
                     return;
                 }
 
-                // 删除旧图片
-                if (existingWork.getImagePath() != null) {
-                    String uploadRealPath = FileUploadUtil.getUploadBasePath();
-                    FileUploadUtil.deleteFile(uploadRealPath, existingWork.getImagePath());
+                String uploadRealPath = FileUploadUtil.getUploadBasePath();
+                try {
+                    byte[] imageData = readPartBytes(filePart);
+                    byte[] thumbnailData = createThumbnail(imageData);
+                    newImagePath = FileUploadUtil.saveFile(filePart, uploadRealPath,
+                            team.getCompetitionId(), team.getTeamId());
+                    existingWork.setImagePath(newImagePath);
+                    existingWork.setImageData(imageData);
+                    existingWork.setImageContentType(contentType);
+                    existingWork.setThumbnailData(thumbnailData);
+                    existingWork.setThumbnailContentType(THUMBNAIL_CONTENT_TYPE);
+                } catch (IOException e) {
+                    response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=invalid_image");
+                    return;
                 }
 
-                byte[] imageData = readPartBytes(filePart);
-                byte[] thumbnailData = createThumbnail(imageData);
-
-                // 保存新图片
-                String uploadRealPath = FileUploadUtil.getUploadBasePath();
-                String imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), team.getTeamId());
-                existingWork.setImagePath(imagePath);
-                existingWork.setImageData(imageData);
-                existingWork.setImageContentType(contentType);
-                existingWork.setThumbnailData(thumbnailData);
-                existingWork.setThumbnailContentType(THUMBNAIL_CONTENT_TYPE);
+                boolean success = workService.updateWork(existingWork);
+                if (success) {
+                    FileUploadUtil.deleteFile(uploadRealPath, oldImagePath);
+                    response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&msg=update_success");
+                } else {
+                    FileUploadUtil.deleteFile(uploadRealPath, newImagePath);
+                    response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=update_failed");
+                }
+                return;
             }
 
             boolean success = workService.updateWork(existingWork);
@@ -625,7 +647,7 @@ public class WorkServlet extends HttpServlet {
         Map<Integer, Team> teamMap = new HashMap<>();
         Map<Integer, Integer> likeCountMap = new HashMap<>();
         for (Work work : works) {
-            if (work.getStatus() != null && work.getStatus() == 2) {
+            if (work.getStatus() != null && (work.getStatus() == 2 || work.getStatus() == 3)) {
                 Team team = teamDAO.findById(work.getTeamId());
                 if (team != null) teamMap.put(work.getTeamId(), team);
                 likeCountMap.put(work.getWorkId(), workService.getLikeCount(work.getWorkId()));
@@ -671,13 +693,11 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
-            if (work.getImagePath() != null) {
-                String uploadRealPath = FileUploadUtil.getUploadBasePath();
-                FileUploadUtil.deleteFile(uploadRealPath, work.getImagePath());
-            }
-
             boolean success = workService.deleteWork(workId, work.getTeamId());
             if (success) {
+                if (work.getImagePath() != null) {
+                    FileUploadUtil.deleteFile(FileUploadUtil.getUploadBasePath(), work.getImagePath());
+                }
                 response.sendRedirect(request.getContextPath() + "/work?msg=delete_success");
             } else {
                 response.sendRedirect(request.getContextPath() + "/work?error=delete_failed");
@@ -698,6 +718,11 @@ public class WorkServlet extends HttpServlet {
         }
         try {
             Integer workId = Integer.parseInt(workIdStr);
+            Work work = workService.getWorkById(workId);
+            if (!canViewWork(request, user, work)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权操作该作品");
+                return;
+            }
             workService.likeWork(workId, user.getUserId());
             response.sendRedirect(request.getContextPath() + "/work");
         } catch (NumberFormatException e) {
@@ -716,10 +741,46 @@ public class WorkServlet extends HttpServlet {
         }
         try {
             Integer workId = Integer.parseInt(workIdStr);
+            Work work = workService.getWorkById(workId);
+            if (!canViewWork(request, user, work)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权操作该作品");
+                return;
+            }
             workService.unlikeWork(workId, user.getUserId());
             response.sendRedirect(request.getContextPath() + "/work");
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/work");
+        }
+    }
+
+    private void shareWork(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+        String workIdStr = request.getParameter("workId");
+        if (workIdStr == null) {
+            response.sendRedirect(request.getContextPath() + "/work?error=not_found");
+            return;
+        }
+        try {
+            Integer workId = Integer.parseInt(workIdStr);
+            Work work = workService.getWorkById(workId);
+            if (work == null) {
+                response.sendRedirect(request.getContextPath() + "/work?error=not_found");
+                return;
+            }
+            if (!canViewWork(request, user, work)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权分享该作品");
+                return;
+            }
+            String platform = SharePolicy.normalizePlatform(request.getParameter("platform"));
+            if (platform == null || !workService.shareWork(workId, user.getUserId(), platform)) {
+                response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&error=share_failed");
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/work?action=detail&id=" + workId + "&msg=share_success");
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/work?error=not_found");
         }
     }
 

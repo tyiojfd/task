@@ -34,7 +34,8 @@
             }
         }
     }
-    boolean navIsParticipant = navUser != null && navHasParticipantRole && !navIsAdmin && !navIsJudge;
+    // 账号可同时承担评委和参赛身份；队伍操作还会按具体 team.leader_id 做校验。
+    boolean navIsParticipant = navUser != null && navHasParticipantRole && !navIsAdmin;
     String navActive = (String) request.getAttribute("activeNav");
     if (navActive == null) navActive = "";
     String navDisplayName = navUser == null ? "" : (navUser.getRealName() != null && !navUser.getRealName().trim().isEmpty()

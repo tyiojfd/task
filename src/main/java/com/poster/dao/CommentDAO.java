@@ -36,6 +36,11 @@ public interface CommentDAO {
     List<Comment> findByWorkId(Integer workId);
 
     /**
+     * 查询评委对指定作品的已有评语。
+     */
+    Comment findByWorkIdAndJudgeId(Integer workId, Integer judgeId);
+
+    /**
      * 根据评委ID查询所有评语
      */
     List<Comment> findByJudgeId(Integer judgeId);

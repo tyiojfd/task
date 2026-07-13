@@ -125,6 +125,9 @@ public class TeamServlet extends HttpServlet {
 
         // 获取我创建的队伍（我是队长）
         List<Team> myTeams = teamService.getTeamsByLeaderId(user.getUserId());
+        if (myTeams == null) {
+            myTeams = new ArrayList<>();
+        }
 
         // 获取我作为队员加入的队伍（通过邀请接受后加入的）
         List<TeamMember> myMemberships = teamMemberDAO.findByUserId(user.getUserId());

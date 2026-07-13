@@ -9,6 +9,7 @@
 <%@ page import="com.poster.service.TeamService" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -205,9 +206,9 @@
     <!-- 作品信息横幅 -->
     <div class="work-info-banner d-flex justify-content-between align-items-center">
         <div>
-            <h4><%= targetWork.getTitle() %></h4>
+            <h4><%= HtmlEscaper.escape(targetWork.getTitle()) %></h4>
             <div class="meta mt-2">
-                <i class="fas fa-users me-1"></i><%= targetTeam != null ? targetTeam.getTeamName() : "未知队伍" %>
+                <i class="fas fa-users me-1"></i><%= HtmlEscaper.escape(targetTeam != null ? targetTeam.getTeamName() : "未知队伍") %>
                 <span class="mx-2">|</span>
                 <i class="fas fa-calendar me-1"></i><%= targetWork.getSubmitTime() != null ? targetWork.getSubmitTime().format(dtf) : "未知" %>
             </div>
@@ -398,9 +399,9 @@
                 <tr>
                     <td><%= idx++ %></td>
                     <td>
-                        <strong><%= w != null ? w.getTitle() : "作品#" + s.getWorkId() %></strong>
+                        <strong><%= HtmlEscaper.escape(w != null ? w.getTitle() : "作品#" + s.getWorkId()) %></strong>
                     </td>
-                    <td><%= t != null ? t.getTeamName() : "未知" %></td>
+                    <td><%= HtmlEscaper.escape(t != null ? t.getTeamName() : "未知") %></td>
                     <td><span class="score-badge <%= cssClass %>"><%= String.format("%.1f", sc) %> 分</span></td>
                     <td class="text-muted">--</td>
                     <td><%= s.getScoreTime() != null ? s.getScoreTime().format(dtf) : "未知" %></td>

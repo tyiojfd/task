@@ -3,6 +3,7 @@
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -77,8 +78,8 @@
                                 <i class="fas fa-camera"></i>
                             </label>
                         </div>
-                        <h5><%= sessionUser.getRealName() %></h5>
-                        <p class="text-muted">@<%= sessionUser.getUsername() %></p>
+                        <h5><%= HtmlEscaper.escape(sessionUser.getRealName()) %></h5>
+                        <p class="text-muted">@<%= HtmlEscaper.escape(sessionUser.getUsername()) %></p>
                         <p>
                             <span class="badge bg-<%= sessionUser.getStatus() == 1 ? "success" : "danger" %>">
                                 <%= sessionUser.getStatus() == 1 ? "正常" : "已禁用" %>

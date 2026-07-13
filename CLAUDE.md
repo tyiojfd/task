@@ -589,6 +589,21 @@
 - **修改文件：** 1个文件（home.css），+2行
 - **教训：** 轮播组件使用 absolute 定位叠放幻灯片时，必须用 `pointer-events` 控制非活跃幻灯片的交互，否则会产生难以排查的链接失效或跳转错误问题
 
+**已完成：作品图片数据库存储与缩略图加载优化（完成人：洪振博 / Claude 协助）**
+- ✅ 数据库结构：`database/schema.sql` 的 `work` 表新增 `thumbnail_data(MEDIUMBLOB)` 和 `thumbnail_content_type(VARCHAR(50))` 字段，用于保存海报缩略图
+- ✅ 数据库执行说明：已提供 Navicat 可直接执行的 ALTER TABLE SQL；代码不自动执行数据库迁移，需手动确认目标库字段已添加
+- ✅ Model层：`Work.java` 新增 `thumbnailData`、`thumbnailContentType` 字段及 getter/setter
+- ✅ DAO层：`WorkDAOImpl` 的 insert/update/extractWorkFromResultSet 支持原图与缩略图字段读写
+- ✅ Controller层：`WorkServlet` 在提交/更新作品图片时读取原图二进制数据，使用 Java ImageIO 自动生成最大宽度 300px、JPEG质量 0.75 的缩略图
+- ✅ Controller层：`ImageDataServlet` 支持 `/image-data?workId=ID&type=thumb` 和 `/image-data?workId=ID&type=original`，缩略图不存在时自动回退原图
+- ✅ 前端页面：列表/卡片类页面改用缩略图接口，详情/评分/编辑预览页面改用原图接口
+  - 缩略图：`submission_list.jsp`、`team_detail.jsp`、`competition_works.jsp`
+  - 原图：`submission_detail.jsp`、`submission_add.jsp`、`score_input.jsp`
+- ✅ 解决问题：避免图片只保存在上传者本机导致其他设备/同账号无法显示；列表页加载缩略图，减少一次性加载原图造成的性能问题
+- ⚠️ 旧数据说明：历史作品若 `image_data` 为空，无法自动生成缩略图；需要重新上传/编辑作品图片后才会写入原图与缩略图
+- **修改文件：** 11个代码/配置文件 + 1个实现计划文档
+- **编译状态：** BUILD SUCCESS（`JAVA_HOME="C:/Program Files/Java/jdk-21" ./mvnw -q -DskipTests package`）
+
 ---
 
 ## 开发规范
@@ -1103,6 +1118,6 @@ poster-competition-system/
 
 ---
 
-**最后更新时间：** 2026年7月12日
+**最后更新时间：** 2026年7月13日
 **更新人：** 洪振博 / Claude
-**版本：** v1.12
+**版本：** v1.13

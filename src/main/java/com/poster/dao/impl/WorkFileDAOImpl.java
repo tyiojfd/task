@@ -108,6 +108,27 @@ public class WorkFileDAOImpl implements WorkFileDAO {
     }
 
     @Override
+    public WorkFile findByFilePath(String filePath) {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT * FROM work_file WHERE file_path = ? LIMIT 1";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, filePath);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractWorkFileFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public List<WorkFile> findByWorkId(Integer workId) {
         String sql = "SELECT * FROM work_file WHERE work_id = ?";
         List<WorkFile> list = new ArrayList<>();

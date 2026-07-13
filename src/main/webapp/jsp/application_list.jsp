@@ -2,6 +2,7 @@
 <%@ page import="com.poster.model.*" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) { response.sendRedirect(request.getContextPath() + "/login"); return; }
@@ -40,7 +41,7 @@
     <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <h2 class="mb-2"><i class="fas fa-user-plus me-2"></i><%= teamMode ? "入队申请审核" : "我的入队申请" %></h2>
-            <p class="mb-0"><%= teamMode && team != null ? team.getTeamName() : "查看申请进度" %></p>
+            <p class="mb-0"><%= HtmlEscaper.escape(teamMode && team != null ? team.getTeamName() : "查看申请进度") %></p>
         </div>
         <a class="btn btn-light" href="${pageContext.request.contextPath}/<%= teamMode && team != null ? "team?action=detail&id=" + team.getTeamId() : "team?action=myTeams" %>">返回</a>
     </div>
@@ -60,8 +61,8 @@
         <div class="app-card">
             <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
                 <div>
-                    <h5 class="fw-bold mb-2"><%= teamMode ? (applicant != null ? applicant.getRealName() : "申请人#" + app.getApplicantId()) : (itemTeam != null ? itemTeam.getTeamName() : "队伍#" + app.getTeamId()) %></h5>
-                    <p class="text-muted mb-2"><%= app.getMessage() != null && !app.getMessage().trim().isEmpty() ? app.getMessage() : "申请加入队伍" %></p>
+                    <h5 class="fw-bold mb-2"><%= HtmlEscaper.escape(teamMode ? (applicant != null ? applicant.getRealName() : "申请人#" + app.getApplicantId()) : (itemTeam != null ? itemTeam.getTeamName() : "队伍#" + app.getTeamId())) %></h5>
+                    <p class="text-muted mb-2"><%= HtmlEscaper.escape(app.getMessage() != null && !app.getMessage().trim().isEmpty() ? app.getMessage() : "申请加入队伍") %></p>
                     <span class="badge status-<%= app.getStatus() != null ? app.getStatus() : 0 %>"><%= statusText %></span>
                 </div>
                 <% if (teamMode && app.getStatus() != null && app.getStatus() == 0) { %>

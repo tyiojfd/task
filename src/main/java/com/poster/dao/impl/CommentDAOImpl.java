@@ -114,6 +114,27 @@ public class CommentDAOImpl implements CommentDAO {
     }
 
     @Override
+    public Comment findByWorkIdAndJudgeId(Integer workId, Integer judgeId) {
+        if (workId == null || judgeId == null) {
+            return null;
+        }
+        String sql = "SELECT * FROM comment WHERE work_id = ? AND judge_id = ? ORDER BY comment_time DESC LIMIT 1";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, workId);
+            pstmt.setInt(2, judgeId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractCommentFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public List<Comment> findByJudgeId(Integer judgeId) {
         String sql = "SELECT * FROM comment WHERE judge_id = ? ORDER BY comment_time DESC";
         List<Comment> commentList = new ArrayList<>();

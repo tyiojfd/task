@@ -7,6 +7,7 @@ import com.poster.service.TeamApplicationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 入队申请服务实现类
@@ -14,11 +15,26 @@ import java.util.List;
  * @date 2026-07-12
  */
 public class TeamApplicationServiceImpl implements TeamApplicationService {
-    private TeamApplicationDAO applicationDAO = new TeamApplicationDAOImpl();
-    private TeamDAO teamDAO = new TeamDAOImpl();
-    private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
-    private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
-    private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
+    private final TeamApplicationDAO applicationDAO;
+    private final TeamDAO teamDAO;
+    private final TeamMemberDAO teamMemberDAO;
+    private final CompetitionDAO competitionDAO;
+    private final UserRoleDAO userRoleDAO;
+
+    public TeamApplicationServiceImpl() {
+        this(new TeamApplicationDAOImpl(), new TeamDAOImpl(), new TeamMemberDAOImpl(),
+                new CompetitionDAOImpl(), new UserRoleDAOImpl());
+    }
+
+    public TeamApplicationServiceImpl(TeamApplicationDAO applicationDAO, TeamDAO teamDAO,
+                                      TeamMemberDAO teamMemberDAO, CompetitionDAO competitionDAO,
+                                      UserRoleDAO userRoleDAO) {
+        this.applicationDAO = Objects.requireNonNull(applicationDAO, "applicationDAO");
+        this.teamDAO = Objects.requireNonNull(teamDAO, "teamDAO");
+        this.teamMemberDAO = Objects.requireNonNull(teamMemberDAO, "teamMemberDAO");
+        this.competitionDAO = Objects.requireNonNull(competitionDAO, "competitionDAO");
+        this.userRoleDAO = Objects.requireNonNull(userRoleDAO, "userRoleDAO");
+    }
 
     @Override
     public boolean applyToTeam(Integer teamId, Integer applicantId, String message) {
@@ -37,6 +53,7 @@ public class TeamApplicationServiceImpl implements TeamApplicationService {
 
     @Override
     public boolean approveApplication(Integer applicationId, Integer leaderId) {
+        if (applicationId == null || leaderId == null) return false;
         TeamApplication application = applicationDAO.findById(applicationId);
         if (application == null || application.getStatus() == null || application.getStatus() != 0) return false;
         Team team = teamDAO.findById(application.getTeamId());
@@ -52,11 +69,18 @@ public class TeamApplicationServiceImpl implements TeamApplicationService {
 
         application.setStatus(1);
         application.setResponseTime(LocalDateTime.now());
-        return applicationDAO.update(application) > 0;
+        if (applicationDAO.update(application) > 0) {
+            return true;
+        }
+
+        // 申请状态更新失败时撤销刚插入的成员，避免页面报失败但队员已进入队伍。
+        teamMemberDAO.deleteByTeamIdAndUserId(team.getTeamId(), application.getApplicantId());
+        return false;
     }
 
     @Override
     public boolean rejectApplication(Integer applicationId, Integer leaderId) {
+        if (applicationId == null || leaderId == null) return false;
         TeamApplication application = applicationDAO.findById(applicationId);
         if (application == null || application.getStatus() == null || application.getStatus() != 0) return false;
         Team team = teamDAO.findById(application.getTeamId());
@@ -68,6 +92,7 @@ public class TeamApplicationServiceImpl implements TeamApplicationService {
 
     @Override
     public boolean cancelApplication(Integer applicationId, Integer applicantId) {
+        if (applicationId == null || applicantId == null) return false;
         TeamApplication application = applicationDAO.findById(applicationId);
         if (application == null || application.getStatus() == null || application.getStatus() != 0) return false;
         if (!applicantId.equals(application.getApplicantId())) return false;

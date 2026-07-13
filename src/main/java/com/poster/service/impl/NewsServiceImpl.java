@@ -19,6 +19,9 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public boolean publishNews(News news) {
+        if (news == null) {
+            return false;
+        }
         // 1. 输入验证
         if (news.getTitle() == null || news.getTitle().trim().isEmpty()) {
             return false;
@@ -39,6 +42,9 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public boolean updateNews(News news) {
+        if (news == null) {
+            return false;
+        }
         // 1. 输入验证
         if (news.getNewsId() == null) {
             return false;
@@ -47,6 +53,9 @@ public class NewsServiceImpl implements NewsService {
             return false;
         }
         if (news.getContent() == null || news.getContent().trim().isEmpty()) {
+            return false;
+        }
+        if (news.getStatus() == null || (news.getStatus() != 0 && news.getStatus() != 1)) {
             return false;
         }
 

@@ -132,6 +132,10 @@ public class CompetitionServlet extends HttpServlet {
             try {
                 Integer competitionId = Integer.parseInt(idStr);
                 Competition competition = competitionService.getCompetitionById(competitionId);
+                if (competition == null) {
+                    response.sendRedirect(request.getContextPath() + "/competition?action=list&error=not_found");
+                    return;
+                }
 
                 // 检查用户是否已参加该竞赛
                 HttpSession session = request.getSession(false);
@@ -196,6 +200,10 @@ public class CompetitionServlet extends HttpServlet {
             try {
                 Integer id = Integer.parseInt(idStr);
                 Competition competition = competitionService.getCompetitionById(id);
+                if (competition == null) {
+                    response.sendRedirect(request.getContextPath() + "/competition?action=list&error=not_found");
+                    return;
+                }
                 List<CompetitionCategory> categories = categoryDAO.findByCompetitionId(id);
                 request.setAttribute("competition", competition);
                 request.setAttribute("categories", categories);
@@ -225,12 +233,11 @@ public class CompetitionServlet extends HttpServlet {
 
             boolean success = competitionService.createCompetition(competition);
 
-            if (success) {
+            if (success && saveCategories(request, competition.getCompetitionId())) {
                 // 保存竞赛子类
-                saveCategories(request, competition.getCompetitionId());
                 response.sendRedirect(request.getContextPath() + "/competition?action=list");
             } else {
-                request.setAttribute("error", "创建竞赛失败");
+                request.setAttribute("error", success ? "竞赛已创建，但子类保存失败" : "创建竞赛失败");
                 request.getRequestDispatcher("/jsp/competition_add.jsp").forward(request, response);
             }
         } catch (Exception e) {
@@ -257,15 +264,27 @@ public class CompetitionServlet extends HttpServlet {
             if (success) {
                 // 处理删除的子类
                 String[] deleteIds = request.getParameterValues("deleteCategoryIds");
+                boolean categoriesOk = true;
                 if (deleteIds != null) {
                     for (String deleteId : deleteIds) {
                         try {
-                            categoryDAO.deleteById(Integer.parseInt(deleteId));
-                        } catch (NumberFormatException ignored) {}
+                            if (categoryDAO.deleteById(Integer.parseInt(deleteId)) <= 0) {
+                                categoriesOk = false;
+                            }
+                        } catch (NumberFormatException ignored) {
+                            categoriesOk = false;
+                        }
                     }
                 }
                 // 保存新增的子类
-                saveCategories(request, competition.getCompetitionId());
+                categoriesOk = saveCategories(request, competition.getCompetitionId()) && categoriesOk;
+                if (!categoriesOk) {
+                    request.setAttribute("error", "竞赛已更新，但部分子类保存/删除失败");
+                    request.setAttribute("competition", competitionService.getCompetitionById(competition.getCompetitionId()));
+                    request.setAttribute("categories", categoryDAO.findByCompetitionId(competition.getCompetitionId()));
+                    request.getRequestDispatcher("/jsp/competition_edit.jsp").forward(request, response);
+                    return;
+                }
                 response.sendRedirect(request.getContextPath() + "/competition?action=detail&id=" + competition.getCompetitionId());
             } else {
                 request.setAttribute("error", "更新竞赛失败");
@@ -330,11 +349,12 @@ public class CompetitionServlet extends HttpServlet {
     /**
      * 保存竞赛子类（从请求中提取并批量插入）
      */
-    private void saveCategories(HttpServletRequest request, Integer competitionId) {
+    private boolean saveCategories(HttpServletRequest request, Integer competitionId) {
         String[] names = request.getParameterValues("categoryName");
         String[] descs = request.getParameterValues("categoryDesc");
 
         if (names != null && competitionId != null) {
+            boolean success = true;
             for (int i = 0; i < names.length; i++) {
                 String name = names[i].trim();
                 if (!name.isEmpty()) {
@@ -344,10 +364,14 @@ public class CompetitionServlet extends HttpServlet {
                     if (descs != null && i < descs.length && descs[i] != null) {
                         cat.setCategoryDesc(descs[i].trim());
                     }
-                    categoryDAO.insert(cat);
+                    if (categoryDAO.insert(cat) <= 0) {
+                        success = false;
+                    }
                 }
             }
+            return success;
         }
+        return true;
     }
 
     /**

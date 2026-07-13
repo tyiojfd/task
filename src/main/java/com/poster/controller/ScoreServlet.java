@@ -106,7 +106,7 @@ public class ScoreServlet extends HttpServlet {
                 : java.util.Collections.emptyList();
         List<Work> submittedWorks = new java.util.ArrayList<>();
         for (Work w : sourceWorks) {
-            if (w.getStatus() != null && w.getStatus() == 2) {
+            if (isSubmittedOrScored(w)) {
                 submittedWorks.add(w);
             }
         }
@@ -149,7 +149,7 @@ public class ScoreServlet extends HttpServlet {
             Integer workId = Integer.parseInt(workIdStr);
             Work work = workDAO.findById(workId);
             Integer competitionId = parseInteger(request.getParameter("competitionId"));
-            if (work == null || work.getStatus() == null || work.getStatus() != 2) {
+            if (!isSubmittedOrScored(work)) {
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
@@ -284,7 +284,7 @@ public class ScoreServlet extends HttpServlet {
             Integer competitionId = parseInteger(request.getParameter("competitionId"));
             Double scoreValue = Double.parseDouble(request.getParameter("score"));
             Work work = workDAO.findById(workId);
-            if (work == null || work.getStatus() == null || work.getStatus() != 2
+            if (!isSubmittedOrScored(work)
                     || (competitionId != null && !competitionId.equals(work.getCompetitionId()))
                     || !isCompetitionRunning(work)) {
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
@@ -381,6 +381,11 @@ public class ScoreServlet extends HttpServlet {
         if (work == null || work.getCompetitionId() == null) return false;
         Competition competition = competitionDAO.findById(work.getCompetitionId());
         return competition != null && competition.getStatus() != null && competition.getStatus() == 2;
+    }
+
+    private boolean isSubmittedOrScored(Work work) {
+        return work != null && (Integer.valueOf(2).equals(work.getStatus())
+                || Integer.valueOf(3).equals(work.getStatus()));
     }
 
     private boolean isJudge(HttpServletRequest request) {

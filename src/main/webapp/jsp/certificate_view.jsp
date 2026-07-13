@@ -2,6 +2,7 @@
 <%@ page import="com.poster.model.*" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
 
@@ -139,6 +140,10 @@
 <button class="btn btn-primary btn-print no-print" onclick="window.print()">
     <i class="fas fa-print"></i> 打印奖状
 </button>
+<a class="btn btn-success no-print" style="position:fixed;top:20px;right:140px;z-index:999;"
+   href="<%= request.getContextPath() %>/certificate?action=download&awardId=<%= award.getAwardId() %>">
+    <i class="fas fa-download"></i> 下载奖状
+</a>
 
 <div class="certificate-container">
     <i class="fas fa-trophy cert-decor decor-tl"></i>
@@ -153,31 +158,31 @@
 
     <div class="cert-body">
         <div class="competition-name">
-            在「<%= competition != null ? competition.getName() : "大学生海报设计竞赛" %>」中
+            在「<%= HtmlEscaper.escape(competition != null ? competition.getName() : "大学生海报设计竞赛") %>」中
         </div>
 
         <div class="recipient">
-            <strong><%= team != null ? team.getTeamName() : "优秀团队" %></strong>
+            <strong><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "优秀团队") %></strong>
             <% if (leader != null) { %>
-            （队长：<%= leader.getRealName() != null ? leader.getRealName() : leader.getUsername() %>）
+            （队长：<%= HtmlEscaper.escape(leader.getRealName() != null ? leader.getRealName() : leader.getUsername()) %>）
             <% } %>
         </div>
 
         <div>
             提交的作品
-            <span class="work-title">《<%= work != null ? work.getTitle() : "优秀作品" %>》</span>
+            <span class="work-title">《<%= HtmlEscaper.escape(work != null ? work.getTitle() : "优秀作品") %>》</span>
         </div>
 
         <div>荣获</div>
 
         <div class="award-level">
-            <%= award.getAwardLevel() %>
+            <%= HtmlEscaper.escape(award.getAwardLevel()) %>
         </div>
 
         <div>最终得分：<strong><%= String.format("%.1f", award.getFinalScore()) %></strong> 分</div>
 
         <% if (certificate != null) { %>
-        <div class="cert-no">证书编号：<%= certificate.getCertificateNo() %></div>
+            <div class="cert-no">证书编号：<%= HtmlEscaper.escape(certificate.getCertificateNo()) %></div>
         <% } %>
     </div>
 

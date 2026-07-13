@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.News" %>
 <%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     News news = (News) request.getAttribute("news");
     User sessionUser = (User) session.getAttribute("user");
@@ -67,7 +68,7 @@
 
         <% if (error != null) { %>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-1"></i><%= error %>
+                <i class="fas fa-exclamation-triangle me-1"></i><%= HtmlEscaper.escape(error) %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <% } %>
@@ -82,7 +83,7 @@
                         <i class="fas fa-heading me-1"></i>新闻标题 <span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="title" name="title"
-                           value="<%= news.getTitle() != null ? news.getTitle() : "" %>"
+                           value="<%= HtmlEscaper.escape(news.getTitle() != null ? news.getTitle() : "") %>"
                            required maxlength="200">
                 </div>
 
@@ -99,7 +100,7 @@
                         <i class="fas fa-align-left me-1"></i>新闻内容 <span class="text-danger">*</span>
                     </label>
                     <textarea class="form-control" id="content" name="content" rows="12"
-                              required><%= news.getContent() != null ? news.getContent() : "" %></textarea>
+                              required><%= HtmlEscaper.escape(news.getContent() != null ? news.getContent() : "") %></textarea>
                 </div>
 
                 <div class="mb-4">

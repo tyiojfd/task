@@ -91,7 +91,7 @@ public class NewsServlet extends HttpServlet {
             try {
                 Integer id = Integer.parseInt(idStr);
                 News news = newsService.getNewsById(id);
-                if (news != null) {
+                if (news != null && Integer.valueOf(1).equals(news.getStatus())) {
                     request.setAttribute("news", news);
                     request.getRequestDispatcher("/jsp/news_detail.jsp").forward(request, response);
                 } else {
@@ -283,7 +283,10 @@ public class NewsServlet extends HttpServlet {
         if (idStr != null) {
             try {
                 Integer id = Integer.parseInt(idStr);
-                newsService.deleteNews(id);
+                boolean deleted = newsService.deleteNews(id);
+                if (!deleted) {
+                    request.getSession().setAttribute("error", "新闻删除失败");
+                }
             } catch (NumberFormatException e) {
                 // 忽略无效ID
             }

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     String error = (String) request.getAttribute("error");
@@ -60,7 +61,7 @@
 
         <% if (error != null) { %>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-1"></i><%= error %>
+                <i class="fas fa-exclamation-triangle me-1"></i><%= HtmlEscaper.escape(error) %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <% } %>

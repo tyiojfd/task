@@ -3,6 +3,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -107,20 +108,20 @@
                     </div>
                     <div class="ms-3">
                         <div class="fw-bold">
-                            <%= award != null ? award.getAwardLevel() : "获奖" %>
+                            <%= HtmlEscaper.escape(award != null ? award.getAwardLevel() : "获奖") %>
                         </div>
-                        <small class="text-muted"><%= compName %></small>
+                        <small class="text-muted"><%= HtmlEscaper.escape(compName) %></small>
                     </div>
                 </div>
                 <div class="mb-2">
-                    <strong><%= work != null ? work.getTitle() : "作品" %></strong>
+                    <strong><%= HtmlEscaper.escape(work != null ? work.getTitle() : "作品") %></strong>
                 </div>
                 <small class="text-muted">
-                    <i class="fas fa-users"></i> <%= teamName %> &nbsp;
+                    <i class="fas fa-users"></i> <%= HtmlEscaper.escape(teamName) %> &nbsp;
                     <i class="fas fa-star"></i> <%= award != null ? String.format("%.1f", award.getFinalScore()) : "0.0" %> 分
                 </small>
                 <div class="mt-2 text-muted" style="font-size:0.85rem;">
-                    <i class="fas fa-barcode"></i> <%= cert.getCertificateNo() %>
+                    <i class="fas fa-barcode"></i> <%= HtmlEscaper.escape(cert.getCertificateNo()) %>
                 </div>
                 <a href="${pageContext.request.contextPath}/certificate?action=view&awardId=<%= cert.getAwardId() %>"
                    class="btn btn-outline-warning btn-sm w-100 mt-3" target="_blank">

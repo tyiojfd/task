@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     @SuppressWarnings("unchecked")
     List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
@@ -70,7 +71,7 @@
                     <div class="col-md-5">
                         <label class="form-label small text-muted">关键词搜索</label>
                         <input type="text" class="form-control" name="keyword" placeholder="搜索竞赛名称、主题、描述..."
-                               value="<%= request.getAttribute("keyword") != null ? request.getAttribute("keyword") : "" %>">
+                               value="<%= HtmlEscaper.escape(request.getAttribute("keyword") != null ? request.getAttribute("keyword").toString() : "") %>">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small text-muted">年度</label>
@@ -139,7 +140,7 @@
                         <div class="card competition-card" onclick="window.location.href='${pageContext.request.contextPath}/competition?action=detail&id=<%= comp.getCompetitionId() %>'">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0"><%= comp.getName() %></h5>
+                                    <h5 class="card-title mb-0"><%= HtmlEscaper.escape(comp.getName()) %></h5>
                                     <span class="badge status-badge
                                         <% if (comp.getStatus() == 1) { %>bg-success<% }
                                            else if (comp.getStatus() == 2) { %>bg-primary<% }
@@ -153,9 +154,9 @@
                                 </div>
                                 <p class="text-muted mb-2">年度：<%= comp.getYear() %>年</p>
                                 <% if (comp.getTheme() != null) { %>
-                                    <p class="text-muted mb-2">主题：<%= comp.getTheme() %></p>
+                                    <p class="text-muted mb-2">主题：<%= HtmlEscaper.escape(comp.getTheme()) %></p>
                                 <% } %>
-                                <p class="card-text text-truncate"><%= comp.getDescription() != null ? comp.getDescription() : "暂无描述" %></p>
+                                <p class="card-text text-truncate"><%= HtmlEscaper.escape(comp.getDescription() != null ? comp.getDescription() : "暂无描述") %></p>
                                 <small class="text-muted">
                                     截止时间：<%= comp.getSubmitDeadline() != null ? comp.getSubmitDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "未设置" %>
                                 </small>

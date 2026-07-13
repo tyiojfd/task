@@ -2,17 +2,23 @@ package com.poster.service.impl;
 
 import com.poster.dao.AwardDAO;
 import com.poster.dao.CertificateDAO;
+import com.poster.dao.CompetitionDAO;
 import com.poster.dao.NewsDAO;
+import com.poster.dao.ScoreDAO;
 import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.AwardDAOImpl;
 import com.poster.dao.impl.CertificateDAOImpl;
+import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.dao.impl.NewsDAOImpl;
+import com.poster.dao.impl.ScoreDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
+import com.poster.model.Competition;
 import com.poster.model.Award;
 import com.poster.model.Certificate;
 import com.poster.model.News;
 import com.poster.model.Work;
 import com.poster.service.AwardService;
+import com.poster.util.AwardEligibilityPolicy;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,9 +36,14 @@ public class AwardServiceImpl implements AwardService {
     private CertificateDAO certificateDAO = new CertificateDAOImpl();
     private NewsDAO newsDAO = new NewsDAOImpl();
     private WorkDAO workDAO = new WorkDAOImpl();
+    private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
+    private ScoreDAO scoreDAO = new ScoreDAOImpl();
 
     @Override
     public boolean setAward(Award award) {
+        if (award == null) {
+            return false;
+        }
         // 1. 验证获奖等级
         if (award.getAwardLevel() == null || award.getAwardLevel().trim().isEmpty()) {
             return false;
@@ -54,11 +65,12 @@ public class AwardServiceImpl implements AwardService {
             return false;
         }
 
-        // 4. 验证作品必须存在、已提交，且属于当前竞赛
+        // 4. 验证竞赛已结束、作品已提交且至少存在一条评分
         Work work = workDAO.findById(award.getWorkId());
-        if (work == null || work.getStatus() == null || work.getStatus() != 2
-                || work.getCompetitionId() == null
-                || !work.getCompetitionId().equals(award.getCompetitionId())) {
+        Competition competition = competitionDAO.findById(award.getCompetitionId());
+        List<com.poster.model.Score> scores = scoreDAO.findByWorkId(award.getWorkId());
+        boolean hasScore = scores != null && !scores.isEmpty();
+        if (!AwardEligibilityPolicy.isEligible(competition, work, hasScore)) {
             return false;
         }
 
@@ -72,8 +84,9 @@ public class AwardServiceImpl implements AwardService {
         boolean success = awardDAO.insert(award) > 0;
 
         // 7. 自动生成电子奖状
-        if (success) {
-            generateCertificate(award.getAwardId());
+        if (success && !generateCertificate(award.getAwardId())) {
+            awardDAO.deleteById(award.getAwardId());
+            return false;
         }
 
         return success;
@@ -142,6 +155,17 @@ public class AwardServiceImpl implements AwardService {
             return false;
         }
 
+        String title = "竞赛获奖公告 - 竞赛ID:" + competitionId;
+        List<News> existingNews = newsDAO.findAll();
+        if (existingNews != null) {
+            for (News existing : existingNews) {
+                if (title.equals(existing.getTitle())
+                        && competitionId.equals(existing.getCompetitionId())) {
+                    return true;
+                }
+            }
+        }
+
         // 2. 构建获奖公告内容
         StringBuilder content = new StringBuilder();
         content.append("本次竞赛获奖名单如下：\n\n");
@@ -155,7 +179,7 @@ public class AwardServiceImpl implements AwardService {
 
         // 3. 创建新闻公告（使用第一个获奖记录的issuerId作为发布者）
         News news = new News();
-        news.setTitle("竞赛获奖公告 - 竞赛ID:" + competitionId);
+        news.setTitle(title);
         news.setContent(content.toString());
         news.setCompetitionId(competitionId);
         news.setAuthorId(awards.get(0).getIssuerId());

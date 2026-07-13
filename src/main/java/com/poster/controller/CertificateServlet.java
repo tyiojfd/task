@@ -40,7 +40,7 @@ public class CertificateServlet extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
 
-        if ("view".equals(action)) {
+        if ("view".equals(action) || "download".equals(action)) {
             // 查看奖状.
             showCertificate(request, response);
         } else if ("myCertificates".equals(action)) {
@@ -81,6 +81,22 @@ public class CertificateServlet extends HttpServlet {
             if (award == null) {
                 response.sendRedirect(request.getContextPath() + "/index");
                 return;
+            }
+
+            if (certificate == null) {
+                certificateService.generateCertificate(award.getAwardId());
+                certificate = certificateService.getCertificateByAwardId(award.getAwardId());
+                if (certificate == null) {
+                    response.sendRedirect(request.getContextPath() + "/index");
+                    return;
+                }
+            }
+
+            if ("download".equals(request.getParameter("action"))) {
+                String certificateNo = certificate != null ? certificate.getCertificateNo() : "award-" + award.getAwardId();
+                String safeName = certificateNo.replaceAll("[^A-Za-z0-9._-]", "_");
+                response.setContentType("text/html;charset=UTF-8");
+                response.setHeader("Content-Disposition", "attachment; filename=\"certificate-" + safeName + ".html\"");
             }
 
             // 加载关联数据

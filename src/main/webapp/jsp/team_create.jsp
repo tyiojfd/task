@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Competition" %>
 <%@ page import="com.poster.model.CompetitionCategory" %>
 <%@ page import="java.util.List" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -267,7 +268,7 @@
             <div class="col-lg-8">
                 <% if (request.getAttribute("error") != null) { %>
                     <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i><%= request.getAttribute("error") %>
+                        <i class="fas fa-exclamation-circle me-2"></i><%= HtmlEscaper.escape(String.valueOf(request.getAttribute("error"))) %>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 <% } %>
@@ -300,10 +301,10 @@
                                             <div class="comp-icon" style="background: <%= iconColor %>1A; color: <%= iconColor %>;">
                                                 <i class="fas fa-<%= idx % 2 == 0 ? "medal" : "star" %>"></i>
                                             </div>
-                                            <h6 class="fw-bold mb-1"><%= comp.getName() %></h6>
+                                            <h6 class="fw-bold mb-1"><%= HtmlEscaper.escape(comp.getName()) %></h6>
                                             <p class="text-muted small mb-0"><%= comp.getYear() %>年度 · 最多<%= comp.getMaxTeamSize() %>人/队</p>
                                             <% if (comp.getTheme() != null && !comp.getTheme().isEmpty()) { %>
-                                                <span class="badge bg-light text-muted mt-2"><i class="fas fa-tag me-1"></i><%= comp.getTheme() %></span>
+                                                <span class="badge bg-light text-muted mt-2"><i class="fas fa-tag me-1"></i><%= HtmlEscaper.escape(comp.getTheme()) %></span>
                                             <% } %>
                                         </label>
                                     </div>
@@ -340,7 +341,7 @@
                                         %>
                                             <option value="<%= cat.getCategoryId() %>"
                                                     data-comp-id="<%= cat.getCompetitionId() %>">
-                                                <%= cat.getCategoryName() %>
+                                                <%= HtmlEscaper.escape(cat.getCategoryName()) %>
                                             </option>
                                         <%  }
                                         } else { %>

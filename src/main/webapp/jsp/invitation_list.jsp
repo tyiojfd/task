@@ -5,6 +5,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -241,7 +242,7 @@
                 <% if ("accept_failed".equals(error)) { %>接受邀请失败：队伍可能已满、邀请已失效、您已在队伍/同竞赛其他队伍中，或当前账号不是可参赛账号。管理员和评委不可加入队伍。<% }
                    else if ("reject_failed".equals(error)) { %>拒绝邀请失败<% }
                    else if ("invalid_id".equals(error)) { %>无效的邀请ID<% }
-                   else { %><%= error %><% } %>
+                   else { %><%= HtmlEscaper.escape(error) %><% } %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <% } %>
@@ -274,7 +275,7 @@
                         <i class="fas fa-user-plus"></i>
                     </div>
                     <div class="inv-card-info">
-                        <h6><%= inviterName %> 邀请你加入 <strong><%= teamName %></strong></h6>
+                        <h6><%= HtmlEscaper.escape(inviterName) %> 邀请你加入 <strong><%= HtmlEscaper.escape(teamName) %></strong></h6>
                         <p><i class="far fa-clock"></i><%= timeStr %></p>
                     </div>
                     <div class="inv-card-actions">
@@ -325,7 +326,7 @@
                         <i class="fas fa-<%= accepted ? "check" : "times" %>"></i>
                     </div>
                     <div class="inv-card-info">
-                        <h6><%= inviterName %> 邀请你加入 <strong><%= teamName %></strong></h6>
+                        <h6><%= HtmlEscaper.escape(inviterName) %> 邀请你加入 <strong><%= HtmlEscaper.escape(teamName) %></strong></h6>
                         <p><i class="far fa-clock"></i>邀请于 <%= timeStr %></p>
                         <p><i class="fas fa-<%= accepted ? "check-circle" : "times-circle" %>"></i><%= accepted ? "已接受" : "已拒绝" %> · <%= responseTimeStr %></p>
                     </div>

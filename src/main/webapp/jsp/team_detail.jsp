@@ -9,6 +9,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -71,7 +72,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= team.getTeamName() %> - 大学生海报设计竞赛系统</title>
+    <title><%= HtmlEscaper.escape(team.getTeamName()) %> - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -329,11 +330,11 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div>
-                        <h2 class="mb-1"><%= team.getTeamName() %></h2>
+                        <h2 class="mb-1"><%= HtmlEscaper.escape(team.getTeamName()) %></h2>
                         <div class="cover-meta">
-                            <i class="fas fa-trophy me-1"></i><%= competitionName != null ? competitionName : "未指定竞赛" %>
+                            <i class="fas fa-trophy me-1"></i><%= HtmlEscaper.escape(competitionName != null ? competitionName : "未指定竞赛") %>
                             <span class="mx-2">·</span>
-                            <i class="fas fa-layer-group me-1"></i><%= categoryName != null ? categoryName : "未指定子类" %>
+                            <i class="fas fa-layer-group me-1"></i><%= HtmlEscaper.escape(categoryName != null ? categoryName : "未指定子类") %>
                         </div>
                     </div>
                     <div class="ms-auto text-end">
@@ -397,21 +398,21 @@
                             <div class="info-icon" style="background:#EDE9FE; color:var(--primary)"><i class="fas fa-crown"></i></div>
                             <div>
                                 <div class="small text-muted">队长</div>
-                                <strong><%= leaderName != null ? leaderName : "用户 #" + team.getLeaderId() %></strong>
+                                <strong><%= HtmlEscaper.escape(leaderName != null ? leaderName : "用户 #" + team.getLeaderId()) %></strong>
                             </div>
                         </div>
                         <div class="info-item">
                             <div class="info-icon" style="background:#E8F8F5; color:#00CEC9"><i class="fas fa-trophy"></i></div>
                             <div>
                                 <div class="small text-muted">参赛竞赛</div>
-                                <strong><%= competitionName != null ? competitionName : "未指定" %></strong>
+                                <strong><%= HtmlEscaper.escape(competitionName != null ? competitionName : "未指定") %></strong>
                             </div>
                         </div>
                         <div class="info-item">
                             <div class="info-icon" style="background:#FEF3E2; color:#F39C12"><i class="fas fa-layer-group"></i></div>
                             <div>
                                 <div class="small text-muted">参赛子类</div>
-                                <strong><%= categoryName != null ? categoryName : "未指定" %></strong>
+                                <strong><%= HtmlEscaper.escape(categoryName != null ? categoryName : "未指定") %></strong>
                             </div>
                         </div>
                         <div class="info-item">
@@ -426,7 +427,7 @@
                     <div class="info-card mb-3">
                         <h6 class="mb-3">队伍简介</h6>
                         <p class="text-muted mb-0">
-                            <%= team.getTeamDesc() != null && !team.getTeamDesc().isEmpty() ? team.getTeamDesc() : "这个队伍还没有填写简介，快去编辑吧 ✨" %>
+                            <%= HtmlEscaper.escape(team.getTeamDesc() != null && !team.getTeamDesc().isEmpty() ? team.getTeamDesc() : "这个队伍还没有填写简介，快去编辑吧 ✨") %>
                         </p>
                     </div>
                 </div>
@@ -460,12 +461,12 @@
                                             <%= initial %>
                                         </div>
                                     <% } %>
-                                    <h6 class="mb-0"><%= name %></h6>
+                                    <h6 class="mb-0"><%= HtmlEscaper.escape(name) %></h6>
                                     <span class="badge <%= isTeamLeader ? "bg-warning text-dark" : "bg-light text-muted" %> mt-1">
                                         <%= isTeamLeader ? "👑 队长" : "队员" %>
                                     </span>
                                     <% if (email != null && !email.isEmpty()) { %>
-                                        <div class="small text-muted mt-1"><%= email %></div>
+                                        <div class="small text-muted mt-1"><%= HtmlEscaper.escape(email) %></div>
                                     <% } %>
                                 </div>
                             </div>
@@ -502,7 +503,7 @@
                                         <div style="height: 180px; background: linear-gradient(135deg, #E8ECF1, #DFE6E9); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;"
                                              onclick="previewWorkImage('<%= imgSrc %>')" title="点击查看大图">
                                             <img src="<%= imgSrc %>"
-                                                 alt="<%= w.getTitle() %>"
+                                                 alt="<%= HtmlEscaper.escape(w.getTitle()) %>"
                                                  style="width:100%; height:100%; object-fit:cover;"
                                                  onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-icon').style.display='block';">
                                             <i class="fas fa-image fa-3x fallback-icon" style="color:#B2BEC3; display:none;"></i>
@@ -510,14 +511,14 @@
                                         <!-- 作品信息 -->
                                         <div class="p-3">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;" title="<%= w.getTitle() %>">
-                                                    <%= w.getTitle() %>
+                                                <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;" title="<%= HtmlEscaper.escape(w.getTitle()) %>">
+                                                    <%= HtmlEscaper.escape(w.getTitle()) %>
                                                 </h6>
                                                 <span class="badge <%= statusClass %>" style="font-size:0.7rem;"><%= statusText %></span>
                                             </div>
                                             <% if (w.getDescription() != null && !w.getDescription().isEmpty()) { %>
                                                 <p class="text-muted small mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                                    <%= w.getDescription().length() > 80 ? w.getDescription().substring(0, 80) + "..." : w.getDescription() %>
+                                                    <%= HtmlEscaper.escape(w.getDescription().length() > 80 ? w.getDescription().substring(0, 80) + "..." : w.getDescription()) %>
                                                 </p>
                                             <% } %>
                                             <div class="d-flex justify-content-between align-items-center">
@@ -596,7 +597,7 @@
                             <% } %>
                             <hr>
                             <form action="${pageContext.request.contextPath}/team?action=delete&id=<%= team.getTeamId() %>" method="post"
-                                  onsubmit="return confirm('⚠️ 确定要解散队伍「<%= team.getTeamName() %>」吗？\n\n仅组建中且未提交作品的队伍可以解散，此操作不可恢复。')">
+                                  onsubmit="return confirm('⚠️ 确定要解散该队伍吗？\n\n仅组建中且未提交作品的队伍可以解散，此操作不可恢复。')">
                                 <button type="submit" class="action-btn btn-delete w-100 border-0">
                                     <i class="fas fa-trash-alt"></i>解散队伍
                                 </button>
@@ -673,7 +674,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">队伍名称 *</label>
                                 <input type="text" class="form-control" name="teamName"
-                                       value="<%= team.getTeamName() %>" required style="border-radius:10px;">
+                                       value="<%= HtmlEscaper.escape(team.getTeamName()) %>" required style="border-radius:10px;">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">参赛竞赛 *</label>
@@ -682,7 +683,7 @@
                                         for (Competition c : competitions) { %>
                                             <option value="<%= c.getCompetitionId() %>"
                                                 <%= c.getCompetitionId().equals(team.getCompetitionId()) ? "selected" : "" %>>
-                                                <%= c.getName() %>
+                                                <%= HtmlEscaper.escape(c.getName()) %>
                                             </option>
                                     <%  }
                                     } %>
@@ -695,7 +696,7 @@
                                         for (CompetitionCategory cat : categories) { %>
                                             <option value="<%= cat.getCategoryId() %>"
                                                 <%= cat.getCategoryId().equals(team.getCategoryId()) ? "selected" : "" %>>
-                                                <%= cat.getCategoryName() %>
+                                                <%= HtmlEscaper.escape(cat.getCategoryName()) %>
                                             </option>
                                     <%  }
                                     } %>
@@ -704,7 +705,7 @@
                             <div class="col-12">
                                 <label class="form-label fw-bold">队伍简介</label>
                                 <textarea class="form-control" name="teamDesc" rows="3"
-                                          style="border-radius:10px;" maxlength="500"><%= team.getTeamDesc() != null ? team.getTeamDesc() : "" %></textarea>
+                                          style="border-radius:10px;" maxlength="500"><%= HtmlEscaper.escape(team.getTeamDesc() != null ? team.getTeamDesc() : "") %></textarea>
                             </div>
                         </div>
                     </div>

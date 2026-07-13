@@ -4,7 +4,10 @@ import com.poster.dao.ScoreDAO;
 import com.poster.dao.CommentDAO;
 import com.poster.dao.impl.ScoreDAOImpl;
 import com.poster.dao.impl.CommentDAOImpl;
+import com.poster.dao.WorkDAO;
+import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Score;
+import com.poster.model.Work;
 import com.poster.service.ScoreService;
 
 import java.util.List;
@@ -18,9 +21,13 @@ public class ScoreServiceImpl implements ScoreService {
 
     private ScoreDAO scoreDAO = new ScoreDAOImpl();
     private CommentDAO commentDAO = new CommentDAOImpl();
+    private WorkDAO workDAO = new WorkDAOImpl();
 
     @Override
     public boolean addScore(Score score) {
+        if (score == null) {
+            return false;
+        }
         // 1. 验证评分范围（0-100）
         if (score.getScore() == null || score.getScore().isNaN() || score.getScore().isInfinite()
                 || score.getScore() < 0 || score.getScore() > 100) {
@@ -37,8 +44,17 @@ public class ScoreServiceImpl implements ScoreService {
             return false;
         }
 
-        // 4. 调用DAO插入数据库
-        return scoreDAO.insert(score) > 0;
+        // 4. 插入评分并同步作品状态，避免作品永远停留在“已提交”。
+        if (scoreDAO.insert(score) <= 0) {
+            return false;
+        }
+        if (!markWorkAsScored(score.getWorkId())) {
+            if (score.getScoreId() != null) {
+                scoreDAO.deleteById(score.getScoreId());
+            }
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -55,8 +71,16 @@ public class ScoreServiceImpl implements ScoreService {
         }
 
         // 3. 仅允许评分所属评委更新
+        Score existing = scoreDAO.findById(score.getScoreId());
+        if (existing == null || !judgeId.equals(existing.getJudgeId())) {
+            return false;
+        }
+        score.setWorkId(existing.getWorkId());
         score.setJudgeId(judgeId);
-        return scoreDAO.update(score) > 0;
+        if (scoreDAO.update(score) <= 0) {
+            return false;
+        }
+        return markWorkAsScored(score.getWorkId());
     }
 
     @Override
@@ -98,11 +122,26 @@ public class ScoreServiceImpl implements ScoreService {
         }
         // 查询该作品的所有评分，检查是否有当前评委的评分记录
         List<Score> scores = scoreDAO.findByWorkId(workId);
+        if (scores == null) {
+            return false;
+        }
         for (Score s : scores) {
-            if (s.getJudgeId().equals(judgeId)) {
+            if (s != null && judgeId.equals(s.getJudgeId())) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean markWorkAsScored(Integer workId) {
+        Work work = workDAO.findById(workId);
+        if (work == null) {
+            return false;
+        }
+        if (Integer.valueOf(3).equals(work.getStatus())) {
+            return true;
+        }
+        work.setStatus(3);
+        return workDAO.update(work) > 0;
     }
 }

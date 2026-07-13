@@ -1,10 +1,21 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.News" %>
 <%@ page import="com.poster.model.User" %>
+<%@ page import="com.poster.model.Role" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     News news = (News) request.getAttribute("news");
     User sessionUser = (User) session.getAttribute("user");
+    @SuppressWarnings("unchecked")
+    List<Role> sessionRoles = (List<Role>) session.getAttribute("roles");
+    boolean isAdmin = false;
+    if (sessionRoles != null) {
+        for (Role role : sessionRoles) {
+            if ("管理员".equals(role.getRoleName())) { isAdmin = true; break; }
+        }
+    }
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     if (news == null) {
@@ -17,7 +28,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= news.getTitle() %> - 大学生海报设计竞赛系统</title>
+    <title><%= HtmlEscaper.escape(news.getTitle()) %> - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -78,7 +89,7 @@
 
         <!-- 新闻详情卡片 -->
         <div class="detail-header">
-            <h3><%= news.getTitle() %></h3>
+            <h3><%= HtmlEscaper.escape(news.getTitle()) %></h3>
             <div class="meta-bar">
                 <span><i class="far fa-calendar-alt"></i><%= news.getPublishTime() != null ? news.getPublishTime().format(formatter) : "未知时间" %></span>
                 <% if (news.getCompetitionId() != null) { %>
@@ -94,9 +105,9 @@
             </div>
         </div>
         <div class="detail-body">
-            <div class="news-content"><%= news.getContent() != null ? news.getContent() : "暂无内容" %></div>
+            <div class="news-content"><%= HtmlEscaper.escape(news.getContent() != null ? news.getContent() : "暂无内容") %></div>
 
-            <% if (sessionUser != null) { %>
+            <% if (isAdmin) { %>
                 <div class="action-bar d-flex gap-2">
                     <a href="${pageContext.request.contextPath}/news?action=edit&id=<%= news.getNewsId() %>" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-edit me-1"></i>编辑

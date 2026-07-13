@@ -5,6 +5,7 @@ import com.poster.dao.impl.*;
 import com.poster.model.*;
 import com.poster.service.CompetitionService;
 import com.poster.util.DBUtil;
+import com.poster.util.CompetitionStatusPolicy;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,11 +28,14 @@ public class CompetitionServiceImpl implements CompetitionService {
 
     @Override
     public boolean createCompetition(Competition competition) {
-        // 验证必填字段
-        if (competition.getName() == null || competition.getName().trim().isEmpty()) {
+        if (competition == null || competition.getName() == null
+                || competition.getName().trim().isEmpty()) {
             return false;
         }
-        if (competition.getYear() == null || competition.getSubmitDeadline() == null) {
+        if (competition.getYear() == null || competition.getYear() < 2000
+                || competition.getSubmitDeadline() == null
+                || competition.getTheme() == null || competition.getTheme().trim().isEmpty()
+                || competition.getCreatorId() == null) {
             return false;
         }
 
@@ -42,6 +46,14 @@ public class CompetitionServiceImpl implements CompetitionService {
         if (competition.getMaxTeamSize() == null) {
             competition.setMaxTeamSize(5); // 默认最大队伍人数
         }
+        if (competition.getMaxTeamSize() <= 0 || competition.getMaxTeamSize() > 100
+                || !CompetitionStatusPolicy.canTransition(competition.getStatus(), competition.getStatus())) {
+            return false;
+        }
+        if ((competition.getStatus() == 1 || competition.getStatus() == 2)
+                && competition.getSubmitDeadline().isBefore(LocalDateTime.now())) {
+            return false;
+        }
         competition.setCreateTime(LocalDateTime.now());
 
         // 调用DAO插入
@@ -50,11 +62,28 @@ public class CompetitionServiceImpl implements CompetitionService {
 
     @Override
     public boolean updateCompetition(Competition competition) {
-        // 验证必填字段
-        if (competition.getCompetitionId() == null) {
+        if (competition == null || competition.getCompetitionId() == null) {
             return false;
         }
+        Competition existing = competitionDAO.findById(competition.getCompetitionId());
+        if (existing == null) {
+            return false;
+        }
+        if (competition.getYear() == null) competition.setYear(existing.getYear());
+        if (competition.getTheme() == null) competition.setTheme(existing.getTheme());
+        if (competition.getDescription() == null) competition.setDescription(existing.getDescription());
+        if (competition.getSubmitDeadline() == null) competition.setSubmitDeadline(existing.getSubmitDeadline());
+        if (competition.getMaxTeamSize() == null) competition.setMaxTeamSize(existing.getMaxTeamSize());
+        if (competition.getStatus() == null) competition.setStatus(existing.getStatus());
         if (competition.getName() == null || competition.getName().trim().isEmpty()) {
+            return false;
+        }
+        if (competition.getYear() == null || competition.getYear() < 2000
+                || competition.getTheme() == null || competition.getTheme().trim().isEmpty()
+                || competition.getSubmitDeadline() == null
+                || competition.getMaxTeamSize() == null || competition.getMaxTeamSize() <= 0
+                || competition.getMaxTeamSize() > 100
+                || !CompetitionStatusPolicy.canTransition(existing.getStatus(), competition.getStatus())) {
             return false;
         }
 
@@ -195,6 +224,9 @@ public class CompetitionServiceImpl implements CompetitionService {
             return false;
         }
 
+        if (!CompetitionStatusPolicy.canTransition(competition.getStatus(), status)) {
+            return false;
+        }
         competition.setStatus(status);
         return competitionDAO.update(competition) > 0;
     }
@@ -236,7 +268,7 @@ public class CompetitionServiceImpl implements CompetitionService {
         int submittedWorkCount = 0;
         if (works != null) {
             for (Work work : works) {
-                if (work.getStatus() != null && work.getStatus() == 2) {
+                if (work.getStatus() != null && (work.getStatus() == 2 || work.getStatus() == 3)) {
                     submittedWorkCount++;
                 }
             }

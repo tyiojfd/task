@@ -12,6 +12,7 @@ import com.poster.service.UserService;
 import com.poster.util.PasswordUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 用户服务实现类
@@ -20,9 +21,19 @@ import java.util.List;
  */
 public class UserServiceImpl implements UserService {
 
-    private UserDAO userDAO = new UserDAOImpl();
-    private RoleDAO roleDAO = new RoleDAOImpl();
-    private UserRoleDAO userRoleDAO = new UserRoleDAOImpl();
+    private final UserDAO userDAO;
+    private final RoleDAO roleDAO;
+    private final UserRoleDAO userRoleDAO;
+
+    public UserServiceImpl() {
+        this(new UserDAOImpl(), new RoleDAOImpl(), new UserRoleDAOImpl());
+    }
+
+    public UserServiceImpl(UserDAO userDAO, RoleDAO roleDAO, UserRoleDAO userRoleDAO) {
+        this.userDAO = Objects.requireNonNull(userDAO, "userDAO");
+        this.roleDAO = Objects.requireNonNull(roleDAO, "roleDAO");
+        this.userRoleDAO = Objects.requireNonNull(userRoleDAO, "userRoleDAO");
+    }
 
     @Override
     public boolean register(String username, String password, String realName, String email, String avatar) {
@@ -53,8 +64,11 @@ public class UserServiceImpl implements UserService {
         if (userId > 0) {
             // 6. 分配默认角色（队员，role_name='队员'）
             Role defaultRole = roleDAO.findByName("队员");
-            if (defaultRole != null) {
-                userRoleDAO.assignRole(userId, defaultRole.getRoleId());
+            if (defaultRole == null || defaultRole.getRoleId() == null
+                    || !userRoleDAO.assignRole(userId, defaultRole.getRoleId())) {
+                // 用户和默认角色必须一起成功，否则留下的半成品账号无法正常登录/授权。
+                userDAO.deleteById(userId);
+                return false;
             }
             return true;
         }
@@ -103,7 +117,7 @@ public class UserServiceImpl implements UserService {
             }
 
             boolean matched = "普通用户".equals(expectedRole)
-                    ? (isParticipant && !isAdmin && !isJudge)
+                    ? (isParticipant && !isAdmin)
                     : exactMatched;
             if (!matched) {
                 return null;

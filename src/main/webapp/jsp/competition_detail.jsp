@@ -8,6 +8,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Set" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     Competition competition = (Competition) request.getAttribute("competition");
     Boolean hasJoined = (Boolean) request.getAttribute("hasJoined");
@@ -63,7 +64,7 @@
         <% if (competition != null) { %>
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><%= competition.getName() %></h4>
+                    <h4 class="mb-0"><%= HtmlEscaper.escape(competition.getName()) %></h4>
                     <span class="badge bg-light text-dark">
                         <% if (competition.getStatus() == 1) { %>报名中<% }
                            else if (competition.getStatus() == 2) { %>进行中<% }
@@ -85,13 +86,13 @@
                     <% if (competition.getTheme() != null) { %>
                     <div class="info-row">
                         <span class="info-label">主题：</span>
-                        <span><%= competition.getTheme() %></span>
+                        <span><%= HtmlEscaper.escape(competition.getTheme()) %></span>
                     </div>
                     <% } %>
 
                     <div class="info-row">
                         <span class="info-label">描述：</span>
-                        <p class="mt-2"><%= competition.getDescription() != null ? competition.getDescription() : "暂无描述" %></p>
+                        <p class="mt-2"><%= HtmlEscaper.escape(competition.getDescription() != null ? competition.getDescription() : "暂无描述") %></p>
                     </div>
 
                     <div class="info-row">
@@ -109,7 +110,7 @@
                         <span class="info-label">竞赛方向：</span>
                         <div class="mt-2">
                             <% for (CompetitionCategory cat : categories) { %>
-                                <span class="badge bg-info text-dark me-2 mb-2"><%= cat.getCategoryName() %></span>
+                                <span class="badge bg-info text-dark me-2 mb-2"><%= HtmlEscaper.escape(cat.getCategoryName()) %></span>
                             <% } %>
                         </div>
                     </div>
@@ -140,7 +141,7 @@
                             <p class="text-muted mb-0">管理员用于系统管理，评委用于评分，不参与创建或加入参赛队伍。</p>
                         <% } else if (hasJoined) { %>
                             <h5 class="text-success">✓ 您已参加此竞赛</h5>
-                            <p class="mb-2">队伍：<%= userTeam != null ? userTeam.getTeamName() : "未知" %></p>
+                            <p class="mb-2">队伍：<%= HtmlEscaper.escape(userTeam != null ? userTeam.getTeamName() : "未知") %></p>
                             <a href="${pageContext.request.contextPath}/team?action=detail&id=<%= userTeam != null ? userTeam.getTeamId() : "" %>"
                                class="btn btn-primary me-2">查看队伍</a>
                             <a href="${pageContext.request.contextPath}/work?action=myWorks" class="btn btn-success">查看作品</a>
@@ -176,7 +177,7 @@
                             boolean applied = appliedTeamIds != null && appliedTeamIds.contains(t.getTeamId());
                         %>
                         <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2 flex-wrap gap-2">
-                            <div><strong><%= t.getTeamName() %></strong><span class="text-muted ms-2"><%= memberCount %>/<%= competition.getMaxTeamSize() %> 人</span></div>
+                            <div><strong><%= HtmlEscaper.escape(t.getTeamName()) %></strong><span class="text-muted ms-2"><%= memberCount %>/<%= competition.getMaxTeamSize() %> 人</span></div>
                             <% if (applied) { %>
                                 <button class="btn btn-sm btn-secondary" disabled>已申请</button>
                             <% } else { %>
@@ -268,18 +269,37 @@
                 try {
                     var teams = JSON.parse(xhr.responseText);
                     if (!teams.length) { container.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-users-slash fa-2x mb-2"></i><p>未找到匹配的队伍</p></div>'; return; }
-                    var html = '';
+                    container.innerHTML = '';
                     teams.forEach(function(t) {
-                        html += '<div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">';
-                        html += '<div><strong>' + t.teamName + '</strong><small class="text-muted ms-2">' + t.competitionName + '</small><br><small class="text-muted">' + t.memberCount + '/' + t.maxTeamSize + ' 人</small></div>';
-                        html += '<form method="post" action="${pageContext.request.contextPath}/application?action=apply" onsubmit="return confirm(\'确认申请加入「' + t.teamName + '」吗？\')">';
-                        html += '<input type="hidden" name="teamId" value="' + t.teamId + '">';
-                        html += '<input type="hidden" name="message" value="">';
-                        html += '<button class="btn btn-sm btn-primary" type="submit">申请加入</button>';
-                        html += '</form>';
-                        html += '</div>';
+                        var item = document.createElement('div');
+                        item.className = 'list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2';
+                        var info = document.createElement('div');
+                        var name = document.createElement('strong');
+                        name.textContent = t.teamName || '未命名队伍';
+                        var competitionName = document.createElement('small');
+                        competitionName.className = 'text-muted ms-2';
+                        competitionName.textContent = t.competitionName || '';
+                        var count = document.createElement('small');
+                        count.className = 'text-muted';
+                        count.textContent = (t.memberCount || 0) + '/' + (t.maxTeamSize || 0) + ' 人';
+                        info.appendChild(name);
+                        info.appendChild(competitionName);
+                        info.appendChild(document.createElement('br'));
+                        info.appendChild(count);
+                        var form = document.createElement('form');
+                        form.method = 'post';
+                        form.action = '${pageContext.request.contextPath}/application?action=apply';
+                        form.className = 'd-flex gap-2';
+                        form.onsubmit = function() { return confirm('确认申请加入「' + (t.teamName || '该队伍') + '」吗？'); };
+                        var teamId = document.createElement('input');
+                        teamId.type = 'hidden'; teamId.name = 'teamId'; teamId.value = t.teamId;
+                        var message = document.createElement('input');
+                        message.type = 'hidden'; message.name = 'message'; message.value = '';
+                        var button = document.createElement('button');
+                        button.className = 'btn btn-sm btn-primary'; button.type = 'submit'; button.textContent = '申请加入';
+                        form.appendChild(teamId); form.appendChild(message); form.appendChild(button);
+                        item.appendChild(info); item.appendChild(form); container.appendChild(item);
                     });
-                    container.innerHTML = html;
                 } catch(e) { container.innerHTML = '<div class="text-center text-danger py-4">搜索出错，请重试</div>'; }
             };
             xhr.send();

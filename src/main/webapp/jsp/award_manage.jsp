@@ -7,6 +7,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Set" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) {
@@ -126,13 +127,13 @@
 
     <% if (message != null) { %>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle"></i> <%= message %>
+        <i class="fas fa-check-circle"></i> <%= HtmlEscaper.escape(message) %>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% } %>
     <% if (error != null) { %>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle"></i> <%= error %>
+        <i class="fas fa-exclamation-circle"></i> <%= HtmlEscaper.escape(error) %>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     <% } %>
@@ -146,7 +147,7 @@
             <div class="col-md-4 col-lg-3 mb-2">
                 <a href="?action=manage&competitionId=<%= comp.getCompetitionId() %>" class="text-decoration-none">
                     <div class="card p-3 <%= selectedCompetition != null && selectedCompetition.getCompetitionId().equals(comp.getCompetitionId()) ? "selected" : "" %>">
-                        <div class="fw-bold text-dark"><%= comp.getName() %></div>
+                        <div class="fw-bold text-dark"><%= HtmlEscaper.escape(comp.getName()) %></div>
                         <small class="text-muted"><%= comp.getStatus() == 1 ? "报名中" : (comp.getStatus() == 2 ? "进行中" : "已结束") %></small>
                     </div>
                 </a>
@@ -161,7 +162,7 @@
     <div class="row">
         <!-- 左侧：作品列表 -->
         <div class="col-lg-7">
-            <h5 class="mb-3"><i class="fas fa-image"></i> <%= selectedCompetition.getName() %> - 作品列表</h5>
+            <h5 class="mb-3"><i class="fas fa-image"></i> <%= HtmlEscaper.escape(selectedCompetition.getName()) %> - 作品列表</h5>
 
             <% if (works != null && !works.isEmpty()) {
                 for (Work w : works) {
@@ -172,9 +173,9 @@
             <div class="card-custom <%= awarded ? "awarded" : "" %>">
                 <div class="row align-items-center">
                     <div class="col-md-6">
-                        <div class="fw-bold"><%= w.getTitle() %></div>
+                        <div class="fw-bold"><%= HtmlEscaper.escape(w.getTitle()) %></div>
                         <small class="text-muted">
-                            <i class="fas fa-users"></i> <%= tName %> &nbsp;
+                            <i class="fas fa-users"></i> <%= HtmlEscaper.escape(tName) %> &nbsp;
                             <i class="fas fa-star"></i> 均分: <%= String.format("%.1f", avg != null ? avg : 0.0) %>
                         </small>
                     </div>
@@ -186,7 +187,7 @@
                                     if ("二等奖".equals(a.getAwardLevel())) badgeClass = "award-badge-2";
                                     if ("三等奖".equals(a.getAwardLevel())) badgeClass = "award-badge-3";
                         %>
-                            <span class="badge <%= badgeClass %>"><%= a.getAwardLevel() %></span>
+                            <span class="badge <%= badgeClass %>"><%= HtmlEscaper.escape(a.getAwardLevel()) %></span>
                             <small class="d-block text-muted">得分: <%= String.format("%.1f", a.getFinalScore()) %></small>
                         <%      }
                             }
@@ -236,7 +237,7 @@
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">作品</label>
-                                    <p class="form-control-plaintext"><%= w.getTitle() %></p>
+                                    <p class="form-control-plaintext"><%= HtmlEscaper.escape(w.getTitle()) %></p>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">平均分</label>
@@ -301,7 +302,7 @@
                             %>
                             <tr>
                                 <td>#<%= a.getWorkId() %></td>
-                                <td><span class="badge <%= badgeClass %>"><%= a.getAwardLevel() %></span></td>
+                                <td><span class="badge <%= badgeClass %>"><%= HtmlEscaper.escape(a.getAwardLevel()) %></span></td>
                                 <td><%= String.format("%.1f", a.getFinalScore()) %></td>
                                 <td>
                                     <a href="${pageContext.request.contextPath}/certificate?action=view&awardId=<%= a.getAwardId() %>"

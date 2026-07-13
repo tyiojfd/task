@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -23,7 +24,7 @@
                     </div>
                     <div class="card-body">
                         <% if (request.getAttribute("error") != null) { %>
-                            <div class="alert alert-danger"><%= request.getAttribute("error") %></div>
+                            <div class="alert alert-danger"><%= HtmlEscaper.escape(String.valueOf(request.getAttribute("error"))) %></div>
                         <% } %>
 
                         <form action="${pageContext.request.contextPath}/competition?action=create" method="post">

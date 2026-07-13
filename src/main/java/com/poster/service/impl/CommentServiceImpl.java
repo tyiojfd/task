@@ -28,6 +28,10 @@ public class CommentServiceImpl implements CommentService {
             return false;
         }
 
+        if (commentDAO.findByWorkIdAndJudgeId(comment.getWorkId(), comment.getJudgeId()) != null) {
+            return false;
+        }
+
         // 3. 调用DAO插入数据库
         return commentDAO.insert(comment) > 0;
     }

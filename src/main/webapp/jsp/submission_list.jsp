@@ -9,6 +9,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Set" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) { response.sendRedirect(request.getContextPath() + "/login"); return; }
@@ -23,6 +24,7 @@
     List<Work> works = (List<Work>) request.getAttribute("works");
     Map<Integer, Team> teamMap = (Map<Integer, Team>) request.getAttribute("teamMap");
     Map<Integer, Integer> likeCountMap = (Map<Integer, Integer>) request.getAttribute("likeCountMap");
+    Map<Integer, Integer> shareCountMap = (Map<Integer, Integer>) request.getAttribute("shareCountMap");
     Map<Integer, Boolean> likedMap = (Map<Integer, Boolean>) request.getAttribute("likedMap");
     Set<Integer> leaderTeamIds = (Set<Integer>) request.getAttribute("leaderTeamIds");
     String keyword = (String) request.getAttribute("keyword");
@@ -78,7 +80,7 @@
         <div class="d-flex gap-2">
             <form class="search-box" method="get" action="${pageContext.request.contextPath}/work">
                 <div class="input-group">
-                    <input type="text" class="form-control" name="keyword" placeholder="搜索队伍名称或作品名称..." value="<%= keyword != null ? keyword : "" %>">
+                    <input type="text" class="form-control" name="keyword" placeholder="搜索队伍名称或作品名称..." value="<%= HtmlEscaper.escape(keyword) %>">
                     <button type="submit"><i class="fas fa-search"></i></button>
                 </div>
             </form>
@@ -86,10 +88,10 @@
         </div>
     </div>
     <% if (msg != null) { %>
-        <div class="alert alert-success"><%= "submit_success".equals(msg) ? "作品提交成功！" : "delete_success".equals(msg) ? "作品已删除" : "update_success".equals(msg) ? "作品已更新" : msg %></div>
+        <div class="alert alert-success"><%= "submit_success".equals(msg) ? "作品提交成功！" : "delete_success".equals(msg) ? "作品已删除" : "update_success".equals(msg) ? "作品已更新" : HtmlEscaper.escape(msg) %></div>
     <% } %>
     <% if (error != null) { %>
-        <div class="alert alert-danger"><%= "not_found".equals(error) ? "作品不存在" : "permission_denied".equals(error) ? "没有操作权限" : "delete_failed".equals(error) ? "删除失败" : error %></div>
+        <div class="alert alert-danger"><%= "not_found".equals(error) ? "作品不存在" : "permission_denied".equals(error) ? "没有操作权限" : "delete_failed".equals(error) ? "删除失败" : "share_failed".equals(error) ? "分享失败" : HtmlEscaper.escape(error) %></div>
     <% } %>
     <% if (works == null || works.isEmpty()) { %>
         <div class="empty-state">
@@ -103,6 +105,7 @@
                 Team team = teamMap != null ? teamMap.get(work.getTeamId()) : null;
                 boolean isLeader = team != null && leaderTeamIds != null && leaderTeamIds.contains(work.getTeamId());
                 int likeCount = likeCountMap != null ? likeCountMap.getOrDefault(work.getWorkId(), 0) : 0;
+                int shareCount = shareCountMap != null ? shareCountMap.getOrDefault(work.getWorkId(), 0) : 0;
                 boolean liked = likedMap != null && likedMap.getOrDefault(work.getWorkId(), false);
                 String imgUrl = request.getContextPath() + "/image-data?workId=" + work.getWorkId() + "&type=thumb";
             %>
@@ -110,17 +113,18 @@
                 <div class="work-card">
                     <div style="height:180px;background:#F1F2F6;display:flex;align-items:center;justify-content:center;overflow:hidden;">
                         <% if (!imgUrl.isEmpty()) { %>
-                            <img src="<%= imgUrl %>" alt="<%= work.getTitle() %>" style="width:100%;height:100%;object-fit:cover;">
+                            <img src="<%= imgUrl %>" alt="<%= HtmlEscaper.escape(work.getTitle()) %>" style="width:100%;height:100%;object-fit:cover;">
                         <% } else { %>
                             <i class="fas fa-image" style="font-size:3rem;color:#DFE6E9"></i>
                         <% } %>
                     </div>
                     <div class="work-body">
-                        <div class="work-title"><a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>"><%= work.getTitle() != null ? work.getTitle() : "未命名作品" %></a></div>
+                        <div class="work-title"><a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>"><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "未命名作品") %></a></div>
                         <div class="work-meta">
-                            <div><i class="fas fa-users"></i> <%= team != null ? team.getTeamName() : "未知" %></div>
+                            <div><i class="fas fa-users"></i> <%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知") %></div>
                             <% if (work.getSubmitTime() != null) { %><div><i class="fas fa-clock"></i> <%= work.getSubmitTime().format(dtf) %></div><% } %>
                             <div><i class="fas fa-heart"></i> <%= likeCount %> 赞</div>
+                            <div><i class="fas fa-share-alt"></i> <%= shareCount %> 次分享</div>
                         </div>
                     </div>
                     <div class="work-actions">
@@ -128,6 +132,12 @@
                             <input type="hidden" name="action" value="<%= liked ? "unlike" : "like" %>">
                             <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
                             <button type="submit" class="btn-sm btn-like <%= liked ? "liked" : "" %>"><i class="fas fa-thumbs-up"></i> <%= liked ? "已赞" : "点赞" %></button>
+                        </form>
+                        <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0">
+                            <input type="hidden" name="action" value="share">
+                            <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
+                            <input type="hidden" name="platform" value="link">
+                            <button type="submit" class="btn-sm" style="background:#EAF7F0;color:#198754;"><i class="fas fa-share-alt"></i> 分享</button>
                         </form>
                         <% if (isLeader) { %>
                             <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn-sm btn-edit"><i class="fas fa-edit"></i> 编辑</a>

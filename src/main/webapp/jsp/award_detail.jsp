@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.*" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
 
@@ -71,8 +72,8 @@
 
 <div class="container">
     <div class="page-header">
-        <h2><i class="fas fa-medal"></i> <%= award.getAwardLevel() %></h2>
-        <p><%= competition != null ? competition.getName() : "" %></p>
+        <h2><i class="fas fa-medal"></i> <%= HtmlEscaper.escape(award.getAwardLevel()) %></h2>
+        <p><%= HtmlEscaper.escape(competition != null ? competition.getName() : "") %></p>
     </div>
 
     <div class="row">
@@ -80,14 +81,14 @@
             <div class="card-custom">
                 <h5 class="mb-3"><i class="fas fa-info-circle"></i> 获奖信息</h5>
                 <table class="table">
-                    <tr><td class="text-muted" width="150">获奖等级</td><td><strong class="text-warning"><%= award.getAwardLevel() %></strong></td></tr>
+                    <tr><td class="text-muted" width="150">获奖等级</td><td><strong class="text-warning"><%= HtmlEscaper.escape(award.getAwardLevel()) %></strong></td></tr>
                     <tr><td class="text-muted">最终得分</td><td><strong><%= String.format("%.1f", award.getFinalScore()) %></strong> 分</td></tr>
                     <tr><td class="text-muted">获奖时间</td><td><%= award.getAwardTime() != null ? award.getAwardTime().format(dtf) : "" %></td></tr>
-                    <tr><td class="text-muted">作品名称</td><td><strong><%= work != null ? work.getTitle() : "未知" %></strong></td></tr>
-                    <tr><td class="text-muted">所属队伍</td><td><%= team != null ? team.getTeamName() : "未知" %></td></tr>
-                    <tr><td class="text-muted">参赛竞赛</td><td><%= competition != null ? competition.getName() : "未知" %></td></tr>
+                    <tr><td class="text-muted">作品名称</td><td><strong><%= HtmlEscaper.escape(work != null ? work.getTitle() : "未知") %></strong></td></tr>
+                    <tr><td class="text-muted">所属队伍</td><td><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知") %></td></tr>
+                    <tr><td class="text-muted">参赛竞赛</td><td><%= HtmlEscaper.escape(competition != null ? competition.getName() : "未知") %></td></tr>
                     <% if (certificate != null) { %>
-                    <tr><td class="text-muted">证书编号</td><td><code><%= certificate.getCertificateNo() %></code></td></tr>
+                    <tr><td class="text-muted">证书编号</td><td><code><%= HtmlEscaper.escape(certificate.getCertificateNo()) %></code></td></tr>
                     <% } %>
                 </table>
             </div>
@@ -96,7 +97,7 @@
         <div class="col-lg-4">
             <div class="card-custom text-center">
                 <i class="fas fa-trophy" style="font-size:4rem;color:#FFD700;"></i>
-                <h4 class="mt-3"><%= award.getAwardLevel() %></h4>
+                <h4 class="mt-3"><%= HtmlEscaper.escape(award.getAwardLevel()) %></h4>
                 <p class="text-muted">最终得分: <%= String.format("%.1f", award.getFinalScore()) %> 分</p>
                 <a href="${pageContext.request.contextPath}/certificate?action=view&awardId=<%= award.getAwardId() %>"
                    class="btn btn-warning w-100 mt-3" target="_blank">

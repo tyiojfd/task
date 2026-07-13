@@ -62,7 +62,8 @@
             if ("队员".equals(role.getRoleName()) || "队长".equals(role.getRoleName())) hasParticipantRole = true;
         }
     }
-    boolean isParticipant = sessionUser != null && hasParticipantRole && !isAdmin && !isJudge;
+    // 全局角色允许叠加，队伍页面再按具体队伍负责人校验。
+    boolean isParticipant = sessionUser != null && hasParticipantRole && !isAdmin;
 
     int compCount = globalStats != null && globalStats.get("compCount") != null ? globalStats.get("compCount") : (competitions != null ? competitions.size() : 0);
     int teamCount = globalStats != null && globalStats.get("teamCount") != null ? globalStats.get("teamCount") : 0;

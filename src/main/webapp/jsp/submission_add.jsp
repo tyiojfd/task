@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Team" %>
 <%@ page import="com.poster.model.Work" %>
 <%@ page import="com.poster.util.FileUploadUtil" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%@ page import="java.util.List" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
@@ -102,7 +103,7 @@
                             <div class="d-flex align-items-center">
                                 <div class="me-3"><i class="fas fa-users text-primary" style="font-size:1.5rem"></i></div>
                                 <div>
-                                    <strong><%= editTeam != null ? editTeam.getTeamName() : "原队伍" %></strong>
+                                    <strong><%= HtmlEscaper.escape(editTeam != null ? editTeam.getTeamName() : "原队伍") %></strong>
                                     <span class="badge bg-info">编辑时不可更换队伍</span>
                                 </div>
                             </div>
@@ -125,7 +126,7 @@
                             <div class="d-flex align-items-center">
                                 <div class="me-3"><i class="fas fa-users text-primary" style="font-size:1.5rem"></i></div>
                                 <div>
-                                    <strong><%= t.getTeamName() %></strong>
+                                    <strong><%= HtmlEscaper.escape(t.getTeamName()) %></strong>
                                     <% if (teamSubmitted) { %>
                                         <span class="badge bg-secondary">已提交作品</span>
                                     <% } else if (t.getStatus() != null && t.getStatus() == 2 && !ineligible) { %>
@@ -143,11 +144,11 @@
                     <h5><i class="fas fa-info-circle me-2" style="color:var(--primary)"></i>作品信息</h5>
                     <div class="mb-3">
                         <label class="form-label">作品名称 <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="title" placeholder="请输入作品名称" required maxlength="100" value="<%= isEdit && editWork.getTitle() != null ? editWork.getTitle() : "" %>">
+                        <input type="text" class="form-control" name="title" placeholder="请输入作品名称" required maxlength="100" value="<%= HtmlEscaper.escape(isEdit && editWork.getTitle() != null ? editWork.getTitle() : "") %>">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">作品描述</label>
-                        <textarea class="form-control" name="description" placeholder="请输入作品描述（选填）" maxlength="500"><%= isEdit && editWork.getDescription() != null ? editWork.getDescription() : "" %></textarea>
+                        <textarea class="form-control" name="description" placeholder="请输入作品描述（选填）" maxlength="500"><%= HtmlEscaper.escape(isEdit && editWork.getDescription() != null ? editWork.getDescription() : "") %></textarea>
                     </div>
                 </div>
             </div>

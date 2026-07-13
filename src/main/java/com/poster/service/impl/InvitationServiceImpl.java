@@ -76,7 +76,7 @@ public class InvitationServiceImpl implements InvitationService {
         }
 
         // 4. 验证被邀请人与当前用户一致
-        if (!invitation.getInviteeId().equals(userId)) {
+        if (invitation.getInviteeId() == null || !invitation.getInviteeId().equals(userId)) {
             return false;
         }
 
@@ -145,7 +145,10 @@ public class InvitationServiceImpl implements InvitationService {
         // 9. 更新邀请状态为"已接受"
         invitation.setStatus(1);
         invitation.setResponseTime(LocalDateTime.now());
-        invitationDAO.update(invitation);
+        if (invitationDAO.update(invitation) <= 0) {
+            teamMemberDAO.deleteByTeamIdAndUserId(invitation.getTeamId(), userId);
+            return false;
+        }
 
         return true;
     }
@@ -169,15 +172,13 @@ public class InvitationServiceImpl implements InvitationService {
         }
 
         // 4. 验证被邀请人与当前用户一致
-        if (!invitation.getInviteeId().equals(userId)) {
+        if (invitation.getInviteeId() == null || !invitation.getInviteeId().equals(userId)) {
             return false;
         }
 
         // 5. 更新邀请状态为"已拒绝"
         invitation.setStatus(2);
         invitation.setResponseTime(LocalDateTime.now());
-        invitationDAO.update(invitation);
-
-        return true;
+        return invitationDAO.update(invitation) > 0;
     }
 }

@@ -4,6 +4,7 @@
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     @SuppressWarnings("unchecked")
     List<News> newsList = (List<News>) request.getAttribute("newsList");
@@ -132,12 +133,12 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
-                                        <h5 class="news-title"><%= news.getTitle() %></h5>
+                                        <h5 class="news-title"><%= HtmlEscaper.escape(news.getTitle()) %></h5>
                                         <div class="news-meta">
                                             <i class="far fa-clock"></i>
                                             <%= news.getPublishTime() != null ? news.getPublishTime().format(formatter) : "未知时间" %>
                                         </div>
-                                        <p class="news-excerpt"><%= excerpt != null ? excerpt : "" %></p>
+                                        <p class="news-excerpt"><%= HtmlEscaper.escape(excerpt) %></p>
                                     </div>
                                     <i class="fas fa-chevron-right text-muted ms-3 mt-2"></i>
                                 </div>

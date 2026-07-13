@@ -100,6 +100,12 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <!-- JUnit 5 测试执行器 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
             <!-- Jetty鏈嶅姟鍣ㄦ彃浠讹紙鍏煎 javax.servlet / Java EE锛?-->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>

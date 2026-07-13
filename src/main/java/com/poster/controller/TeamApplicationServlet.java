@@ -82,6 +82,10 @@ public class TeamApplicationServlet extends HttpServlet {
             throws ServletException, IOException {
         User user = (User) request.getSession(false).getAttribute("user");
         Integer teamId = parseInt(request.getParameter("teamId"));
+        if (teamId == null) {
+            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=invalid_team");
+            return;
+        }
         Team team = teamDAO.findById(teamId);
         if (team == null || !user.getUserId().equals(team.getLeaderId())) {
             response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=permission_denied");
@@ -98,6 +102,10 @@ public class TeamApplicationServlet extends HttpServlet {
     private void apply(HttpServletRequest request, HttpServletResponse response) throws IOException {
         User user = (User) request.getSession(false).getAttribute("user");
         Integer teamId = parseInt(request.getParameter("teamId"));
+        if (teamId == null) {
+            response.sendRedirect(request.getContextPath() + "/competition?action=list&error=invalid_team");
+            return;
+        }
         String message = request.getParameter("message");
         boolean success = applicationService.applyToTeam(teamId, user.getUserId(), message);
         Team team = teamDAO.findById(teamId);
@@ -129,14 +137,20 @@ public class TeamApplicationServlet extends HttpServlet {
     }
 
     private Integer parseInt(String value) {
-        try { return value == null ? null : Integer.parseInt(value); } catch (Exception e) { return null; }
+        try {
+            if (value == null) return null;
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Map<Integer, Team> buildTeamMap(List<TeamApplication> applications) {
         Map<Integer, Team> map = new HashMap<>();
         if (applications != null) {
             for (TeamApplication application : applications) {
-                if (!map.containsKey(application.getTeamId())) {
+                if (application.getTeamId() != null && !map.containsKey(application.getTeamId())) {
                     Team team = teamDAO.findById(application.getTeamId());
                     if (team != null) map.put(application.getTeamId(), team);
                 }
@@ -149,7 +163,7 @@ public class TeamApplicationServlet extends HttpServlet {
         Map<Integer, User> map = new HashMap<>();
         if (applications != null) {
             for (TeamApplication application : applications) {
-                if (!map.containsKey(application.getApplicantId())) {
+                if (application.getApplicantId() != null && !map.containsKey(application.getApplicantId())) {
                     User user = userDAO.findById(application.getApplicantId());
                     if (user != null) map.put(application.getApplicantId(), user);
                 }

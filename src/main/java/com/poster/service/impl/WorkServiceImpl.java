@@ -4,6 +4,7 @@ import com.poster.dao.*;
 import com.poster.dao.impl.*;
 import com.poster.model.*;
 import com.poster.service.WorkService;
+import com.poster.util.SharePolicy;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -143,10 +144,18 @@ public class WorkServiceImpl implements WorkService {
             return false;
         }
 
+        if (workDAO.findById(workId) == null) {
+            return false;
+        }
+        String normalizedPlatform = SharePolicy.normalizePlatform(platform);
+        if (normalizedPlatform == null) {
+            return false;
+        }
+
         WorkShare workShare = new WorkShare();
         workShare.setWorkId(workId);
         workShare.setUserId(userId);
-        workShare.setPlatform(platform);
+        workShare.setPlatform(normalizedPlatform);
 
         return workShareDAO.insert(workShare) > 0;
     }
@@ -185,6 +194,14 @@ public class WorkServiceImpl implements WorkService {
     public int getLikeCount(Integer workId) {
         if (workId == null) return 0;
         return workLikeDAO.countByWorkId(workId);
+    }
+
+    @Override
+    public int getShareCount(Integer workId) {
+        if (workId == null) {
+            return 0;
+        }
+        return workShareDAO.countByWorkId(workId);
     }
 
     @Override

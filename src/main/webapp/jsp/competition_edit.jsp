@@ -3,6 +3,7 @@
 <%@ page import="com.poster.model.CompetitionCategory" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     Competition competition = (Competition) request.getAttribute("competition");
     @SuppressWarnings("unchecked")
@@ -32,7 +33,7 @@
                     </div>
                     <div class="card-body">
                         <% if (request.getAttribute("error") != null) { %>
-                            <div class="alert alert-danger"><%= request.getAttribute("error") %></div>
+                            <div class="alert alert-danger"><%= HtmlEscaper.escape(String.valueOf(request.getAttribute("error"))) %></div>
                         <% } %>
 
                         <% if (competition != null) { %>
@@ -48,18 +49,18 @@
                                 <div class="mb-3">
                                     <label class="form-label">竞赛名称 *</label>
                                     <input type="text" class="form-control" name="name"
-                                           value="<%= competition.getName() %>" required>
+                                           value="<%= HtmlEscaper.escape(competition.getName()) %>" required>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">竞赛主题</label>
                                     <input type="text" class="form-control" name="theme"
-                                           value="<%= competition.getTheme() != null ? competition.getTheme() : "" %>">
+                                           value="<%= HtmlEscaper.escape(competition.getTheme() != null ? competition.getTheme() : "") %>">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">竞赛描述</label>
-                                    <textarea class="form-control" name="description" rows="4"><%= competition.getDescription() != null ? competition.getDescription() : "" %></textarea>
+                                    <textarea class="form-control" name="description" rows="4"><%= HtmlEscaper.escape(competition.getDescription() != null ? competition.getDescription() : "") %></textarea>
                                 </div>
 
                                 <div class="mb-3">
@@ -93,9 +94,9 @@
                                                 <div class="d-flex align-items-center mb-2 p-2 border rounded existing-cat-row">
                                                     <input type="hidden" name="deleteCategoryIds" value="" disabled>
                                                     <span class="me-2 flex-grow-1">
-                                                        <strong><%= cat.getCategoryName() %></strong>
+                                                        <strong><%= HtmlEscaper.escape(cat.getCategoryName()) %></strong>
                                                         <% if (cat.getCategoryDesc() != null && !cat.getCategoryDesc().isEmpty()) { %>
-                                                            <small class="text-muted"> — <%= cat.getCategoryDesc() %></small>
+                                                            <small class="text-muted"> — <%= HtmlEscaper.escape(cat.getCategoryDesc()) %></small>
                                                         <% } %>
                                                     </span>
                                                     <button type="button" class="btn btn-outline-danger btn-sm delete-existing"

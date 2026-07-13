@@ -159,7 +159,10 @@ public class FileUploadUtil {
             return false;
         }
         try {
-            Path filePath = Paths.get(uploadBasePath, relativePath);
+            Path filePath = UploadPathResolver.resolve(Paths.get(uploadBasePath), relativePath);
+            if (filePath == null) {
+                return false;
+            }
             return Files.deleteIfExists(filePath);
         } catch (IOException e) {
             e.printStackTrace();

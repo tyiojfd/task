@@ -6,6 +6,7 @@
 <%@ page import="com.poster.model.Competition" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     User sessionUser = (User) session.getAttribute("user");
     if (sessionUser == null) { response.sendRedirect(request.getContextPath() + "/login"); return; }
@@ -49,7 +50,7 @@
     <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <h2 class="mb-2"><i class="fas fa-images me-2"></i>作品展厅</h2>
-            <p class="mb-0"><%= competition != null ? competition.getName() : "竞赛作品" %></p>
+            <p class="mb-0"><%= HtmlEscaper.escape(competition != null ? competition.getName() : "竞赛作品") %></p>
         </div>
         <a href="${pageContext.request.contextPath}/competition?action=detail&id=<%= competition != null ? competition.getCompetitionId() : "" %>" class="btn btn-light">
             <i class="fas fa-arrow-left me-1"></i>返回竞赛
@@ -59,7 +60,7 @@
     <% if (works != null && !works.isEmpty()) { %>
     <div class="row g-4 mb-5">
         <% for (Work work : works) {
-            if (work.getStatus() == null || work.getStatus() != 2) continue;
+            if (work.getStatus() == null || (work.getStatus() != 2 && work.getStatus() != 3)) continue;
             Team team = teamMap != null ? teamMap.get(work.getTeamId()) : null;
             Integer likes = likeCountMap != null ? likeCountMap.get(work.getWorkId()) : 0;
             String imgUrl = request.getContextPath() + "/image-data?workId=" + work.getWorkId() + "&type=thumb";
@@ -67,14 +68,14 @@
         <div class="col-md-6 col-lg-4">
             <div class="work-card">
                 <% if (!imgUrl.isEmpty()) { %>
-                <img src="<%= imgUrl %>" class="work-cover" alt="<%= work.getTitle() != null ? work.getTitle() : "作品图片" %>">
+                <img src="<%= imgUrl %>" class="work-cover" alt="<%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "作品图片") %>">
                 <% } else { %>
                 <div class="work-cover d-flex align-items-center justify-content-center text-muted"><i class="fas fa-image fa-3x"></i></div>
                 <% } %>
                 <div class="p-4">
-                    <h5 class="fw-bold mb-2"><%= work.getTitle() != null ? work.getTitle() : "未命名作品" %></h5>
-                    <div class="text-muted small mb-3"><i class="fas fa-users me-1"></i><%= team != null ? team.getTeamName() : "未知队伍" %></div>
-                    <p class="text-muted" style="min-height:3rem;"><%= work.getDescription() != null && work.getDescription().length() > 60 ? work.getDescription().substring(0, 60) + "..." : (work.getDescription() != null ? work.getDescription() : "暂无描述") %></p>
+                    <h5 class="fw-bold mb-2"><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "未命名作品") %></h5>
+                    <div class="text-muted small mb-3"><i class="fas fa-users me-1"></i><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知队伍") %></div>
+                    <p class="text-muted" style="min-height:3rem;"><%= HtmlEscaper.escape(work.getDescription() != null && work.getDescription().length() > 60 ? work.getDescription().substring(0, 60) + "..." : (work.getDescription() != null ? work.getDescription() : "暂无描述")) %></p>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="text-muted small"><i class="fas fa-heart text-danger me-1"></i><%= likes != null ? likes : 0 %></span>
                         <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>" class="btn btn-outline-primary btn-sm">查看详情</a>
