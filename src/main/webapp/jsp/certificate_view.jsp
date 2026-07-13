@@ -131,12 +131,6 @@
 </head>
 <body>
 
-<!-- 返回按钮 -->
-<div class="no-print" style="position:fixed;top:20px;left:20px;z-index:999;">
-    <a href="javascript:history.back()" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> 返回
-    </a>
-</div>
 <button class="btn btn-primary btn-print no-print" onclick="window.print()">
     <i class="fas fa-print"></i> 打印奖状
 </button>
