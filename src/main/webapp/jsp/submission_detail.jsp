@@ -42,34 +42,6 @@
     <title><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "作品详情") %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-                :root { --primary: #6C5CE7; --dark: #2D3436; --gray: #636E72; }
-        body { background: #f5f5f5; min-height: 100vh; }
-        .navbar { background: var(--dark) !important; }
-        .detail-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
-        .detail-image { width: 100%; max-height: 500px; object-fit: contain; background: #F8F9FA; }
-        .detail-body { padding: 2rem; }
-        .detail-title { font-weight: 700; font-size: 1.5rem; margin-bottom: 1rem; }
-        .detail-meta { font-size: 0.9rem; color: var(--gray); margin-bottom: 1.5rem; }
-        .detail-meta i { width: 18px; color: var(--primary); margin-right: 6px; }
-        .action-bar { padding: 1rem 2rem; background: #FAFBFC; border-top: 1px solid #eee; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
-        .btn-action { padding: 0.5rem 1.2rem; border-radius: 10px; border: none; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-block; cursor: pointer; }
-        .btn-like { background: #FFF0F0; color: #FF6B6B; }
-        .btn-like.liked { background: #FF6B6B; color: white; }
-        .btn-primary-custom { background: var(--primary); color: white; }
-        .btn-primary-custom:hover { background: #5A4BD1; color: white; }
-        .btn-danger-custom { background: #FF6B6B; color: white; }
-        .btn-back { background: #F1F2F6; color: var(--gray); }
-        .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
-        .btn-outline:hover { background: var(--primary); color: white; }
-        /* 大图预览Modal */
-        .modal-fullscreen-img { max-height: 85vh; object-fit: contain; width: 100%; }
-        .img-wrapper { position: relative; display: inline-block; width: 100%; }
-        .img-overlay-icons { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; opacity: 0; transition: opacity 0.3s; }
-        .img-wrapper:hover .img-overlay-icons { opacity: 1; }
-        .img-overlay-icons a { width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.1rem; }
-        .img-overlay-icons a:hover { background: var(--primary); }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body class="app-page app-page-detail app-page-submission-detail">

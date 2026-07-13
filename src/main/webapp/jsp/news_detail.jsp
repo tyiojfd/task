@@ -31,48 +31,6 @@
     <title><%= HtmlEscaper.escape(news.getTitle()) %> - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-        }
-        body { background: #f5f5f5; }
-        .navbar-brand { font-weight: bold; }
-        .detail-container { max-width: 860px; margin: 0 auto; }
-        .detail-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border-radius: 15px 15px 0 0;
-            padding: 40px;
-        }
-        .detail-body {
-            background: white;
-            border-radius: 0 0 15px 15px;
-            padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        .news-content {
-            font-size: 1.05rem;
-            line-height: 1.8;
-            color: #444;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .meta-bar {
-            display: flex;
-            gap: 20px;
-            color: rgba(255,255,255,0.85);
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-        .meta-bar i { margin-right: 5px; }
-        .btn-back {
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        .btn-back:hover { transform: translateX(-3px); }
-        .action-bar { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body class="app-page app-page-detail app-page-news-detail">
