@@ -30,8 +30,8 @@
 <div class="container">
     <div class="app-auth-glass">
         <div class="app-auth-brand">
-            <h1>⭐ 评委登录</h1>
-            <p>评审工作台。查看作品、评分打分、撰写评语——专业评审入口。</p>
+            <h1>评委登录</h1>
+            <p>查看作品、评分打分、撰写评语 &mdash; 专业评审入口。</p>
             <div><a href="${pageContext.request.contextPath}/login" class="back-link">返回普通用户登录</a></div>
         </div>
         <div class="app-auth-form">

@@ -98,7 +98,7 @@
     </div>
 
     <% if (competitions != null && !competitions.isEmpty()) { %>
-        <section class="app-catalog-grid" aria-label="竞赛列表">
+        <section class="app-catalog-grid reveal-stagger" aria-label="竞赛列表">
             <% for (Competition comp : competitions) {
                 String statusColorClass;
                 String statusLabel;
@@ -121,7 +121,7 @@
                     statusClass = "bg-danger";
                 }
             %>
-                <article class="competition-card <%= statusColorClass %>">
+                <article class="competition-card reveal <%= statusColorClass %>">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                             <h2 class="card-title mb-0"><%= HtmlEscaper.escape(comp.getName()) %></h2>

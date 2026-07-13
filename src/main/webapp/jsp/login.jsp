@@ -34,8 +34,8 @@
 <div class="container">
     <div class="app-auth-glass">
         <div class="app-auth-brand">
-            <h1>🎨 海报竞赛系统</h1>
-            <p>大学生海报设计竞赛平台。发布赛事、组建团队、提交作品、专业评审——一站式竞赛管理。</p>
+            <h1>海报竞赛</h1>
+            <p>大学生海报设计竞赛平台 &mdash; 发布赛事、组建团队、提交作品、专业评审。</p>
         </div>
         <div class="app-auth-form">
             <h2>登录</h2>

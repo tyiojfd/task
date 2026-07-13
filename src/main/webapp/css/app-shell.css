@@ -73,14 +73,28 @@ body:not(.home-page) .app-navbar .container {
 }
 
 body:not(.home-page) .app-navbar .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     color: #f8fbfb;
     font-size: 1rem;
     font-weight: 850;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.02em;
 }
 
-body:not(.home-page) .app-navbar .navbar-brand::first-letter {
-    color: var(--app-yellow);
+body:not(.home-page) .app-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    background: var(--app-yellow);
+    color: var(--app-ink);
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    flex-shrink: 0;
 }
 
 body:not(.home-page) .app-navbar .nav-link {
@@ -402,6 +416,35 @@ body:not(.home-page) select:focus-visible,
 body:not(.home-page) textarea:focus-visible {
     outline: 3px solid var(--app-focus);
     outline-offset: 2px;
+}
+
+/* ── Scroll Reveal ── */
+body:not(.home-page) .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body:not(.home-page) .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger children */
+body:not(.home-page) .reveal-stagger > *:nth-child(1) { transition-delay: 0s; }
+body:not(.home-page) .reveal-stagger > *:nth-child(2) { transition-delay: 0.08s; }
+body:not(.home-page) .reveal-stagger > *:nth-child(3) { transition-delay: 0.16s; }
+body:not(.home-page) .reveal-stagger > *:nth-child(4) { transition-delay: 0.24s; }
+body:not(.home-page) .reveal-stagger > *:nth-child(5) { transition-delay: 0.32s; }
+body:not(.home-page) .reveal-stagger > *:nth-child(6) { transition-delay: 0.40s; }
+
+@media (prefers-reduced-motion: reduce) {
+    body:not(.home-page) .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
 }
 
 @media (max-width: 720px) {

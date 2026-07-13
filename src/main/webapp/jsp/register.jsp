@@ -61,8 +61,8 @@
 <div class="container">
     <div class="app-auth-glass">
         <div class="app-auth-brand">
-            <h1>加入我们</h1>
-            <p>创建你的账号，加入大学生海报设计竞赛平台。组队参赛、提交作品、赢取荣誉。</p>
+            <h1>注册账号</h1>
+            <p>加入大学生海报设计竞赛平台 &mdash; 组队参赛、提交作品、赢取荣誉。</p>
         </div>
         <div class="app-auth-form">
             <h2>创建账号</h2>

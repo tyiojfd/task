@@ -43,7 +43,7 @@
 %>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top app-navbar">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/index">🎨 海报竞赛系统</a>
+        <a class="navbar-brand fw-bold app-brand" href="${pageContext.request.contextPath}/index"><span class="app-brand-mark">P</span>海报竞赛</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="切换导航">
             <span class="navbar-toggler-icon"></span>
         </button>

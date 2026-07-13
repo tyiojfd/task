@@ -30,8 +30,8 @@
 <div class="container">
     <div class="app-auth-glass">
         <div class="app-auth-brand">
-            <h1>🛡️ 管理员登录</h1>
-            <p>竞赛系统管理中心。发布赛事、管理用户、设置获奖——后台运营入口。</p>
+            <h1>管理员登录</h1>
+            <p>发布赛事、管理用户、设置获奖 &mdash; 后台运营入口。</p>
             <div><a href="${pageContext.request.contextPath}/login" class="back-link">返回普通用户登录</a></div>
         </div>
         <div class="app-auth-form">
