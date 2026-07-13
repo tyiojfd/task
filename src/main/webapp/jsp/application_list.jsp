@@ -26,6 +26,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
 <%@ include file="includes/app-shell-assets.jspf" %>
+<style>
+    .app-card { background: var(--app-surface); border: 1px solid rgba(21,50,71,0.07); border-radius: 12px; padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+    .status-0 { background: #FFF3CD; color: #856404; }
+    .status-1 { background: #D4EDDA; color: #155724; }
+    .status-2 { background: #F8D7DA; color: #721C24; }
+    .status-3 { background: #E2E3E5; color: #383D41; }
+</style>
 </head>
 <body class="app-page app-page-catalog app-page-applications">
 <% request.setAttribute("activeNav", "applications"); %>

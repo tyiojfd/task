@@ -53,6 +53,20 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
 <%@ include file="includes/app-shell-assets.jspf" %>
+<style>
+    .tab-nav { display: flex; gap: 0; margin-bottom: 1.5rem; background: var(--app-surface); border: 1px solid rgba(21,50,71,0.07); border-radius: 12px; padding: 5px; box-shadow: var(--shadow-sm); }
+    .tab-btn { flex: 1; padding: 0.7rem 1.2rem; border: none; background: transparent; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: var(--app-muted); transition: all 0.2s; cursor: pointer; }
+    .tab-btn.active { background: var(--app-blue); color: #fff; box-shadow: var(--shadow-sm); }
+    .badge-count { display: inline-block; min-width: 22px; height: 22px; border-radius: 11px; font-size: 0.75rem; line-height: 22px; margin-left: 6px; font-weight: 700; text-align: center; }
+    .tab-btn.active .badge-count { background: rgba(255,255,255,0.28); color: #fff; }
+    .tab-btn:not(.active) .badge-count { background: var(--app-surface-soft); color: var(--app-blue); }
+    .inv-card { background: var(--app-surface); border: 1px solid rgba(21,50,71,0.07); border-radius: 12px; padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; }
+    .inv-card-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; flex-shrink: 0; background: var(--app-surface-soft); color: var(--app-ink-soft); }
+    .inv-card-info { flex: 1; min-width: 0; }
+    .inv-card-info strong { display: block; color: var(--app-ink); font-size: 1rem; }
+    .inv-card-info small { color: var(--app-muted); }
+    .inv-card-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+</style>
 </head>
 <body class="app-page app-page-catalog app-page-invitations">
     <!-- 导航栏 -->
