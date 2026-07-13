@@ -44,64 +44,9 @@
     <title>往届获奖记录 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6C5CE7; --primary-light: #A29BFE; --accent: #FD79A8;
-            --dark: #2D3436; --gray: #636E72; --gold: #FFD700; --silver: #C0C0C0; --bronze: #CD7F32;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.06);
-        }
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-
-        .page-header {
-            background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
-            margin: 2rem 0;
-            color: white;
-            text-align: center;
-        }
-        .page-header h2 { font-weight: 700; margin: 0; }
-        .page-header p { opacity: 0.9; margin: 0.5rem 0 0; }
-
-        .award-card {
-            background: white;
-            border-radius: 20px;
-            padding: 0;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .award-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(108, 92, 231, 0.15); }
-
-        .award-card.first  { border-top: 4px solid #FFD700; }
-        .award-card.second { border-top: 4px solid #C0C0C0; }
-        .award-card.third  { border-top: 4px solid #CD7F32; }
-
-        .award-rank {
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: 700; color: white;
-        }
-        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
-        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #909090); }
-        .rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); }
-
-        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--gray); }
-        .empty-state i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.4; }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-catalog app-page-awards">
 
 <!-- 导航栏 -->
 <%
@@ -120,7 +65,7 @@
     <div class="competition-selector mb-4">
         <form method="get" action="${pageContext.request.contextPath}/award" class="d-flex align-items-center gap-2 flex-wrap">
             <input type="hidden" name="action" value="list">
-            <label class="fw-bold text-nowrap"><i class="fas fa-trophy me-1" style="color:var(--primary)"></i>选择竞赛：</label>
+            <label class="fw-bold text-nowrap"><i class="fas fa-trophy me-1" style="color:var(--app-yellow)"></i>选择竞赛：</label>
             <select name="competitionId" class="form-select" style="max-width:400px" onchange="this.form.submit()">
                 <% for (Competition ec : endedCompetitions) {
                     boolean isSelected = ec.getCompetitionId().equals(selectedCompId);
