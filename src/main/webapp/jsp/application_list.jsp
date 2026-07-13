@@ -33,6 +33,7 @@
         .status-2 { background:#F8D7DA; color:#721C24; }
         .status-3 { background:#E2E3E5; color:#383D41; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <% request.setAttribute("activeNav", "applications"); %>

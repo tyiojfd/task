@@ -62,6 +62,7 @@
             box-shadow: var(--card-shadow); margin-bottom: 1.5rem;
         }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 

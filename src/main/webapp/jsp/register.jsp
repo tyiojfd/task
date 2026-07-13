@@ -424,6 +424,7 @@
         .form-panel::-webkit-scrollbar-track { background: transparent; }
         .form-panel::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 动态背景 -->

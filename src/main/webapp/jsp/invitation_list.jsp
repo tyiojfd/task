@@ -208,6 +208,7 @@
 
         .alert { border-radius: 14px; border: none; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

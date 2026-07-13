@@ -68,6 +68,7 @@
         .empty-state { text-align: center; padding: 4rem 2rem; }
         .empty-state i { font-size: 4rem; color: #DFE6E9; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <%

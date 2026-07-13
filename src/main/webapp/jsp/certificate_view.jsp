@@ -128,6 +128,7 @@
             }
         }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 

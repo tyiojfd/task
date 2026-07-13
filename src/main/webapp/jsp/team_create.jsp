@@ -236,6 +236,7 @@
             margin-bottom: 1rem;
         }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

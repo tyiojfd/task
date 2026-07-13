@@ -36,6 +36,7 @@
         .profile-card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0 !important; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

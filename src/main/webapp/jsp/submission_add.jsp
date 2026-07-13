@@ -72,6 +72,7 @@
         .team-card:hover { border-color: var(--primary-light); background: #F8F6FF; }
         .team-card.selected { border-color: var(--primary); background: #F0EDFF; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <%

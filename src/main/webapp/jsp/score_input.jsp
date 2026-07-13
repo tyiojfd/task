@@ -177,6 +177,7 @@
         .back-link { color: var(--primary); text-decoration: none; font-weight: 500; }
         .back-link:hover { color: var(--primary-light); }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 

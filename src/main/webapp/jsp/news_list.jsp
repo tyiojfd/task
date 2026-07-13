@@ -97,6 +97,7 @@
         }
         .btn-publish:hover { opacity: 0.9; color: white; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

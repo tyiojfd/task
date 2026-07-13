@@ -19,6 +19,7 @@
         .btn-login { background: linear-gradient(135deg, #2d3436 0%, #636e72 100%); border: none; width: 100%; padding: 12px; font-size: 17px; color: #fff; border-radius: 10px; }
         .btn-login:hover { opacity: 0.92; color: #fff; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <div class="container">

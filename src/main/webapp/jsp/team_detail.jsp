@@ -272,6 +272,7 @@
         .stat-mini .number { font-size: 1.5rem; font-weight: 800; color: var(--dark); }
         .stat-mini .label  { font-size: 0.75rem; color: var(--gray); }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

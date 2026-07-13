@@ -13,6 +13,7 @@
         .brand-panel { background: linear-gradient(135deg, #6C5CE7, #A29BFE); color: #fff; padding: 36px; }
         .form-panel { padding: 36px; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <div class="container">

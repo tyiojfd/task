@@ -29,6 +29,7 @@
         .role-tag { margin-right: 4px; margin-bottom: 2px; }
         .search-box { max-width: 500px; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <%

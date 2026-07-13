@@ -45,6 +45,7 @@
         }
         .status-badge { font-size: 14px; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

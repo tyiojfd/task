@@ -42,6 +42,7 @@
         .empty-state { text-align: center; padding: 4rem 2rem; color: #636E72; }
         .empty-state i { font-size: 4rem; opacity: .35; margin-bottom: 1rem; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <% request.setAttribute("activeNav", "competitions"); %>

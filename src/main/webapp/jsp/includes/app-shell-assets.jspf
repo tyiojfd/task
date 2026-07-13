@@ -1,0 +1,2 @@
+<%@ page pageEncoding="UTF-8" %>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-shell.css?v=20260713">

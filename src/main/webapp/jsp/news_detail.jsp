@@ -73,6 +73,7 @@
         .btn-back:hover { transform: translateX(-3px); }
         .action-bar { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <!-- 导航栏 -->

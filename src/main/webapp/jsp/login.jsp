@@ -20,6 +20,7 @@
         .switch-btn { width:100%; margin-bottom:12px; text-align:left; border-radius:10px; font-size:16px; padding:10px 14px; }
         .small-tip { font-size:13px; color:#6c757d; line-height:1.6; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <div class="container">

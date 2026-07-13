@@ -70,6 +70,7 @@
         .img-overlay-icons a { width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.1rem; }
         .img-overlay-icons a:hover { background: var(--primary); }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
 <%

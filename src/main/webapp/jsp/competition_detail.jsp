@@ -53,6 +53,7 @@
         .info-row { padding: 15px 0; border-bottom: 1px solid #eee; }
         .info-label { font-weight: bold; color: #666; }
     </style>
+    <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
 <body>
     <%
