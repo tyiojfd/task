@@ -73,6 +73,8 @@ public class TeamServlet extends HttpServlet {
             request.getRequestDispatcher("/jsp/team_create.jsp").forward(request, response);
         } else if ("detail".equals(action)) {
             showTeamDetail(request, response);
+        } else if ("searchTeam".equals(action)) {
+            searchTeamForJoin(request, response);
         } else if ("myTeams".equals(action) || action == null || "list".equals(action)) {
             listMyTeams(request, response);
         } else {
