@@ -62,122 +62,9 @@
     <title>评分记录 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --accent: #FD79A8;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --light-bg: #F8F9FA;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.06);
-        }
-
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-        .nav-link.active { color: var(--primary-light) !important; font-weight: 600; }
-
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 2rem 0 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .page-header h2 { font-weight: 700; color: var(--dark); margin: 0; }
-        .page-header h2 i { color: var(--primary); }
-
-        .stats-row { margin-bottom: 1.5rem; }
-        .stat-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.2rem 1.5rem;
-            box-shadow: var(--card-shadow);
-            text-align: center;
-        }
-        .stat-card .stat-number { font-size: 2rem; font-weight: 700; color: var(--primary); }
-        .stat-card .stat-label { font-size: 0.85rem; color: var(--gray); margin-top: 0.25rem; }
-        .stat-card i { font-size: 1.3rem; color: var(--primary-light); margin-right: 4px; }
-
-        .score-table-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            overflow-x: auto;
-        }
-
-        .table { margin-bottom: 0; }
-        .table th {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--gray);
-            border-bottom: 2px solid #e9ecef;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .table td { vertical-align: middle; font-size: 0.9rem; }
-
-        .score-badge {
-            display: inline-block;
-            min-width: 50px;
-            padding: 0.25em 0.65em;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-align: center;
-        }
-        .score-high { background: #D5F5E3; color: #1E8449; }
-        .score-mid { background: #FCF3CF; color: #B7950B; }
-        .score-low { background: #FADBD8; color: #C0392B; }
-
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: white;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-        }
-        .empty-state i { font-size: 4rem; color: var(--primary-light); }
-        .empty-state h5 { margin-top: 1rem; color: var(--gray); }
-
-        .work-info-banner {
-            background: linear-gradient(135deg, var(--primary) 0%, #5B4CC4 100%);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
-            color: white;
-            margin-bottom: 1.5rem;
-        }
-        .work-info-banner h4 { margin: 0; font-weight: 700; }
-        .work-info-banner .meta { opacity: 0.85; font-size: 0.9rem; }
-
-        .avg-score-circle {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-gallery app-page-score-list">
 
 <!-- 导航栏 -->
 <%
@@ -189,7 +76,7 @@
 
     <!-- 消息提示 -->
     <% if (message != null) { %>
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert" style="border-radius:12px; border:none;">
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
         <i class="fas fa-check-circle me-2"></i><%= message %>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
@@ -307,7 +194,7 @@
     </div>
 
     <!-- 竞赛筛选 -->
-    <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;">
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="get" action="${pageContext.request.contextPath}/score" class="row g-3 align-items-end">
                 <input type="hidden" name="action" value="myScores">
@@ -420,7 +307,7 @@
                 <% } } else { %>
                 <tr>
                     <td colspan="7" class="text-center py-5">
-                        <i class="fas fa-inbox" style="font-size: 3rem; color: var(--primary-light); display: block; margin-bottom: 1rem;"></i>
+                        <i class="fas fa-inbox" style="font-size:3rem; color:var(--app-muted); display:block; margin-bottom:1rem;"></i>
                         <span class="text-muted">您还没有对任何作品进行评分</span>
                         <br>
                         <a href="${pageContext.request.contextPath}/score?action=list" class="btn btn-primary mt-3">

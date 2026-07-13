@@ -33,18 +33,9 @@
     <title>作品展厅 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%); min-height: 100vh; }
-        .page-header { background: linear-gradient(135deg, #6C5CE7, #A29BFE); color: white; border-radius: 20px; padding: 2rem; margin: 2rem 0; }
-        .work-card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 16px rgba(108,92,231,0.08); transition: transform .2s, box-shadow .2s; height: 100%; }
-        .work-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(108,92,231,0.16); }
-        .work-cover { width: 100%; height: 220px; object-fit: cover; background: #f1f2f6; }
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #636E72; }
-        .empty-state i { font-size: 4rem; opacity: .35; margin-bottom: 1rem; }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-gallery app-page-competition-works">
 <% request.setAttribute("activeNav", "competitions"); %>
 <%@ include file="includes/navbar.jspf" %>
 <div class="container">
@@ -59,37 +50,38 @@
     </div>
 
     <% if (works != null && !works.isEmpty()) { %>
-    <div class="row g-4 mb-5">
+    <section class="app-art-grid" aria-label="作品展厅">
         <% for (Work work : works) {
             if (work.getStatus() == null || (work.getStatus() != 2 && work.getStatus() != 3)) continue;
             Team team = teamMap != null ? teamMap.get(work.getTeamId()) : null;
             Integer likes = likeCountMap != null ? likeCountMap.get(work.getWorkId()) : 0;
             String imgUrl = request.getContextPath() + "/image-data?workId=" + work.getWorkId() + "&type=thumb";
         %>
-        <div class="col-md-6 col-lg-4">
-            <div class="work-card">
+        <article class="work-card app-art-card">
+            <a class="app-art-media" href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>">
                 <% if (!imgUrl.isEmpty()) { %>
-                <img src="<%= imgUrl %>" class="work-cover" alt="<%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "作品图片") %>">
+                <img src="<%= imgUrl %>" alt="<%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "作品图片") %>">
                 <% } else { %>
-                <div class="work-cover d-flex align-items-center justify-content-center text-muted"><i class="fas fa-image fa-3x"></i></div>
+                <div class="d-flex align-items-center justify-content-center text-muted" style="aspect-ratio:4/3;"><i class="fas fa-image fa-3x"></i></div>
                 <% } %>
-                <div class="p-4">
-                    <h5 class="fw-bold mb-2"><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "未命名作品") %></h5>
-                    <div class="text-muted small mb-3"><i class="fas fa-users me-1"></i><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知队伍") %></div>
-                    <p class="text-muted" style="min-height:3rem;"><%= HtmlEscaper.escape(work.getDescription() != null && work.getDescription().length() > 60 ? work.getDescription().substring(0, 60) + "..." : (work.getDescription() != null ? work.getDescription() : "暂无描述")) %></p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small"><i class="fas fa-heart text-danger me-1"></i><%= likes != null ? likes : 0 %></span>
-                        <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>" class="btn btn-outline-primary btn-sm">查看详情</a>
-                    </div>
+            </a>
+            <div class="work-body app-art-info">
+                <div class="work-title"><a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>"><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "未命名作品") %></a></div>
+                <div class="work-meta app-art-meta">
+                    <div><i class="fas fa-users me-1"></i><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知队伍") %></div>
+                    <div><i class="fas fa-heart me-1"></i><%= likes != null ? likes : 0 %> 赞</div>
                 </div>
             </div>
-        </div>
+            <div class="work-actions app-art-actions">
+                <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= work.getWorkId() %>" class="btn btn-sm">查看详情</a>
+            </div>
+        </article>
         <% } %>
-    </div>
+    </section>
     <% } else { %>
-    <div class="empty-state bg-white rounded-4">
+    <div class="app-empty">
         <i class="fas fa-images"></i>
-        <h4>暂无作品</h4>
+        <h2>暂无作品</h2>
         <p>该竞赛暂未展示已提交作品。</p>
     </div>
     <% } %>

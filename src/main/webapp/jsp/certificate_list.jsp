@@ -41,44 +41,9 @@
     <title>我的奖状 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6C5CE7; --primary-light: #A29BFE; --accent: #FD79A8;
-            --dark: #2D3436; --gray: #636E72; --gold: #D4A843;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.06);
-        }
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-
-        .page-header {
-            background: linear-gradient(135deg, #D4A843 0%, #F0D78C 100%);
-            border-radius: 20px; padding: 2.5rem 2rem; margin: 2rem 0; color: #5D3A1A; text-align: center;
-        }
-        .page-header h2 { font-weight: 700; margin: 0; }
-        .page-header p { opacity: 0.8; margin: 0.5rem 0 0; }
-
-        .cert-card {
-            background: white; border-radius: 16px; padding: 1.8rem;
-            margin-bottom: 1rem; box-shadow: var(--card-shadow);
-            border-left: 4px solid var(--gold);
-            transition: transform 0.2s;
-        }
-        .cert-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(108, 92, 231, 0.12); }
-
-        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--gray); }
-        .empty-state i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.4; }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-catalog app-page-certificates">
 
 <!-- 导航栏 -->
 <%
