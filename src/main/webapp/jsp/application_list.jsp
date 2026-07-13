@@ -15,6 +15,8 @@
     Team team = (Team) request.getAttribute("team");
     String viewMode = (String) request.getAttribute("viewMode");
     boolean teamMode = "team".equals(viewMode);
+    boolean leaderView = request.getAttribute("leaderView") != null && (Boolean) request.getAttribute("leaderView");
+    boolean isMultiTeam = teamMode && team == null;
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -40,10 +42,10 @@
 <div class="container">
     <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-            <h2 class="mb-2"><i class="fas fa-user-plus me-2"></i><%= teamMode ? "入队申请审核" : "我的入队申请" %></h2>
-            <p class="mb-0"><%= HtmlEscaper.escape(teamMode && team != null ? team.getTeamName() : "查看申请进度") %></p>
+            <h2 class="mb-2"><i class="fas fa-user-plus me-2"></i><%= isMultiTeam ? "入队申请审核（全部队伍）" : (teamMode ? "入队申请审核" : "我的入队申请") %></h2>
+            <p class="mb-0"><%= HtmlEscaper.escape(isMultiTeam ? "管理所有队伍的入队申请" : (teamMode && team != null ? team.getTeamName() : "查看申请进度")) %></p>
         </div>
-        <a class="btn btn-light" href="${pageContext.request.contextPath}/<%= teamMode && team != null ? "team?action=detail&id=" + team.getTeamId() : "team?action=myTeams" %>">返回</a>
+        <a class="btn btn-light" href="${pageContext.request.contextPath}/<%= isMultiTeam ? "team?action=myTeams" : (teamMode && team != null ? "team?action=detail&id=" + team.getTeamId() : "team?action=myTeams") %>">返回</a>
     </div>
 
     <% String msg = request.getParameter("msg"); String error = request.getParameter("error"); %>
@@ -55,7 +57,7 @@
     <% } else { %>
         <% for (TeamApplication app : applications) {
             String statusText = app.getStatus() != null && app.getStatus() == 1 ? "已通过" : app.getStatus() != null && app.getStatus() == 2 ? "已拒绝" : app.getStatus() != null && app.getStatus() == 3 ? "已取消" : "待处理";
-            Team itemTeam = teamMode ? team : (teamMap != null ? teamMap.get(app.getTeamId()) : null);
+            Team itemTeam = isMultiTeam ? (teamMap != null ? teamMap.get(app.getTeamId()) : null) : (teamMode ? team : (teamMap != null ? teamMap.get(app.getTeamId()) : null));
             User applicant = userMap != null ? userMap.get(app.getApplicantId()) : null;
         %>
         <div class="app-card">

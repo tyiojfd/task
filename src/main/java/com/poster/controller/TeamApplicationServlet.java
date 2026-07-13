@@ -1,11 +1,14 @@
 package com.poster.controller;
 
 import com.poster.dao.TeamDAO;
+import com.poster.dao.TeamMemberDAO;
 import com.poster.dao.UserDAO;
 import com.poster.dao.impl.TeamDAOImpl;
+import com.poster.dao.impl.TeamMemberDAOImpl;
 import com.poster.dao.impl.UserDAOImpl;
 import com.poster.model.Team;
 import com.poster.model.TeamApplication;
+import com.poster.model.TeamMember;
 import com.poster.model.User;
 import com.poster.service.TeamApplicationService;
 import com.poster.service.impl.TeamApplicationServiceImpl;
@@ -14,6 +17,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +31,7 @@ import java.util.Map;
 public class TeamApplicationServlet extends HttpServlet {
     private TeamApplicationService applicationService = new TeamApplicationServiceImpl();
     private TeamDAO teamDAO = new TeamDAOImpl();
+    private TeamMemberDAO teamMemberDAO = new TeamMemberDAOImpl();
     private UserDAO userDAO = new UserDAOImpl();
 
     @Override
@@ -40,8 +45,10 @@ public class TeamApplicationServlet extends HttpServlet {
         String action = request.getParameter("action");
         if ("teamApplications".equals(action)) {
             showTeamApplications(request, response);
-        } else {
+        } else if ("myApplications".equals(action)) {
             showMyApplications(request, response);
+        } else {
+            showLeaderDashboard(request, response);
         }
     }
 
@@ -66,6 +73,57 @@ public class TeamApplicationServlet extends HttpServlet {
         } else {
             response.sendRedirect(request.getContextPath() + "/application?action=myApplications");
         }
+    }
+
+    private void showLeaderDashboard(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        User user = (User) request.getSession(false).getAttribute("user");
+        Integer userId = user.getUserId();
+
+        // 找到用户作为队长的所有队伍
+        List<Team> leaderTeams = new ArrayList<>();
+        List<Team> byLeaderId = teamDAO.findByLeaderId(userId);
+        if (byLeaderId != null) leaderTeams.addAll(byLeaderId);
+        // 也检查 team_member 中 is_leader=1 的队伍
+        List<TeamMember> memberships = teamMemberDAO.findByUserId(userId);
+        if (memberships != null) {
+            for (TeamMember m : memberships) {
+                if (m.getRole() != null && m.getRole() == 1) {
+                    Team t = teamDAO.findById(m.getTeamId());
+                    if (t != null && !leaderTeams.contains(t)) leaderTeams.add(t);
+                }
+            }
+        }
+
+        // 聚合所有队长队伍的待处理申请
+        List<TeamApplication> allApplications = new ArrayList<>();
+        Map<Integer, Team> teamMap = new HashMap<>();
+        Map<Integer, User> userMap = new HashMap<>();
+
+        if (!leaderTeams.isEmpty()) {
+            for (Team team : leaderTeams) {
+                List<TeamApplication> apps = applicationService.getApplicationsByTeamId(team.getTeamId());
+                if (apps != null) {
+                    for (TeamApplication app : apps) {
+                        allApplications.add(app);
+                        if (app.getTeamId() != null && !teamMap.containsKey(app.getTeamId())) {
+                            teamMap.put(app.getTeamId(), team);
+                        }
+                        if (app.getApplicantId() != null && !userMap.containsKey(app.getApplicantId())) {
+                            User applicant = userDAO.findById(app.getApplicantId());
+                            if (applicant != null) userMap.put(app.getApplicantId(), applicant);
+                        }
+                    }
+                }
+            }
+        }
+
+        request.setAttribute("applications", allApplications);
+        request.setAttribute("teamMap", teamMap);
+        request.setAttribute("userMap", userMap);
+        request.setAttribute("viewMode", "team");
+        request.setAttribute("leaderView", true);
+        request.getRequestDispatcher("/jsp/application_list.jsp").forward(request, response);
     }
 
     private void showMyApplications(HttpServletRequest request, HttpServletResponse response)

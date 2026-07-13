@@ -54,7 +54,7 @@
                 <% if (navIsParticipant) { %>
                     <li class="nav-item"><a class="nav-link <%= "teams".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/team?action=myTeams">我的队伍</a></li>
                     <li class="nav-item"><a class="nav-link <%= "invitations".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/invitation">邀请通知</a></li>
-                    <li class="nav-item"><a class="nav-link <%= "applications".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/application?action=myApplications">入队申请</a></li>
+                    <li class="nav-item"><a class="nav-link <%= "applications".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/application">入队申请</a></li>
                     <li class="nav-item"><a class="nav-link <%= "works".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/work?action=myWorks">我的作品</a></li>
                     <li class="nav-item"><a class="nav-link <%= "certificates".equals(navActive) ? "active" : "" %>" href="${pageContext.request.contextPath}/certificate?action=myCertificates">我的奖状</a></li>
                 <% } %>
