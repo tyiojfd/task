@@ -242,7 +242,7 @@
 
 ### 2026-07-07
 
-**已完成：模块5-评委评分功能（完成人：队员C）**
+**已完成：模块5-评委评分功能（完成人：葛至洲）**
 - ✅ 背景：ScoreDAOImpl、ScoreServiceImpl、ScoreServlet 三个核心类仅有TODO骨架（15个空方法），无法支持评委评分业务流程
 - ✅ DAO层：ScoreDAOImpl 从空壳补全为完整 JDBC 实现（共8个方法，使用 PreparedStatement 防 SQL 注入）
   - insert(Score)：INSERT INTO score，返回自增主键 score_id
@@ -288,7 +288,7 @@
 - **代码量：** 5个文件（3个Java从空壳补全 + 2个JSP新建），原空壳约80行 → 改后约730行，净增约650行
 - **编译状态：** BUILD SUCCESS，86个Java源文件零错误
 
-**已完成：全局导航栏统一修复（完成人：队员C）**
+**已完成：全局导航栏统一修复（完成人：葛至洲）**
 - ✅ 问题诊断：全站JSP页面导航栏碎片化，品牌名/样式/链接集合各不相同，用户反馈两个具体问题：
   - 「我的队伍」页面导航栏与首页不统一，普通用户可通过竞赛列表页面看到「发布竞赛」按钮（无权限校验）
   - 「个人中心」页面导航栏只有2个链接（个人中心+退出），无法跳转到其他页面
@@ -499,7 +499,7 @@
 - **涉及数据表：** work, work_file, work_like, work_share（4张表）
 - **附加职责：** 文件上传功能实现、图片处理工具类
 
-**模块5：评分与获奖模块（队员C负责）**
+**模块5：评分与获奖模块（葛至洲负责）**
 - **功能范围：** 评委评分、评语管理、获奖设置、奖状生成、新闻发布
 - **前端页面：** score_input.jsp, score_list.jsp, award_manage.jsp, certificate_view.jsp, news_list.jsp
 - **后端代码：** ScoreServlet, AwardServlet, CertificateServlet, NewsServlet, ScoreService
@@ -705,7 +705,7 @@ test: 添加作品提交测试用例
 - **7月4日下午（结对编程）：**
   - 队长+副队长：添加Maven依赖、创建DBUtil
   - 杨祥博+队员B：创建实体类（User、Competition、Team、Work等）
-  - 队员C：创建工具类（PasswordUtil、FileUtil）
+  - 葛至洲：创建工具类（PasswordUtil、FileUtil）
 - **7月5日（验证测试）：** 所有人本地测试数据库连接，创建自己的功能分支
 - **7月6-7日（原型开发）：** 每个人开发自己模块的核心功能原型
 
@@ -744,7 +744,7 @@ test: 添加作品提交测试用例
 - [x] 作品详情页面（submission_detail.jsp）✅ 2026-07-06
 - [x] 作品修改/删除功能 ✅ 2026-07-06
 
-**模块5 - 评分与获奖（队员C）：**
+**模块5 - 评分与获奖（葛至洲）：**
 - [x] 新闻发布功能（NewsServlet + news_list.jsp + news_detail.jsp + news_add.jsp + news_edit.jsp + news_manage.jsp）✅ 2026-07-06
 - [x] Model层字段修复（News/Score/Comment/Award/Certificate与数据库对齐）✅ 2026-07-06
 - [x] 评委评分功能（ScoreServlet + score_input.jsp）✅ 2026-07-07
@@ -786,7 +786,7 @@ test: 添加作品提交测试用例
 - [ ] 作品统计（浏览量、点赞数）
 - [x] 图片预览和下载 ✅ 2026-07-06
 
-**模块5 - 评分与获奖（队员C）：**
+**模块5 - 评分与获奖（葛至洲）：**
 - [ ] 电子奖状生成功能（CertificateServlet）
 - [ ] 奖状查看和下载（certificate_view.jsp）
 - [ ] 获奖公告发布
@@ -801,7 +801,7 @@ test: 添加作品提交测试用例
 - **副队长（竞赛管理模块）：** 测试竞赛发布、修改、查询、统计功能
 - **杨祥博（队伍管理模块）：** 测试队伍创建、邀请、报名、成员管理
 - **队员B（作品管理模块）：** 测试作品提交、文件上传、点赞、分享
-- **队员C（评分与获奖模块）：** 测试评分、获奖设置、奖状生成、新闻发布
+- **葛至洲（评分与获奖模块）：** 测试评分、获奖设置、奖状生成、新闻发布
 
 **集成测试（所有人）：**
 - [ ] 完整流程测试（注册→报名→提交作品→评分→获奖）
