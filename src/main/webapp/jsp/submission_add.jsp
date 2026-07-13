@@ -36,7 +36,7 @@
     String msg = request.getParameter("msg");
     String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
     String previewClass = (isEdit && editWork.getImagePath() != null) ? "" : "d-none";
-    String previewImgSrc = (isEdit && editWork.getImagePath() != null) ? request.getContextPath() + "/uploads" + editWork.getImagePath() : "";
+    String previewImgSrc = (isEdit && editWork.getWorkId() != null) ? request.getContextPath() + "/image-data?workId=" + editWork.getWorkId() + "&type=original" : "";
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">

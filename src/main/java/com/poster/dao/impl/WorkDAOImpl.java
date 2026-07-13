@@ -17,7 +17,7 @@ public class WorkDAOImpl implements WorkDAO {
 
     @Override
     public int insert(Work work) {
-        String sql = "INSERT INTO work (team_id, competition_id, category_id, work_title, work_desc, image_path, image_data, image_content_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO work (team_id, competition_id, category_id, work_title, work_desc, image_path, image_data, image_content_type, thumbnail_data, thumbnail_content_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -33,7 +33,9 @@ public class WorkDAOImpl implements WorkDAO {
             pstmt.setString(6, work.getImagePath());
             pstmt.setBytes(7, work.getImageData());
             pstmt.setString(8, work.getImageContentType());
-            pstmt.setInt(9, work.getStatus() != null ? work.getStatus() : 2);
+            pstmt.setBytes(9, work.getThumbnailData());
+            pstmt.setString(10, work.getThumbnailContentType());
+            pstmt.setInt(11, work.getStatus() != null ? work.getStatus() : 2);
 
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
@@ -66,7 +68,7 @@ public class WorkDAOImpl implements WorkDAO {
 
     @Override
     public int update(Work work) {
-        String sql = "UPDATE work SET work_title=?, work_desc=?, image_path=?, image_data=?, image_content_type=?, status=?, category_id=? WHERE work_id=?";
+        String sql = "UPDATE work SET work_title=?, work_desc=?, image_path=?, image_data=?, image_content_type=?, thumbnail_data=?, thumbnail_content_type=?, status=?, category_id=? WHERE work_id=?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -75,13 +77,15 @@ public class WorkDAOImpl implements WorkDAO {
             pstmt.setString(3, work.getImagePath());
             pstmt.setBytes(4, work.getImageData());
             pstmt.setString(5, work.getImageContentType());
-            pstmt.setInt(6, work.getStatus() != null ? work.getStatus() : 2);
+            pstmt.setBytes(6, work.getThumbnailData());
+            pstmt.setString(7, work.getThumbnailContentType());
+            pstmt.setInt(8, work.getStatus() != null ? work.getStatus() : 2);
             if (work.getCategoryId() != null) {
-                pstmt.setInt(7, work.getCategoryId());
+                pstmt.setInt(9, work.getCategoryId());
             } else {
-                pstmt.setNull(7, Types.INTEGER);
+                pstmt.setNull(9, Types.INTEGER);
             }
-            pstmt.setInt(8, work.getWorkId());
+            pstmt.setInt(10, work.getWorkId());
 
             return pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -303,6 +307,8 @@ public class WorkDAOImpl implements WorkDAO {
         work.setImagePath(rs.getString("image_path"));
         work.setImageData(rs.getBytes("image_data"));
         work.setImageContentType(rs.getString("image_content_type"));
+        work.setThumbnailData(rs.getBytes("thumbnail_data"));
+        work.setThumbnailContentType(rs.getString("thumbnail_content_type"));
 
         int status = rs.getInt("status");
         work.setStatus(rs.wasNull() ? 1 : status);

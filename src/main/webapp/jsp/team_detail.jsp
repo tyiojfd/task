@@ -492,8 +492,7 @@
                                     statusClass = "bg-warning text-dark";
                                     statusText = "草稿";
                                 }
-                                String imgUrl = w.getImagePath();
-                                String imgSrc = (imgUrl != null && !imgUrl.isEmpty()) ? request.getContextPath() + "/uploads" + imgUrl : "";
+                                String imgSrc = request.getContextPath() + "/image-data?workId=" + w.getWorkId() + "&type=thumb";
                             %>
                                 <div class="col-md-6">
                                     <div class="info-card p-0 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s;"

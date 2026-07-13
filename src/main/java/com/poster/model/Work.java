@@ -14,6 +14,8 @@ public class Work {
     private String imagePath;
     private byte[] imageData;
     private String imageContentType;
+    private byte[] thumbnailData;
+    private String thumbnailContentType;
     private Integer competitionId;
     private String title;
     private String description;
@@ -69,6 +71,22 @@ public class Work {
 
     public void setImageContentType(String imageContentType) {
         this.imageContentType = imageContentType;
+    }
+
+    public byte[] getThumbnailData() {
+        return thumbnailData;
+    }
+
+    public void setThumbnailData(byte[] thumbnailData) {
+        this.thumbnailData = thumbnailData;
+    }
+
+    public String getThumbnailContentType() {
+        return thumbnailContentType;
+    }
+
+    public void setThumbnailContentType(String thumbnailContentType) {
+        this.thumbnailContentType = thumbnailContentType;
     }
 
     public Integer getCompetitionId() {

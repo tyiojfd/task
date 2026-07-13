@@ -11,6 +11,15 @@ import com.poster.dao.impl.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +41,9 @@ public class WorkServlet extends HttpServlet {
     private UserDAO userDAO = new UserDAOImpl();
 
     private static final String UPLOAD_BASE = "uploads";
+    private static final int THUMBNAIL_MAX_WIDTH = 300;
+    private static final float THUMBNAIL_JPEG_QUALITY = 0.75f;
+    private static final String THUMBNAIL_CONTENT_TYPE = "image/jpeg";
 
     private boolean isCompetitionRunningAndOpen(Competition competition) {
         return competition != null
@@ -55,6 +67,44 @@ public class WorkServlet extends HttpServlet {
             }
             return output.toByteArray();
         }
+    }
+
+    private byte[] createThumbnail(byte[] imageData) throws IOException {
+        BufferedImage source = ImageIO.read(new ByteArrayInputStream(imageData));
+        if (source == null) {
+            throw new IOException("无法读取上传图片");
+        }
+
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+        int targetWidth = Math.min(sourceWidth, THUMBNAIL_MAX_WIDTH);
+        int targetHeight = Math.max(1, (int) Math.round(sourceHeight * (targetWidth / (double) sourceWidth)));
+
+        BufferedImage thumbnail = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = thumbnail.createGraphics();
+        try {
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.drawImage(source, 0, 0, targetWidth, targetHeight, java.awt.Color.WHITE, null);
+        } finally {
+            graphics.dispose();
+        }
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+        try (ImageOutputStream imageOutput = ImageIO.createImageOutputStream(output)) {
+            writer.setOutput(imageOutput);
+            ImageWriteParam params = writer.getDefaultWriteParam();
+            if (params.canWriteCompressed()) {
+                params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                params.setCompressionQuality(THUMBNAIL_JPEG_QUALITY);
+            }
+            writer.write(null, new IIOImage(thumbnail, null, null), params);
+        } finally {
+            writer.dispose();
+        }
+        return output.toByteArray();
     }
 
     private boolean hasRole(HttpServletRequest request, String roleName) {
@@ -303,6 +353,8 @@ public class WorkServlet extends HttpServlet {
         String imagePath = null;
         byte[] imageData = null;
         String imageContentType = null;
+        byte[] thumbnailData = null;
+        String thumbnailContentType = null;
 
         if (filePart != null && filePart.getSize() > 0) {
             String contentType = filePart.getContentType();
@@ -317,6 +369,8 @@ public class WorkServlet extends HttpServlet {
 
             imageData = readPartBytes(filePart);
             imageContentType = contentType;
+            thumbnailData = createThumbnail(imageData);
+            thumbnailContentType = THUMBNAIL_CONTENT_TYPE;
 
             // 保存到文件系统
             String uploadRealPath = FileUploadUtil.getUploadBasePath();
@@ -342,6 +396,8 @@ public class WorkServlet extends HttpServlet {
         work.setImagePath(imagePath);
         work.setImageData(imageData);
         work.setImageContentType(imageContentType);
+        work.setThumbnailData(thumbnailData);
+        work.setThumbnailContentType(thumbnailContentType);
         work.setStatus(2); // 已提交
 
         boolean success = workService.submitWork(work);
@@ -517,6 +573,7 @@ public class WorkServlet extends HttpServlet {
                 }
 
                 byte[] imageData = readPartBytes(filePart);
+                byte[] thumbnailData = createThumbnail(imageData);
 
                 // 保存新图片
                 String uploadRealPath = FileUploadUtil.getUploadBasePath();
@@ -524,6 +581,8 @@ public class WorkServlet extends HttpServlet {
                 existingWork.setImagePath(imagePath);
                 existingWork.setImageData(imageData);
                 existingWork.setImageContentType(contentType);
+                existingWork.setThumbnailData(thumbnailData);
+                existingWork.setThumbnailContentType(THUMBNAIL_CONTENT_TYPE);
             }
 
             boolean success = workService.updateWork(existingWork);
