@@ -61,29 +61,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --accent: #FD79A8;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --light-bg: #F8F9FA;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.06);
-        }
-
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-        .nav-link.active { color: var(--primary-light) !important; font-weight: 600; }
-
         .page-header {
             display: flex;
             align-items: center;
@@ -92,49 +69,49 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-        .page-header h2 { font-weight: 700; color: var(--dark); margin: 0; }
-        .page-header h2 i { color: var(--primary); }
+        .page-header h2 { font-weight: 700; color: var(--app-ink); margin: 0; }
+        .page-header h2 i { color: var(--app-blue); }
 
         .stats-row { margin-bottom: 1.5rem; }
         .stat-card {
-            background: white;
-            border-radius: 16px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 1.2rem 1.5rem;
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--app-rule);
             text-align: center;
         }
-        .stat-card .stat-number { font-size: 2rem; font-weight: 700; color: var(--primary); }
-        .stat-card .stat-label { font-size: 0.85rem; color: var(--gray); margin-top: 0.25rem; }
-        .stat-card i { font-size: 1.3rem; color: var(--primary-light); margin-right: 4px; }
+        .stat-card .stat-number { font-size: 2rem; font-weight: 700; color: var(--app-blue-deep); }
+        .stat-card .stat-label { font-size: 0.85rem; color: var(--app-muted); margin-top: 0.25rem; }
+        .stat-card i { font-size: 1.3rem; color: var(--app-blue); margin-right: 4px; }
 
         .work-card {
-            background: white;
-            border-radius: 16px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--app-rule);
             transition: transform 0.2s, box-shadow 0.2s;
             border-left: 4px solid transparent;
             cursor: pointer;
         }
         .work-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.12);
+            box-shadow: var(--shadow-md);
         }
-        .work-card.scored { border-left-color: #00B894; }
-        .work-card.unscored { border-left-color: var(--accent); }
-        .work-card .work-title { font-weight: 600; font-size: 1.1rem; color: var(--dark); }
-        .work-card .work-meta { font-size: 0.85rem; color: var(--gray); margin-top: 0.3rem; }
+        .work-card.scored { border-left-color: var(--app-sea); }
+        .work-card.unscored { border-left-color: #c44e63; }
+        .work-card .work-title { font-weight: 600; font-size: 1.1rem; color: var(--app-ink); }
+        .work-card .work-meta { font-size: 0.85rem; color: var(--app-muted); margin-top: 0.3rem; }
         .work-card .badge-score { font-size: 0.8rem; padding: 0.35em 0.65em; }
 
         .score-form-card {
-            background: white;
-            border-radius: 20px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 2rem;
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--app-rule);
             margin-bottom: 2rem;
         }
-        .score-form-card h4 { font-weight: 700; color: var(--dark); }
+        .score-form-card h4 { font-weight: 700; color: var(--app-ink); }
         .score-slider {
             width: 100%;
             height: 8px;
@@ -145,19 +122,19 @@
         .score-display {
             font-size: 3rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--app-blue-deep);
             text-align: center;
         }
 
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            background: white;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
+            background: var(--app-surface);
+            border-radius: 12px;
+            border: 1px solid var(--app-rule);
         }
-        .empty-state i { font-size: 4rem; color: var(--primary-light); }
-        .empty-state h5 { margin-top: 1rem; color: var(--gray); }
+        .empty-state i { font-size: 4rem; color: var(--app-sea); }
+        .empty-state h5 { margin-top: 1rem; color: var(--app-muted); }
 
         .alert-custom {
             border-radius: 12px;
@@ -165,21 +142,21 @@
         }
 
         .info-panel {
-            background: white;
-            border-radius: 16px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--app-rule);
             margin-bottom: 1.5rem;
         }
-        .info-panel .info-label { font-size: 0.8rem; color: var(--gray); text-transform: uppercase; }
-        .info-panel .info-value { font-weight: 600; color: var(--dark); }
+        .info-panel .info-label { font-size: 0.8rem; color: var(--app-muted); text-transform: uppercase; }
+        .info-panel .info-value { font-weight: 600; color: var(--app-ink); }
 
-        .back-link { color: var(--primary); text-decoration: none; font-weight: 500; }
-        .back-link:hover { color: var(--primary-light); }
+        .back-link { color: var(--app-blue); text-decoration: none; font-weight: 500; }
+        .back-link:hover { color: var(--app-blue-deep); }
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-score-input">
 
 <!-- 导航栏 -->
 <%
@@ -273,7 +250,8 @@
 
     <%-- 评分表单模式（选中特定作品评分） --%>
     <% if (targetWork != null) { %>
-    <div class="row">
+    <div class="app-workbench">
+        <div class="row">
         <div class="col-lg-4">
             <div class="info-panel">
                 <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>作品信息</h5>
@@ -428,7 +406,7 @@
                 <h6 class="text-muted mb-3">所有评语（<%= comments.size() %>条）</h6>
                 <% for (Comment c : comments) { %>
                 <div style="background:#F8F9FA;border-radius:12px;padding:1rem;margin-bottom:0.8rem;
-                            border-left:3px solid <%= c.getJudgeId().equals(sessionUser.getUserId()) ? "var(--primary)" : "#dee2e6" %>;">
+                            border-left:3px solid <%= c.getJudgeId().equals(sessionUser.getUserId()) ? "var(--app-blue)" : "var(--app-rule)" %>;">
                     <div class="d-flex justify-content-between mb-2">
                         <small class="fw-bold text-muted">
                             <i class="fas fa-user-circle"></i> 评委 #<%= c.getJudgeId() %>
@@ -448,6 +426,7 @@
                 <% } %>
             </div>
         </div>
+    </div>
     </div>
 
     <%-- 作品列表模式 --%>
@@ -498,7 +477,7 @@
                     </div>
                 </div>
                 <% if (w.getDescription() != null && !w.getDescription().isEmpty()) { %>
-                <div class="mt-2" style="font-size:0.85rem;color:var(--gray);">
+                <div class="mt-2" style="font-size:0.85rem;color:var(--app-muted);">
                     <%= HtmlEscaper.escape(w.getDescription().length() > 80 ? w.getDescription().substring(0, 80) + "..." : w.getDescription()) %>
                 </div>
                 <% } %>

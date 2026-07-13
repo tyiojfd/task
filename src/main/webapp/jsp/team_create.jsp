@@ -38,31 +38,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --accent: #FD79A8;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --light-bg: #F8F9FA;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.08);
-            --card-hover-shadow: 0 8px 32px rgba(108, 92, 231, 0.16);
-        }
-
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-
-        /* ── 顶部导航 ── */
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-        .nav-link.active { color: var(--primary-light) !important; font-weight: 600; }
-
         /* ── 步骤指示器 ── */
         .steps-bar {
             display: flex;
@@ -87,52 +62,52 @@
             transition: all 0.3s;
         }
         .step-circle.done {
-            background: var(--primary);
+            background: var(--app-blue);
             color: white;
         }
         .step-circle.active {
             background: white;
-            color: var(--primary);
-            border: 3px solid var(--primary);
-            box-shadow: 0 0 0 6px rgba(108, 92, 231, 0.15);
+            color: var(--app-blue);
+            border: 3px solid var(--app-blue);
+            box-shadow: 0 0 0 6px rgba(23, 105, 170, 0.15);
         }
         .step-circle.pending {
             background: #DFE6E9;
             color: #B2BEC3;
         }
-        .step-label { font-size: 0.85rem; font-weight: 600; color: var(--gray); }
-        .step-label.done { color: var(--primary); }
+        .step-label { font-size: 0.85rem; font-weight: 600; color: var(--app-muted); }
+        .step-label.done { color: var(--app-blue); }
 
         .step-connector {
             width: 80px; height: 3px;
-            background: #DFE6E9;
+            background: var(--app-rule);
             z-index: 1;
             border-radius: 2px;
         }
         .step-connector.done {
-            background: var(--primary);
+            background: var(--app-blue);
         }
 
         /* ── 竞赛选择卡片 ── */
         .comp-select-card {
-            border: 2px solid #E8ECF1;
-            border-radius: 16px;
+            border: 2px solid var(--app-rule);
+            border-radius: 12px;
             padding: 20px;
             cursor: pointer;
             transition: all 0.25s;
-            background: white;
+            background: var(--app-surface);
             position: relative;
             height: 100%;
         }
         .comp-select-card:hover {
-            border-color: var(--primary-light);
-            box-shadow: var(--card-hover-shadow);
+            border-color: var(--app-blue);
+            box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
         .comp-select-card.selected {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, #F8F7FF 0%, #EDE9FE 100%);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.12);
+            border-color: var(--app-blue);
+            background: var(--app-surface-soft);
+            box-shadow: 0 0 0 4px rgba(23, 105, 170, 0.12);
         }
         .comp-select-card input[type="radio"] { display: none; }
         .comp-select-card .comp-icon {
@@ -150,63 +125,62 @@
 
         /* ── 表单卡片 ── */
         .form-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            border: none;
+            background: var(--app-surface);
+            border-radius: 12px;
+            border: 1px solid var(--app-rule);
             overflow: hidden;
         }
         .form-card .card-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #8B7CF6 100%);
+            background: var(--app-ink);
             color: white;
             border: none;
             padding: 1.2rem 1.8rem;
         }
         .form-card .card-body { padding: 2rem; }
-        .form-label { font-weight: 600; font-size: 0.9rem; color: var(--dark); margin-bottom: 0.5rem; }
-        .form-label i { color: var(--primary); width: 20px; margin-right: 4px; }
+        .form-label { font-weight: 600; font-size: 0.9rem; color: var(--app-ink); margin-bottom: 0.5rem; }
+        .form-label i { color: var(--app-blue); width: 20px; margin-right: 4px; }
         .form-control, .form-select {
-            border: 2px solid #EAEEF2;
-            border-radius: 12px;
+            border: 2px solid var(--app-rule);
+            border-radius: 10px;
             padding: 0.65rem 1rem;
             transition: all 0.25s;
             font-size: 0.95rem;
         }
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+            border-color: var(--app-blue);
+            box-shadow: 0 0 0 4px rgba(23, 105, 170, 0.1);
         }
         textarea.form-control { resize: none; }
 
         .btn-primary-action {
-            background: linear-gradient(135deg, var(--primary) 0%, #8B7CF6 100%);
+            background: var(--app-blue);
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 0.7rem 2rem;
             font-weight: 600;
             font-size: 1rem;
             color: white;
             transition: all 0.3s;
-            box-shadow: 0 4px 14px rgba(108, 92, 231, 0.3);
+            box-shadow: var(--shadow-sm);
         }
         .btn-primary-action:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.45);
+            box-shadow: var(--shadow-md);
             color: white;
         }
         .btn-secondary-action {
-            border: 2px solid #DFE6E9;
-            border-radius: 12px;
+            border: 2px solid var(--app-rule);
+            border-radius: 8px;
             padding: 0.7rem 2rem;
             font-weight: 600;
             font-size: 1rem;
-            color: var(--gray);
+            color: var(--app-muted);
             transition: all 0.3s;
-            background: white;
+            background: var(--app-surface);
         }
         .btn-secondary-action:hover {
-            border-color: var(--gray);
-            color: var(--dark);
+            border-color: var(--app-muted);
+            color: var(--app-ink);
         }
 
         /* ── 提示卡片 ── */
@@ -216,20 +190,20 @@
             border-radius: 16px;
             padding: 1.2rem 1.5rem;
         }
-        .tips-card i { color: #F39C12; }
-        .tips-card li { margin-bottom: 0.35rem; font-size: 0.9rem; color: #6D5E00; }
+        .tips-card i { color: var(--app-yellow); }
+        .tips-card li { margin-bottom: 0.35rem; font-size: 0.9rem; color: var(--app-ink-soft); }
 
         /* ── 预览卡片 ── */
         .preview-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
+            background: var(--app-surface);
+            border-radius: 12px;
+            border: 1px solid var(--app-rule);
             padding: 1.5rem;
         }
         .preview-card .team-preview-avatar {
             width: 64px; height: 64px;
             border-radius: 16px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            background: linear-gradient(135deg, var(--app-blue) 0%, var(--app-sea) 100%);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.6rem;
             color: white;
@@ -238,7 +212,7 @@
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-team-form">
     <!-- 导航栏 -->
     <%
     request.setAttribute("activeNav", "teams");
@@ -264,9 +238,8 @@
             </span>
         </div>
 
-        <div class="row">
-            <!-- ═══════════ 左侧表单 ═══════════ -->
-            <div class="col-lg-8">
+        <div class="app-workbench">
+            <div>
                 <% if (request.getAttribute("error") != null) { %>
                     <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i><%= HtmlEscaper.escape(String.valueOf(request.getAttribute("error"))) %>
@@ -290,7 +263,7 @@
                                         String statusText = comp.getStatus() == 1 ? "报名中" : comp.getStatus() == 2 ? "进行中" : "已结束";
                                         boolean selected = (selectedCompetitionId != null && selectedCompetitionId.equals(String.valueOf(comp.getCompetitionId())))
                                                 || (selectedCompetitionId == null && idx == 0);
-                                        String[] iconColors = {"#6C5CE7", "#FD79A8", "#00CEC9", "#FDCB6E", "#E17055", "#74B9FF"};
+                                        String[] iconColors = {"#1769aa", "#078e9f", "#00CEC9", "#efc65c", "#c44e63", "#74B9FF"};
                                         String iconColor = iconColors[idx % iconColors.length];
                                 %>
                                     <div class="col-md-6">
@@ -373,7 +346,7 @@
             </div>
 
             <!-- ═══════════ 右侧面板 ═══════════ -->
-            <div class="col-lg-4">
+            <div class="app-workbench-rail">
                 <div class="preview-card mb-4">
                     <div class="team-preview-avatar">
                         <i class="fas fa-users"></i>

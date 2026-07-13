@@ -31,14 +31,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background: #f5f5f5; }
-        .navbar-brand { font-weight: bold; }
-        .profile-card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0 !important; }
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-profile">
     <!-- 导航栏 -->
     <%
     request.setAttribute("activeNav", "profile");
@@ -50,29 +46,27 @@
         <c:if test="${not empty success}"><div class="alert alert-success alert-dismissible fade show">${success}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></c:if>
         <c:if test="${not empty error}"><div class="alert alert-danger alert-dismissible fade show">${error}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></c:if>
 
-        <div class="row">
-            <!-- 个人信息卡片 -->
-            <div class="col-md-4">
-                <div class="card profile-card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">个人信息</h5>
-                    </div>
-                    <div class="card-body text-center">
+        <div class="app-workbench">
+            <div>
+                <!-- 个人信息 -->
+                <div class="app-form-section">
+                    <h3><i class="fas fa-user-circle me-2"></i>个人信息</h3>
+                    <div class="text-center mb-3">
                         <div class="mb-3 position-relative d-inline-block">
                             <% if (sessionUser.getAvatar() != null && !sessionUser.getAvatar().isEmpty()) { %>
                                 <img src="<%= request.getContextPath() + sessionUser.getAvatar() %>"
                                      style="width:100px;height:100px;border-radius:50%;object-fit:cover;
-                                            box-shadow:0 4px 16px rgba(108,92,231,0.3);" alt="头像">
+                                            box-shadow:var(--shadow-sm);" alt="头像">
                             <% } else { %>
-                                <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg, #6C5CE7, #FD79A8);
+                                <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg, var(--app-blue), var(--app-sea));
                                             display:inline-flex;align-items:center;justify-content:center;
                                             font-size:2.5rem;font-weight:700;color:white;
-                                            box-shadow:0 4px 16px rgba(108,92,231,0.3);">
+                                            box-shadow:var(--shadow-sm);">
                                     <%= sessionUser.getRealName() != null && !sessionUser.getRealName().isEmpty() ? sessionUser.getRealName().substring(0,1) : "?" %>
                                 </div>
                             <% } %>
                             <label for="avatarUpload" style="position:absolute;bottom:0;right:0;width:30px;height:30px;
-                                        background:var(--primary-color, #6C5CE7);border-radius:50%;cursor:pointer;
+                                        background:var(--app-blue);border-radius:50%;cursor:pointer;
                                         display:flex;align-items:center;justify-content:center;color:white;
                                         font-size:0.8rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);"
                                    title="更换头像">
@@ -86,7 +80,6 @@
                                 <%= sessionUser.getStatus() == 1 ? "正常" : "已禁用" %>
                             </span>
                         </p>
-                        <!-- 隐藏的头像上传表单 -->
                         <input type="file" name="avatar" id="avatarUpload" accept="image/jpeg,image/png"
                                form="avatarForm" style="display:none"
                                onchange="document.getElementById('avatarForm').submit()">
@@ -96,68 +89,57 @@
                         </form>
                     </div>
                 </div>
-            </div>
 
-            <!-- 信息编辑/密码修改 -->
-            <div class="col-md-8">
                 <!-- 编辑个人信息 -->
-                <div class="card profile-card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">编辑个人信息</h5>
-                    </div>
-                    <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/profile" method="post">
-                            <input type="hidden" name="action" value="updateProfile">
-                            <div class="mb-3">
-                                <label class="form-label">用户名</label>
-                                <input type="text" class="form-control" value='<c:out value="${sessionScope.user.username}"/>' disabled>
-                            </div>
-                            <div class="mb-3">
-                                <label for="realName" class="form-label">真实姓名</label>
-                                <input type="text" class="form-control" id="realName" name="realName"
-                                       value='<c:out value="${sessionScope.user.realName}"/>' required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">邮箱</label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                       value='<c:out value="${sessionScope.user.email}" default=""/>' required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">手机号</label>
-                                <input type="text" class="form-control" id="phone" name="phone"
-                                       value='<c:out value="${sessionScope.user.phone}" default=""/>'>
-                            </div>
-                            <button type="submit" class="btn btn-primary">保存修改</button>
-                        </form>
-                    </div>
+                <div class="app-form-section">
+                    <h3><i class="fas fa-user-edit me-2"></i>编辑个人信息</h3>
+                    <form action="${pageContext.request.contextPath}/profile" method="post">
+                        <input type="hidden" name="action" value="updateProfile">
+                        <div class="mb-3">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-control" value='<c:out value="${sessionScope.user.username}"/>' disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="realName" class="form-label">真实姓名</label>
+                            <input type="text" class="form-control" id="realName" name="realName"
+                                   value='<c:out value="${sessionScope.user.realName}"/>' required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value='<c:out value="${sessionScope.user.email}" default=""/>' required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">手机号</label>
+                            <input type="text" class="form-control" id="phone" name="phone"
+                                   value='<c:out value="${sessionScope.user.phone}" default=""/>'>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
                 </div>
 
                 <!-- 修改密码 -->
-                <div class="card profile-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">修改密码</h5>
-                    </div>
-                    <div class="card-body">
-                        <form action="${pageContext.request.contextPath}/profile" method="post">
-                            <input type="hidden" name="action" value="changePassword">
-                            <div class="mb-3">
-                                <label for="oldPassword" class="form-label">当前密码</label>
-                                <input type="password" class="form-control" id="oldPassword" name="oldPassword"
-                                       placeholder="请输入当前密码" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="newPassword" class="form-label">新密码</label>
-                                <input type="password" class="form-control" id="newPassword" name="newPassword"
-                                       placeholder="请输入新密码（至少6位）" required minlength="6">
-                            </div>
-                            <div class="mb-3">
-                                <label for="confirmNewPassword" class="form-label">确认新密码</label>
-                                <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword"
-                                       placeholder="请再次输入新密码" required>
-                            </div>
-                            <button type="submit" class="btn btn-warning">修改密码</button>
-                        </form>
-                    </div>
+                <div class="app-form-section">
+                    <h3><i class="fas fa-lock me-2"></i>修改密码</h3>
+                    <form action="${pageContext.request.contextPath}/profile" method="post">
+                        <input type="hidden" name="action" value="changePassword">
+                        <div class="mb-3">
+                            <label for="oldPassword" class="form-label">当前密码</label>
+                            <input type="password" class="form-control" id="oldPassword" name="oldPassword"
+                                   placeholder="请输入当前密码" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword"
+                                   placeholder="请输入新密码（至少6位）" required minlength="6">
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmNewPassword" class="form-label">确认新密码</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword"
+                                   placeholder="请再次输入新密码" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning">修改密码</button>
+                    </form>
                 </div>
             </div>
         </div>

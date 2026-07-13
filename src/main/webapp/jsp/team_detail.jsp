@@ -76,35 +76,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --accent: #FD79A8;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --light-bg: #F8F9FA;
-        }
-
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-        .nav-link.active { color: var(--primary-light) !important; font-weight: 600; }
-
         /* ── 封面横幅 ── */
         .cover-banner {
-            background: linear-gradient(135deg, var(--primary) 0%, #8B7CF6 40%, var(--accent) 100%);
-            border-radius: 20px;
+            background: linear-gradient(135deg, var(--app-ink) 0%, #1a4058 100%);
+            border-radius: 12px;
             padding: 2rem 2.5rem;
             color: white;
-            margin: 2rem 0 1.5rem;
+            margin: 0 0 1.5rem;
             position: relative;
             overflow: hidden;
         }
@@ -142,10 +120,10 @@
         .tab-nav {
             display: flex;
             gap: 4px;
-            background: white;
-            border-radius: 14px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 4px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 1.5rem;
         }
         .tab-btn {
@@ -153,37 +131,38 @@
             padding: 0.65rem 1rem;
             border: none;
             background: transparent;
-            border-radius: 11px;
+            border-radius: 10px;
             font-weight: 600;
             font-size: 0.9rem;
-            color: var(--gray);
+            color: var(--app-muted);
             transition: all 0.25s;
             cursor: pointer;
         }
         .tab-btn.active {
-            background: var(--primary);
+            background: var(--app-blue);
             color: white;
-            box-shadow: 0 3px 10px rgba(108, 92, 231, 0.25);
+            box-shadow: var(--shadow-sm);
         }
-        .tab-btn:hover:not(.active) { background: #F0EDFF; color: var(--primary); }
+        .tab-btn:hover:not(.active) { background: var(--app-surface-soft); color: var(--app-blue-deep); }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
 
         /* ── 信息卡片 ── */
         .info-card {
-            background: white;
-            border-radius: 18px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 14px rgba(108, 92, 231, 0.05);
+            box-shadow: var(--shadow-sm);
             height: 100%;
+            border: 1px solid var(--app-rule);
         }
-        .info-card h6 { font-weight: 700; color: var(--dark); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-card h6 { font-weight: 700; color: var(--app-ink); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .info-item {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 0.6rem 0;
-            border-bottom: 1px solid #F1F3F4;
+            border-bottom: 1px solid var(--app-rule);
         }
         .info-item:last-child { border-bottom: none; }
         .info-icon {
@@ -195,17 +174,18 @@
 
         /* ── 成员网格 ── */
         .member-grid-card {
-            background: white;
-            border-radius: 18px;
+            background: var(--app-surface);
+            border-radius: 12px;
             padding: 1.8rem;
-            box-shadow: 0 2px 14px rgba(108, 92, 231, 0.05);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--app-rule);
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: default;
         }
         .member-grid-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.12);
+            box-shadow: var(--shadow-md);
         }
         .member-grid-avatar {
             width: 72px; height: 72px;
@@ -226,7 +206,7 @@
         /* ── 操作按钮 ── */
         .action-btn {
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 0.7rem 1.2rem;
             font-weight: 600;
             font-size: 0.9rem;
@@ -237,44 +217,45 @@
             justify-content: center;
         }
         .btn-invite {
-            background: linear-gradient(135deg, #00CEC9, #81ECEC);
+            background: var(--app-sea);
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 206, 201, 0.3);
+            box-shadow: var(--shadow-sm);
         }
         .btn-edit {
-            background: linear-gradient(135deg, #F39C12, #FDCB6E);
-            color: white;
-            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+            background: var(--app-yellow);
+            color: var(--app-ink);
+            box-shadow: var(--shadow-sm);
         }
         .btn-delete {
-            background: linear-gradient(135deg, #E17055, #FAB1A0);
+            background: #c44e63;
             color: white;
-            box-shadow: 0 4px 12px rgba(225, 112, 85, 0.3);
+            box-shadow: var(--shadow-sm);
         }
         .btn-register {
-            background: linear-gradient(135deg, var(--primary), #8B7CF6);
+            background: var(--app-blue);
             color: white;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+            box-shadow: var(--shadow-sm);
         }
         .action-btn:hover {
             transform: translateY(-2px);
             color: white;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-md);
         }
+        .btn-edit:hover { color: var(--app-ink); }
 
         /* ── alert / breadcrumb ── */
         .breadcrumb { margin-bottom: 0; }
-        .breadcrumb-item a { color: var(--primary); text-decoration: none; font-weight: 500; }
-        .alert { border-radius: 14px; border: none; }
+        .breadcrumb-item a { color: var(--app-blue); text-decoration: none; font-weight: 500; }
+        .alert { border-radius: 10px; }
 
         /* ── 统计数字 ── */
         .stat-mini { text-align: center; padding: 0.5rem; }
-        .stat-mini .number { font-size: 1.5rem; font-weight: 800; color: var(--dark); }
-        .stat-mini .label  { font-size: 0.75rem; color: var(--gray); }
+        .stat-mini .number { font-size: 1.5rem; font-weight: 800; color: var(--app-ink); }
+        .stat-mini .label  { font-size: 0.75rem; color: var(--app-muted); }
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-detail app-page-team-detail">
     <!-- 导航栏 -->
     <%
     request.setAttribute("activeNav", "teams");
@@ -323,6 +304,9 @@
             <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><%= errorText %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
 
+        <div class="app-detail-layout">
+            <div class="app-detail-main">
+
         <!-- ═══════════ 封面横幅 ═══════════ -->
         <div class="cover-banner">
             <div class="cover-content">
@@ -350,10 +334,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="row g-3">
-            <!-- ═══════════ 左侧主内容 ═══════════ -->
-            <div class="col-lg-8">
                 <!-- Tab 导航 -->
                 <div class="tab-nav">
                     <button class="tab-btn active" onclick="switchTab('overview', this)"><i class="fas fa-info-circle me-1"></i>概览</button>
@@ -368,7 +348,7 @@
                         <div class="row g-3">
                             <div class="col-6 col-md-3">
                                 <div class="stat-mini">
-                                    <div class="number" style="color:var(--primary)"><%= memberCount %></div>
+                                    <div class="number" style="color:var(--app-blue-deep)"><%= memberCount %></div>
                                     <div class="label">成员人数</div>
                                 </div>
                             </div>
@@ -396,7 +376,7 @@
                     <div class="info-card mb-3">
                         <h6 class="mb-3">基本信息</h6>
                         <div class="info-item">
-                            <div class="info-icon" style="background:#EDE9FE; color:var(--primary)"><i class="fas fa-crown"></i></div>
+                            <div class="info-icon" style="background:var(--app-surface-soft); color:var(--app-blue-deep)"><i class="fas fa-crown"></i></div>
                             <div>
                                 <div class="small text-muted">队长</div>
                                 <strong><%= HtmlEscaper.escape(leaderName != null ? leaderName : "用户 #" + team.getLeaderId()) %></strong>
@@ -437,7 +417,7 @@
                 <div class="tab-panel" id="tab-members">
                     <div class="row g-3">
                         <% if (members != null && !members.isEmpty()) {
-                            String[] avatarColors = {"#6C5CE7", "#FD79A8", "#00CEC9", "#F39C12", "#E17055", "#74B9FF"};
+                            String[] avatarColors = {"#1769aa", "#078e9f", "#00CEC9", "#efc65c", "#c44e63", "#74B9FF"};
                             int aIdx = 0;
                             for (TeamMember m : members) {
                                 User mu = memberUsers != null ? memberUsers.get(m.getUserId()) : null;
@@ -498,8 +478,7 @@
                             %>
                                 <div class="col-md-6">
                                     <div class="info-card p-0 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s;"
-                                         onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(108,92,231,0.15)';"
-                                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 14px rgba(108,92,231,0.05)';">
+>
                                         <!-- 作品图片 -->
                                         <div style="height: 180px; background: linear-gradient(135deg, #E8ECF1, #DFE6E9); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;"
                                              onclick="previewWorkImage('<%= imgSrc %>')" title="点击查看大图">
@@ -548,7 +527,7 @@
                             <h5 class="text-muted">暂无作品</h5>
                             <p class="text-muted">组队完成后即可提交参赛作品</p>
                             <% if (isLeader && team.getStatus() != null && team.getStatus() == 2 && !isCompetitionEnded && !isCompetitionCancelled) { %>
-                                <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary mt-2 rounded-3 px-4" style="background:var(--primary); border:none;">
+                                <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary mt-2 rounded-3 px-4">
                                     <i class="fas fa-plus me-1"></i>提交作品
                                 </a>
                             <% } else if (isLeader && isCompetitionEnded) { %>
@@ -559,8 +538,8 @@
                 </div>
             </div>
 
-            <!-- ═══════════ 右侧操作面板 ═══════════ -->
-            <div class="col-lg-4">
+            <!-- ═══════════ 操作面板 ═══════════ -->
+            <div class="app-detail-rail">
                 <div class="info-card mb-3">
                     <h6 class="mb-3"><i class="fas fa-cog me-2"></i>队伍操作</h6>
                     <% if (isLeader) { %>
@@ -620,9 +599,9 @@
                         boolean step2Done = team.getStatus() != null && team.getStatus() == 2;
                         boolean step1Active = !step1Done && !step2Done;
                         boolean step2Active = (memberCount >= 1 || step1Done) && !step2Done && team.getStatus() == 1;
-                        String step1Style = step1Done || step2Done ? "background:#00B894;" : "background:var(--primary);";
-                        String step2Style = step2Done ? "background:#00B894;" : (step2Active ? "background:var(--primary);" : "background:#B2BEC3;");
-                        String step3Style = step2Done ? "background:var(--primary);" : "background:#B2BEC3;";
+                        String step1Style = step1Done || step2Done ? "background:#00B894;" : "background:var(--app-blue);";
+                        String step2Style = step2Done ? "background:#00B894;" : (step2Active ? "background:var(--app-blue);" : "background:#B2BEC3;");
+                        String step3Style = step2Done ? "background:var(--app-blue);" : "background:#B2BEC3;";
                         String step4Style = "background:#B2BEC3;";
                         String step1TextStyle = (step1Done || step2Done) ? "" : "text-muted";
                         String step2TextStyle = step2Done ? "" : (step2Active ? "" : "text-muted");
@@ -653,7 +632,7 @@
                     </div>
                 </div>
 
-                <a href="${pageContext.request.contextPath}/team?action=myTeams" class="btn btn-light w-100 mt-3 rounded-3 py-2 fw-bold" style="border:2px solid #EAEEF2">
+                <a href="${pageContext.request.contextPath}/team?action=myTeams" class="btn btn-light w-100 mt-3 rounded-3 py-2 fw-bold">
                     <i class="fas fa-arrow-left me-2"></i>返回队伍列表
                 </a>
             </div>
@@ -663,8 +642,8 @@
     <!-- ═══════════ 编辑队伍Modal ═══════════ -->
     <div class="modal fade" id="editTeamModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content" style="border-radius:18px; border:none;">
-                <div class="modal-header" style="background:linear-gradient(135deg, var(--primary), #8B7CF6); color:white; border-radius:18px 18px 0 0;">
+            <div class="modal-content" style="border-radius:12px; border:none;">
+                <div class="modal-header" style="border-radius:12px 12px 0 0;">
                     <h5 class="modal-title"><i class="fas fa-edit me-2"></i>编辑队伍信息</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -712,7 +691,7 @@
                     </div>
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-primary rounded-3 px-4" style="background:var(--primary); border:none;">保存修改</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4" style="background:var(--app-blue); border:none;">保存修改</button>
                     </div>
                 </form>
             </div>
@@ -722,8 +701,8 @@
     <!-- ═══════════ 邀请队员Modal ═══════════ -->
     <div class="modal fade" id="inviteMemberModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content" style="border-radius:18px; border:none;">
-                <div class="modal-header" style="background:linear-gradient(135deg, #00CEC9, #81ECEC); color:white; border-radius:18px 18px 0 0;">
+            <div class="modal-content" style="border-radius:12px; border:none;">
+                <div class="modal-header" style="border-radius:12px 12px 0 0;">
                     <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>邀请队员</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -806,10 +785,10 @@
                     }
                     var html = '';
                     users.forEach(function(u) {
-                        html += '<div class="d-flex align-items-center p-2 border rounded-3 mb-2" style="border-color:#EAEEF2 !important;">';
-                        html += '<div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px;background:linear-gradient(135deg, #6C5CE7, #A29BFE);color:white;font-weight:700;font-size:0.9rem;">' + u.realName.charAt(0) + '</div>';
+                        html += '<div class="d-flex align-items-center p-2 border rounded-3 mb-2">';
+                        html += '<div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px;background:linear-gradient(135deg, var(--app-blue), var(--app-blue-deep));color:white;font-weight:700;font-size:0.9rem;">' + u.realName.charAt(0) + '</div>';
                         html += '<div class="flex-grow-1"><strong>' + u.realName + '</strong><br><small class="text-muted">@' + u.username + '</small></div>';
-                        html += '<button class="btn btn-sm btn-invite-action" style="background:linear-gradient(135deg, #00CEC9, #00B894); color:white; border:none; border-radius:10px; padding:0.4rem 1rem; font-weight:600;" ';
+                        html += '<button class="btn btn-sm btn-invite-action" style="background:var(--app-sea); color:white; border:none; border-radius:8px; padding:0.4rem 1rem; font-weight:600;" ';
                         html += 'onclick="inviteUser(' + u.userId + ', \'' + u.realName.replace(/'/g, "\\'") + '\', this)">';
                         html += '<i class="fas fa-paper-plane me-1"></i>邀请</button>';
                         html += '</div>';

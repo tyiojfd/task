@@ -48,40 +48,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #6C5CE7; --primary-light: #A29BFE; --dark: #2D3436; --gray: #636E72; }
-        body { background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%); min-height: 100vh; }
-        .navbar { background: var(--dark) !important; }
-        .navbar-brand { font-weight: 700; }
         .page-header { display: flex; align-items: center; justify-content: space-between; margin: 2rem 0 1.5rem; }
-        .page-header h2 { font-weight: 700; color: var(--dark); }
-        .form-card { background: white; border-radius: 16px; box-shadow: 0 2px 16px rgba(108,92,231,0.06); padding: 2rem; margin-bottom: 1.5rem; }
-        .form-card h5 { font-weight: 700; border-bottom: 2px solid #F0EDFF; padding-bottom: 0.75rem; margin-bottom: 1.25rem; }
+        .page-header h2 { font-weight: 700; color: var(--app-ink); }
+        .form-card { background: var(--app-surface); border-radius: 12px; border: 1px solid var(--app-rule); padding: 2rem; margin-bottom: 1.5rem; }
+        .form-card h5 { font-weight: 700; border-bottom: 2px solid var(--app-rule); padding-bottom: 0.75rem; margin-bottom: 1.25rem; color: var(--app-ink); }
         .form-label { font-weight: 600; font-size: 0.9rem; }
-        .form-control { border-radius: 10px; border: 2px solid #EAEEF2; padding: 0.6rem 1rem; }
-        .form-control:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(108,92,231,0.1); }
-        .upload-area { border: 2px dashed #DFE6E9; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: #F8F9FA; position: relative; }
-        .upload-area:hover { border-color: var(--primary-light); background: #F0EDFF; }
+        .form-control { border-radius: 8px; border: 2px solid var(--app-rule); padding: 0.6rem 1rem; }
+        .form-control:focus { border-color: var(--app-blue); box-shadow: 0 0 0 3px rgba(23,105,170,0.1); }
+        .upload-area { border: 2px dashed var(--app-rule-strong); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--app-surface-soft); position: relative; }
+        .upload-area:hover { border-color: var(--app-blue); background: var(--app-surface-soft); }
         .upload-area input[type="file"] { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; }
         .preview-container { position: relative; display: inline-block; max-width: 100%; }
         .preview-container img { max-height: 300px; border-radius: 8px; }
-        .remove-image { position: absolute; top: -10px; right: -10px; background: #FF6B6B; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; }
-        .btn-submit { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 0.6rem 1.5rem; font-weight: 600; }
-        .btn-submit:hover { background: #5A4BD1; }
-        .btn-cancel { background: #F1F2F6; color: var(--gray); border: none; border-radius: 10px; padding: 0.6rem 1.5rem; }
-        .team-card { border: 2px solid #EAEEF2; border-radius: 12px; padding: 1rem; cursor: pointer; margin-bottom: 0.75rem; }
-        .team-card:hover { border-color: var(--primary-light); background: #F8F6FF; }
-        .team-card.selected { border-color: var(--primary); background: #F0EDFF; }
+        .remove-image { position: absolute; top: -10px; right: -10px; background: #c44e63; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; }
+        .btn-submit { background: var(--app-blue); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600; }
+        .btn-submit:hover { background: var(--app-blue-deep); }
+        .btn-cancel { background: var(--app-surface-soft); color: var(--app-muted); border: none; border-radius: 8px; padding: 0.6rem 1.5rem; }
+        .team-card { border: 2px solid var(--app-rule); border-radius: 10px; padding: 1rem; cursor: pointer; margin-bottom: 0.75rem; background: var(--app-surface); }
+        .team-card:hover { border-color: var(--app-blue); background: var(--app-surface-soft); }
+        .team-card.selected { border-color: var(--app-blue); background: var(--app-surface-soft); }
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-submission-form">
 <%
     request.setAttribute("activeNav", "works");
 %>
 <%@ include file="includes/navbar.jspf" %>
 <div class="container">
     <div class="page-header">
-        <h2><i class="fas fa-plus-circle me-2" style="color:var(--primary)"></i>提交作品</h2>
+        <h2><i class="fas fa-plus-circle me-2 text-primary"></i>提交作品</h2>
         <a href="${pageContext.request.contextPath}/work" class="btn btn-cancel"><i class="fas fa-arrow-left me-1"></i>返回列表</a>
     </div>
     <% if (msg != null) { %>
@@ -95,10 +91,11 @@
         <% if (isEdit) { %>
         <input type="hidden" name="workId" value="<%= editWork.getWorkId() %>">
         <% } %>
-        <div class="row">
+        <div class="app-workbench">
+            <div class="row">
             <div class="col-lg-8">
                 <div class="form-card">
-                    <h5><i class="fas fa-users me-2" style="color:var(--primary)"></i><%= isEdit ? "所属队伍" : "选择队伍" %></h5>
+                    <h5><i class="fas fa-users me-2" style="color:var(--app-blue)"></i><%= isEdit ? "所属队伍" : "选择队伍" %></h5>
                     <% if (isEdit) { %>
                         <div class="team-card selected" style="cursor:default;">
                             <div class="d-flex align-items-center">
@@ -142,7 +139,7 @@
                     <% } %>
                 </div>
                 <div class="form-card">
-                    <h5><i class="fas fa-info-circle me-2" style="color:var(--primary)"></i>作品信息</h5>
+                    <h5><i class="fas fa-info-circle me-2" style="color:var(--app-blue)"></i>作品信息</h5>
                     <div class="mb-3">
                         <label class="form-label">作品名称 <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="title" placeholder="请输入作品名称" required maxlength="100" value="<%= HtmlEscaper.escape(isEdit && editWork.getTitle() != null ? editWork.getTitle() : "") %>">
@@ -155,7 +152,7 @@
             </div>
             <div class="col-lg-4">
                 <div class="form-card">
-                    <h5><i class="fas fa-image me-2" style="color:var(--primary)"></i>海报图片</h5>
+                    <h5><i class="fas fa-image me-2" style="color:var(--app-blue)"></i>海报图片</h5>
                     <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageFile').click()">
                         <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png">
                         <div id="uploadPlaceholder" class="<%= placeholderClass %>">
@@ -169,6 +166,7 @@
                         </div>
                 </div>
             </div>
+        </div>
         </div>
         <div class="d-flex gap-2 justify-content-end mb-4">
             <a href="${pageContext.request.contextPath}/work" class="btn btn-cancel"><i class="fas fa-times me-1"></i>取消</a>
