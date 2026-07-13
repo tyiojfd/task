@@ -63,7 +63,7 @@
             Team team = teamMap != null ? teamMap.get(work.getTeamId()) : null;
             Integer likes = likeCountMap != null ? likeCountMap.get(work.getWorkId()) : 0;
             String imgUrl = (work.getImagePath() != null && !work.getImagePath().isEmpty())
-                    ? request.getContextPath() + "/" + com.poster.util.FileUploadUtil.STORAGE_DIR + work.getImagePath()
+                    ? request.getContextPath() + "/uploads" + work.getImagePath()
                     : "";
         %>
         <div class="col-md-6 col-lg-4">

@@ -11,7 +11,9 @@ import com.poster.dao.impl.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 
 @WebServlet("/work")
@@ -41,6 +43,18 @@ public class WorkServlet extends HttpServlet {
 
     private boolean isCompetitionEnded(Competition competition) {
         return competition != null && competition.getStatus() != null && competition.getStatus() == 3;
+    }
+
+    private byte[] readPartBytes(Part part) throws IOException {
+        try (InputStream input = part.getInputStream();
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = input.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+            return output.toByteArray();
+        }
     }
 
     private boolean hasRole(HttpServletRequest request, String roleName) {
@@ -301,6 +315,9 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
 
+            imageData = readPartBytes(filePart);
+            imageContentType = contentType;
+
             // 保存到文件系统
             String uploadRealPath = FileUploadUtil.getUploadBasePath();
             try {
@@ -499,11 +516,13 @@ public class WorkServlet extends HttpServlet {
                     FileUploadUtil.deleteFile(uploadRealPath, existingWork.getImagePath());
                 }
 
+                byte[] imageData = readPartBytes(filePart);
+
                 // 保存新图片
                 String uploadRealPath = FileUploadUtil.getUploadBasePath();
                 String imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), team.getTeamId());
                 existingWork.setImagePath(imagePath);
-                existingWork.setImageData(null);
+                existingWork.setImageData(imageData);
                 existingWork.setImageContentType(contentType);
             }
 
