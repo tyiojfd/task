@@ -161,6 +161,7 @@ a {
     position: absolute;
     inset: 0;
     opacity: 0;
+    pointer-events: none;
     transform: scale(1.04);
     transition: opacity 0.9s ease, transform 6s ease;
 }
@@ -185,6 +186,7 @@ a {
 
 .hero-slide.is-active {
     opacity: 1;
+    pointer-events: auto;
     transform: scale(1);
 }
 
