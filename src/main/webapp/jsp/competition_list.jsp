@@ -9,7 +9,6 @@
     @SuppressWarnings("unchecked")
     List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
 
-    // 角色权限检查
     User sessionUser = (User) session.getAttribute("user");
     boolean isAdmin = false;
     boolean isJudge = false;
@@ -17,162 +16,144 @@
         @SuppressWarnings("unchecked")
         List<Role> roles = (List<Role>) session.getAttribute("roles");
         if (roles != null) {
-            for (Role r : roles) {
-                if ("管理员".equals(r.getRoleName())) isAdmin = true;
-                if ("评委".equals(r.getRoleName())) isJudge = true;
+            for (Role role : roles) {
+                if ("管理员".equals(role.getRoleName())) isAdmin = true;
+                if ("评委".equals(role.getRoleName())) isJudge = true;
             }
         }
     }
+    int competitionCount = competitions == null ? 0 : competitions.size();
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>竞赛列表 - 大学生海报设计竞赛系统</title>
+    <title>竞赛目录 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background: #f5f5f5; }
-        .competition-card {
-            transition: transform 0.3s;
-            cursor: pointer;
-            border-radius: 10px;
-        }
-        .competition-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-        .status-badge { font-size: 14px; }
-    </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
-    <!-- 导航栏 -->
-    <%
+<body class="app-page app-page-catalog app-page-competition-list">
+<%
     request.setAttribute("activeNav", "competitions");
 %>
 <%@ include file="includes/navbar.jspf" %>
 
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>竞赛列表</h2>
+<main class="container mt-4">
+    <header class="app-page-hero">
+        <div class="app-page-hero-inner">
+            <div class="app-page-hero-copy">
+                <p class="app-page-kicker">竞赛目录</p>
+                <h1>探索赛事</h1>
+                <p class="app-page-summary">从主题、时间和参赛规则开始，找到适合你的海报创作现场。</p>
+            </div>
+            <div class="app-page-hero-stat">
+                <strong><%= competitionCount %></strong>
+                <span>场赛事</span>
+            </div>
             <% if (isAdmin) { %>
-            <a href="${pageContext.request.contextPath}/competition?action=add" class="btn btn-primary">
-                发布竞赛
-            </a>
+                <a href="${pageContext.request.contextPath}/competition?action=add" class="btn btn-light" style="border-radius:8px;font-weight:800;">
+                    <i class="fas fa-plus me-1"></i>发布竞赛
+                </a>
             <% } %>
         </div>
+    </header>
 
-        <!-- 搜索与筛选栏 -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="get" action="${pageContext.request.contextPath}/competition" class="row g-2 align-items-end">
-                    <input type="hidden" name="action" value="list">
-                    <div class="col-md-5">
-                        <label class="form-label small text-muted">关键词搜索</label>
-                        <input type="text" class="form-control" name="keyword" placeholder="搜索竞赛名称、主题、描述..."
-                               value="<%= HtmlEscaper.escape(request.getAttribute("keyword") != null ? request.getAttribute("keyword").toString() : "") %>">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small text-muted">年度</label>
-                        <select class="form-select" name="year">
-                            <option value="">全部</option>
-                            <% Integer filterYear = (Integer) request.getAttribute("filterYear"); %>
-                            <option value="2024" <%= filterYear != null && filterYear == 2024 ? "selected" : "" %>>2024</option>
-                            <option value="2025" <%= filterYear != null && filterYear == 2025 ? "selected" : "" %>>2025</option>
-                            <option value="2026" <%= filterYear != null && filterYear == 2026 ? "selected" : "" %>>2026</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">状态</label>
-                        <select class="form-select" name="status">
-                            <option value="">全部</option>
-                            <% Integer filterStatus = (Integer) request.getAttribute("filterStatus"); %>
-                            <option value="1" <%= filterStatus != null && filterStatus == 1 ? "selected" : "" %>>报名中</option>
-                            <option value="2" <%= filterStatus != null && filterStatus == 2 ? "selected" : "" %>>进行中</option>
-                            <option value="3" <%= filterStatus != null && filterStatus == 3 ? "selected" : "" %>>已结束</option>
-                            <option value="0" <%= filterStatus != null && filterStatus == 0 ? "selected" : "" %>>已取消</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary w-50"><i class="fas fa-search"></i> 搜索</button>
-                        <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-outline-secondary w-50">重置</a>
-                    </div>
-                </form>
+    <div class="app-toolbar">
+        <form method="get" action="${pageContext.request.contextPath}/competition" class="row g-2 align-items-end w-100">
+            <input type="hidden" name="action" value="list">
+            <div class="col-lg-5 toolbar-field toolbar-field-wide">
+                <label for="competitionKeyword">搜索竞赛</label>
+                <input id="competitionKeyword" type="text" class="form-control" name="keyword"
+                       placeholder="竞赛名称、主题或描述"
+                       value="<%= HtmlEscaper.escape(request.getAttribute("keyword") != null ? request.getAttribute("keyword").toString() : "") %>">
             </div>
-        </div>
-
-        <!-- 统计概览 -->
-        <% java.util.Map globalStats = (java.util.Map) request.getAttribute("globalStats");
-           if (globalStats != null) { %>
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card text-center bg-primary bg-opacity-10 border-primary">
-                    <div class="card-body py-3">
-                        <h5 class="text-primary mb-1"><%= globalStats.get("compCount") %></h5>
-                        <small class="text-muted">竞赛总数</small>
-                    </div>
-                </div>
+            <div class="col-md-3 col-lg-2 toolbar-field">
+                <label for="competitionYear">年度</label>
+                <select id="competitionYear" class="form-select" name="year">
+                    <option value="">全部年份</option>
+                    <% Integer filterYear = (Integer) request.getAttribute("filterYear"); %>
+                    <option value="2024" <%= filterYear != null && filterYear == 2024 ? "selected" : "" %>>2024</option>
+                    <option value="2025" <%= filterYear != null && filterYear == 2025 ? "selected" : "" %>>2025</option>
+                    <option value="2026" <%= filterYear != null && filterYear == 2026 ? "selected" : "" %>>2026</option>
+                </select>
             </div>
-            <div class="col-md-4">
-                <div class="card text-center bg-success bg-opacity-10 border-success">
-                    <div class="card-body py-3">
-                        <h5 class="text-success mb-1"><%= globalStats.get("teamCount") %></h5>
-                        <small class="text-muted">参赛队伍</small>
-                    </div>
-                </div>
+            <div class="col-md-3 col-lg-2 toolbar-field">
+                <label for="competitionStatus">状态</label>
+                <select id="competitionStatus" class="form-select" name="status">
+                    <option value="">全部状态</option>
+                    <% Integer filterStatus = (Integer) request.getAttribute("filterStatus"); %>
+                    <option value="1" <%= filterStatus != null && filterStatus == 1 ? "selected" : "" %>>报名中</option>
+                    <option value="2" <%= filterStatus != null && filterStatus == 2 ? "selected" : "" %>>进行中</option>
+                    <option value="3" <%= filterStatus != null && filterStatus == 3 ? "selected" : "" %>>已结束</option>
+                    <option value="0" <%= filterStatus != null && filterStatus == 0 ? "selected" : "" %>>已取消</option>
+                </select>
             </div>
-            <div class="col-md-4">
-                <div class="card text-center bg-warning bg-opacity-10 border-warning">
-                    <div class="card-body py-3">
-                        <h5 class="text-warning mb-1"><%= globalStats.get("workCount") %></h5>
-                        <small class="text-muted">作品总数</small>
-                    </div>
-                </div>
+            <div class="col-md-3 col-lg-3 d-flex gap-2 toolbar-field">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>搜索</button>
+                <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-light">重置</a>
             </div>
-        </div>
-        <% } %>
-
-        <% if (competitions != null && !competitions.isEmpty()) { %>
-            <div class="row">
-                <% for (Competition comp : competitions) { %>
-                    <div class="col-md-6 mb-3">
-                        <div class="card competition-card" onclick="window.location.href='${pageContext.request.contextPath}/competition?action=detail&id=<%= comp.getCompetitionId() %>'">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0"><%= HtmlEscaper.escape(comp.getName()) %></h5>
-                                    <span class="badge status-badge
-                                        <% if (comp.getStatus() == 1) { %>bg-success<% }
-                                           else if (comp.getStatus() == 2) { %>bg-primary<% }
-                                           else if (comp.getStatus() == 3) { %>bg-secondary<% }
-                                           else { %>bg-danger<% } %>">
-                                        <% if (comp.getStatus() == 1) { %>报名中<% }
-                                           else if (comp.getStatus() == 2) { %>进行中<% }
-                                           else if (comp.getStatus() == 3) { %>已结束<% }
-                                           else { %>已取消<% } %>
-                                    </span>
-                                </div>
-                                <p class="text-muted mb-2">年度：<%= comp.getYear() %>年</p>
-                                <% if (comp.getTheme() != null) { %>
-                                    <p class="text-muted mb-2">主题：<%= HtmlEscaper.escape(comp.getTheme()) %></p>
-                                <% } %>
-                                <p class="card-text text-truncate"><%= HtmlEscaper.escape(comp.getDescription() != null ? comp.getDescription() : "暂无描述") %></p>
-                                <small class="text-muted">
-                                    截止时间：<%= comp.getSubmitDeadline() != null ? comp.getSubmitDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "未设置" %>
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                <% } %>
-            </div>
-        <% } else { %>
-            <div class="alert alert-info text-center">
-                暂无竞赛信息<% if (isAdmin) { %>，<a href="${pageContext.request.contextPath}/competition?action=add">立即发布</a><% } %>
-            </div>
-        <% } %>
+        </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <% if (competitions != null && !competitions.isEmpty()) { %>
+        <section class="app-catalog-grid" aria-label="竞赛列表">
+            <% for (Competition comp : competitions) {
+                String statusColorClass;
+                String statusLabel;
+                String statusClass;
+                if (comp.getStatus() != null && comp.getStatus() == 1) {
+                    statusColorClass = "status-open";
+                    statusLabel = "报名中";
+                    statusClass = "bg-success";
+                } else if (comp.getStatus() != null && comp.getStatus() == 2) {
+                    statusColorClass = "status-active";
+                    statusLabel = "进行中";
+                    statusClass = "bg-primary";
+                } else if (comp.getStatus() != null && comp.getStatus() == 3) {
+                    statusColorClass = "status-ended";
+                    statusLabel = "已结束";
+                    statusClass = "bg-secondary";
+                } else {
+                    statusColorClass = "status-cancelled";
+                    statusLabel = "已取消";
+                    statusClass = "bg-danger";
+                }
+            %>
+                <article class="competition-card <%= statusColorClass %>">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <h2 class="card-title mb-0"><%= HtmlEscaper.escape(comp.getName()) %></h2>
+                            <span class="badge status-badge <%= statusClass %>"><%= statusLabel %></span>
+                        </div>
+                        <p class="text-muted mb-2"><i class="far fa-calendar me-1"></i><%= comp.getYear() %> 年</p>
+                        <% if (comp.getTheme() != null && !comp.getTheme().trim().isEmpty()) { %>
+                            <p class="text-muted mb-2"><i class="fas fa-compass me-1"></i><%= HtmlEscaper.escape(comp.getTheme()) %></p>
+                        <% } %>
+                        <p class="card-text"><%= HtmlEscaper.escape(comp.getDescription() != null && !comp.getDescription().trim().isEmpty() ? comp.getDescription() : "等待创作者进入现场") %></p>
+                        <div class="d-flex align-items-center justify-content-between gap-2 mt-auto pt-2">
+                            <small class="text-muted">
+                                <i class="far fa-clock me-1"></i><%= comp.getSubmitDeadline() != null ? comp.getSubmitDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "截止时间待定" %>
+                            </small>
+                            <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/competition?action=detail&id=<%= comp.getCompetitionId() %>">查看详情</a>
+                        </div>
+                    </div>
+                </article>
+            <% } %>
+        </section>
+    <% } else { %>
+        <section class="app-catalog-empty">
+            <i class="far fa-folder-open"></i>
+            <h2>暂时没有竞赛信息</h2>
+            <p>新的主题还在准备中，稍后再来看看。</p>
+            <% if (isAdmin) { %>
+                <a href="${pageContext.request.contextPath}/competition?action=add" class="btn btn-primary mt-2">立即发布竞赛</a>
+            <% } %>
+        </section>
+    <% } %>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
