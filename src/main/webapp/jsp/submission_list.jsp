@@ -36,6 +36,7 @@
     String msg = request.getParameter("msg");
     String error = request.getParameter("error");
     int workCount = works == null ? 0 : works.size();
+    boolean canSubmitWork = Boolean.TRUE.equals(request.getAttribute("canSubmitWork"));
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -52,16 +53,28 @@
     request.setAttribute("activeNav", "works");
 %>
 <%@ include file="includes/navbar.jspf" %>
-
 <main class="container mt-4">
     <header class="app-page-head">
         <div>
-            <p class="app-page-kicker">WORKS / 作品目录</p>
+            <p class="app-page-kicker">作品目录</p>
             <h1>作品墙</h1>
             <p class="app-page-summary">按队伍和作品浏览提交记录，先看作品，再决定下一步动作。</p>
         </div>
         <div class="app-page-count"><strong><%= workCount %></strong><span>件作品</span></div>
-        <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary"><i class="fas fa-plus me-1"></i>提交作品</a>
+        <div class="d-flex gap-2 align-items-center">
+            <form class="search-box d-flex" method="get" action="${pageContext.request.contextPath}/work">
+                <input type="hidden" name="action" value="myWorks">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="keyword" placeholder="搜索作品..." value="<%= HtmlEscaper.escape(keyword) %>">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+            <% if (canSubmitWork) { %>
+                <a href="${pageContext.request.contextPath}/work?action=add" class="btn btn-primary"><i class="fas fa-plus me-1"></i>提交作品</a>
+            <% } else { %>
+                <span class="btn btn-secondary" style="opacity:0.6;cursor:not-allowed;" title="当前没有处于进行中的可提交赛事"><i class="fas fa-lock me-1"></i>暂不可提交</span>
+            <% } %>
+        </div>
     </header>
 
     <div class="app-toolbar">

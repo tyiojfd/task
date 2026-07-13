@@ -439,6 +439,7 @@ public class WorkServlet extends HttpServlet {
             }
 
             if (!canViewWork(request, user, work)) {
+                response.setContentType("text/html;charset=UTF-8");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "比赛结束后才可查看其他队伍的作品");
                 return;
             }
@@ -638,8 +639,9 @@ public class WorkServlet extends HttpServlet {
         }
 
         boolean privileged = hasRole(request, "管理员") || hasRole(request, "评委");
-        if (!privileged && (!isCompetitionEnded(competition) || !isUserInCompetition(user.getUserId(), competitionId))) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "比赛结束后参赛者才可查看该比赛作品");
+        if (!privileged && !isCompetitionEnded(competition)) {
+            response.setContentType("text/html;charset=UTF-8");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "比赛进行中，结束后才可查看该比赛作品");
             return;
         }
 
@@ -720,6 +722,7 @@ public class WorkServlet extends HttpServlet {
             Integer workId = Integer.parseInt(workIdStr);
             Work work = workService.getWorkById(workId);
             if (!canViewWork(request, user, work)) {
+                response.setContentType("text/html;charset=UTF-8");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权操作该作品");
                 return;
             }
@@ -743,6 +746,7 @@ public class WorkServlet extends HttpServlet {
             Integer workId = Integer.parseInt(workIdStr);
             Work work = workService.getWorkById(workId);
             if (!canViewWork(request, user, work)) {
+                response.setContentType("text/html;charset=UTF-8");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权操作该作品");
                 return;
             }
@@ -770,6 +774,7 @@ public class WorkServlet extends HttpServlet {
                 return;
             }
             if (!canViewWork(request, user, work)) {
+                response.setContentType("text/html;charset=UTF-8");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权分享该作品");
                 return;
             }
