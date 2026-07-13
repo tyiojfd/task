@@ -62,9 +62,7 @@
             if (work.getStatus() == null || work.getStatus() != 2) continue;
             Team team = teamMap != null ? teamMap.get(work.getTeamId()) : null;
             Integer likes = likeCountMap != null ? likeCountMap.get(work.getWorkId()) : 0;
-            String imgUrl = (work.getImagePath() != null && !work.getImagePath().isEmpty())
-                    ? request.getContextPath() + "/uploads" + work.getImagePath()
-                    : "";
+            String imgUrl = request.getContextPath() + "/image-data?workId=" + work.getWorkId() + "&type=thumb";
         %>
         <div class="col-md-6 col-lg-4">
             <div class="work-card">

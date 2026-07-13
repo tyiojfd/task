@@ -104,7 +104,7 @@
                 boolean isLeader = team != null && leaderTeamIds != null && leaderTeamIds.contains(work.getTeamId());
                 int likeCount = likeCountMap != null ? likeCountMap.getOrDefault(work.getWorkId(), 0) : 0;
                 boolean liked = likedMap != null && likedMap.getOrDefault(work.getWorkId(), false);
-                String imgUrl = (work.getImagePath() != null && !work.getImagePath().isEmpty()) ? request.getContextPath() + "/uploads" + work.getImagePath() : "";
+                String imgUrl = request.getContextPath() + "/image-data?workId=" + work.getWorkId() + "&type=thumb";
             %>
             <div class="col-md-6 col-lg-4">
                 <div class="work-card">

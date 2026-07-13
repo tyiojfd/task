@@ -181,6 +181,8 @@ CREATE TABLE work (
     image_path VARCHAR(500) DEFAULT NULL COMMENT '海报图片路径',
     image_data MEDIUMBLOB DEFAULT NULL COMMENT '海报图片二进制数据',
     image_content_type VARCHAR(50) DEFAULT NULL COMMENT '图片MIME类型（image/jpeg, image/png）',
+    thumbnail_data MEDIUMBLOB DEFAULT NULL COMMENT '海报缩略图二进制数据',
+    thumbnail_content_type VARCHAR(50) DEFAULT NULL COMMENT '缩略图MIME类型（image/jpeg）',
     file_path VARCHAR(500) DEFAULT NULL COMMENT '文件路径（兼容旧版字段，作品主图使用image_path）',
     file_size INT DEFAULT NULL COMMENT '文件大小（字节，兼容旧版字段）',
     version INT DEFAULT 1 COMMENT '版本号（兼容旧版字段）',

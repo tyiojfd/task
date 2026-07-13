@@ -39,8 +39,21 @@ public class ImageDataServlet extends HttpServlet {
                 return;
             }
 
-            byte[] imageData = work.getImageData();
-            String contentType = work.getImageContentType();
+            String type = request.getParameter("type");
+            byte[] imageData;
+            String contentType;
+
+            if ("thumb".equalsIgnoreCase(type)) {
+                imageData = work.getThumbnailData();
+                contentType = work.getThumbnailContentType();
+                if (imageData == null || imageData.length == 0) {
+                    imageData = work.getImageData();
+                    contentType = work.getImageContentType();
+                }
+            } else {
+                imageData = work.getImageData();
+                contentType = work.getImageContentType();
+            }
 
             if (imageData == null || imageData.length == 0) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "图片数据不存在");
@@ -51,6 +64,7 @@ public class ImageDataServlet extends HttpServlet {
             response.setContentType(contentType != null ? contentType : "image/jpeg");
             response.setContentLength(imageData.length);
             response.setHeader("Cache-Control", "private, max-age=3600");
+            response.setHeader("X-Image-Variant", "thumb".equalsIgnoreCase(type) ? "thumb" : "original");
 
             // 写入图片数据
             try (OutputStream out = response.getOutputStream()) {

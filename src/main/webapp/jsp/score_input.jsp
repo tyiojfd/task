@@ -294,7 +294,7 @@
                 <% if (targetWork.getImagePath() != null && !targetWork.getImagePath().isEmpty()) { %>
                 <div>
                     <div class="info-label">作品图片</div>
-                    <img src="${pageContext.request.contextPath}/image-data?workId=<%= targetWork.getWorkId() %>"
+                    <img src="${pageContext.request.contextPath}/image-data?workId=<%= targetWork.getWorkId() %>&type=original"
                          class="img-fluid rounded mt-2" alt="作品图片"
                          style="max-height: 200px; cursor: pointer;"
                          onclick="window.open(this.src, '_blank')">
