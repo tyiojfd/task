@@ -13,42 +13,10 @@
     <title>发布新闻 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-        }
-        body { background: #f5f5f5; }
-        .navbar-brand { font-weight: bold; }
-        .form-container { max-width: 800px; margin: 0 auto; }
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 30px 40px;
-            margin-bottom: 25px;
-        }
-        .form-card {
-            background: white;
-            border-radius: 15px;
-            padding: 35px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        .form-label { font-weight: 500; color: #444; }
-        .btn-submit {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 30px;
-            font-size: 1rem;
-            transition: opacity 0.3s;
-        }
-        .btn-submit:hover { opacity: 0.9; color: white; }
-    </style>
-    <%@ include file="includes/app-shell-assets.jspf" %>
+
+<%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-news-form">
     <%
     request.setAttribute("activeNav", "newsManage");
 %>

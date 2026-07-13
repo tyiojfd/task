@@ -24,18 +24,10 @@
     <title><%= teamMode ? "入队申请审核" : "我的入队申请" %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background: linear-gradient(135deg,#F8F9FA,#E8ECF1); min-height: 100vh; }
-        .page-header { background: linear-gradient(135deg,#6C5CE7,#A29BFE); color:white; border-radius:20px; padding:2rem; margin:2rem 0; }
-        .app-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:0 2px 16px rgba(108,92,231,.08); margin-bottom:1rem; }
-        .status-0 { background:#FFF3CD; color:#856404; }
-        .status-1 { background:#D4EDDA; color:#155724; }
-        .status-2 { background:#F8D7DA; color:#721C24; }
-        .status-3 { background:#E2E3E5; color:#383D41; }
-    </style>
-    <%@ include file="includes/app-shell-assets.jspf" %>
+
+<%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-catalog app-page-applications">
 <% request.setAttribute("activeNav", "applications"); %>
 <%@ include file="includes/navbar.jspf" %>
 <div class="container">

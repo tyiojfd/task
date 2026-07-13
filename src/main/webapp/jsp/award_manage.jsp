@@ -56,64 +56,10 @@
     <title>获奖管理 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --accent: #FD79A8;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --gold: #FDCB6E;
-            --silver: #B2BEC3;
-            --bronze: #E17055;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.06);
-        }
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
 
-        .page-header { display: flex; align-items: center; justify-content: space-between; margin: 2rem 0 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .page-header h2 { font-weight: 700; color: var(--dark); margin: 0; }
-        .page-header h2 i { color: var(--primary); }
-
-        .card-custom {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--card-shadow);
-            border-left: 4px solid var(--primary);
-            transition: transform 0.2s;
-        }
-        .card-custom:hover { transform: translateY(-2px); }
-        .card-custom.awarded { border-left-color: #00B894; }
-
-        .award-badge-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; font-weight: 700; }
-        .award-badge-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #fff; font-weight: 700; }
-        .award-badge-3 { background: linear-gradient(135deg, #CD7F32, #B8860B); color: #fff; font-weight: 700; }
-
-        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--gray); }
-        .empty-state i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.4; }
-
-        .competition-selector .card {
-            border: 2px solid transparent;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .competition-selector .card:hover { border-color: var(--primary-light); }
-        .competition-selector .card.selected { border-color: var(--primary); background: #F0EDFF; }
-    </style>
-    <%@ include file="includes/app-shell-assets.jspf" %>
+<%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-award-manage">
 
 <!-- 导航栏 -->
 <%

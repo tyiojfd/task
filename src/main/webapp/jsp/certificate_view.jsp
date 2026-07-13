@@ -31,106 +31,10 @@
     <title>电子奖状 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6C5CE7; --primary-light: #A29BFE; --gold: #D4A843;
-            --dark: #2D3436; --gray: #636E72;
-        }
-        body {
-            background: #f0ebe3;
-            min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'STSong', 'SimSun', 'Noto Serif SC', 'KaiTi', '楷体', serif;
-            padding: 2rem 1rem;
-        }
 
-        .certificate-container {
-            width: 900px;
-            max-width: 100%;
-            background: #fffef7;
-            border: 8px double #D4A843;
-            padding: 3rem 4rem;
-            position: relative;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.12);
-        }
-        .certificate-container::before {
-            content: '';
-            position: absolute;
-            top: 12px; left: 12px; right: 12px; bottom: 12px;
-            border: 2px solid rgba(212, 168, 67, 0.3);
-            pointer-events: none;
-        }
-
-        .cert-header { text-align: center; margin-bottom: 2rem; }
-        .cert-header .cert-title {
-            font-size: 2.5rem; font-weight: 900; color: #8B0000;
-            letter-spacing: 8px;
-        }
-        .cert-header .cert-subtitle {
-            font-size: 1.1rem; color: var(--gray); margin-top: 0.5rem;
-            letter-spacing: 4px;
-        }
-
-        .cert-body { text-align: center; margin: 2.5rem 0; line-height: 2.5; }
-        .cert-body .award-level {
-            font-size: 3rem; font-weight: 900; color: #D4A843;
-            margin: 1.5rem 0;
-            letter-spacing: 6px;
-        }
-        .cert-body .recipient { font-size: 1.5rem; color: var(--dark); }
-        .cert-body .work-title { font-size: 1.3rem; color: var(--primary); font-weight: 600; }
-        .cert-body .competition-name { font-size: 1.1rem; color: var(--gray); }
-        .cert-body .cert-no { font-size: 0.85rem; color: #999; margin-top: 1rem; }
-
-        .cert-footer { margin-top: 3rem; text-align: right; }
-        .cert-footer .issuer { font-size: 1rem; color: var(--gray); }
-        .cert-footer .date { font-size: 0.95rem; color: var(--gray); margin-top: 0.5rem; }
-
-        .cert-stamp {
-            position: absolute;
-            bottom: 100px;
-            right: 80px;
-            width: 100px;
-            height: 100px;
-            border: 3px solid #C41E3A;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #C41E3A;
-            font-weight: 900;
-            font-size: 0.9rem;
-            transform: rotate(-15deg);
-            opacity: 0.7;
-        }
-
-        .cert-decor {
-            position: absolute;
-            font-size: 5rem;
-            opacity: 0.05;
-            color: var(--gold);
-        }
-        .decor-tl { top: 30px; left: 50px; }
-        .decor-tr { top: 30px; right: 50px; }
-        .decor-bl { bottom: 30px; left: 50px; }
-        .decor-br { bottom: 30px; right: 50px; }
-
-        .btn-print {
-            position: fixed; top: 20px; right: 20px; z-index: 999;
-        }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .btn-print, .no-print { display: none !important; }
-            .certificate-container {
-                box-shadow: none; border: 8px double #D4A843;
-                width: 100%; max-width: 100%; padding: 2rem;
-            }
-        }
-    </style>
-    <%@ include file="includes/app-shell-assets.jspf" %>
+<%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-catalog app-page-certificate-detail">
 
 <button class="btn btn-primary btn-print no-print" onclick="window.print()">
     <i class="fas fa-print"></i> 打印奖状

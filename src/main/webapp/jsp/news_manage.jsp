@@ -29,36 +29,10 @@
     <title>新闻管理 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-        }
-        body { background: #f5f5f5; }
-        .navbar-brand { font-weight: bold; }
-        .page-header {
-            background: linear-gradient(135deg, #434343 0%, #000000 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 30px 40px;
-            margin-bottom: 25px;
-        }
-        .table-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        .table { margin-bottom: 0; }
-        .table th { border-top: none; font-weight: 600; color: #555; }
-        .btn-action { padding: 4px 10px; font-size: 0.85rem; }
-        .status-badge { font-size: 0.8rem; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
-        .empty-state i { font-size: 3rem; margin-bottom: 15px; display: block; }
-    </style>
-    <%@ include file="includes/app-shell-assets.jspf" %>
+
+<%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-workbench app-page-news-manage">
     <%
     request.setAttribute("activeNav", "newsManage");
 %>

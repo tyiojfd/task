@@ -51,166 +51,10 @@
     <title>邀请通知 - 大学生海报设计竞赛系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --accent: #FD79A8;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --light-bg: #F8F9FA;
-            --card-shadow: 0 2px 16px rgba(108, 92, 231, 0.06);
-        }
 
-        body {
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8ECF1 100%);
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-
-        .navbar { background: var(--dark) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
-        .navbar-brand i { color: var(--primary-light); margin-right: 6px; }
-        .nav-link { font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover { color: var(--primary-light) !important; }
-        .nav-link.active { color: var(--primary-light) !important; font-weight: 600; }
-
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 2rem 0 1.5rem;
-        }
-        .page-header h2 { font-weight: 700; color: var(--dark); margin: 0; }
-        .page-header h2 i { color: var(--primary); }
-
-        /* ── Tab切换 ── */
-        .tab-nav {
-            display: flex;
-            gap: 0;
-            margin-bottom: 1.5rem;
-            background: white;
-            border-radius: 14px;
-            padding: 5px;
-            box-shadow: var(--card-shadow);
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 0.7rem 1.2rem;
-            border: none;
-            background: transparent;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--gray);
-            transition: all 0.25s;
-            cursor: pointer;
-        }
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.25);
-        }
-        .tab-btn .badge-count {
-            display: inline-block;
-            min-width: 22px;
-            height: 22px;
-            border-radius: 11px;
-            font-size: 0.75rem;
-            line-height: 22px;
-            margin-left: 6px;
-            font-weight: 700;
-        }
-        .tab-btn.active .badge-count { background: rgba(255,255,255,0.3); color: white; }
-        .tab-btn:not(.active) .badge-count { background: #EDE9FE; color: var(--primary); }
-
-        /* ── 邀请卡片 ── */
-        .invitation-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            padding: 1.3rem 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .invitation-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.1);
-        }
-        .inv-card-icon {
-            width: 52px; height: 52px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-        .inv-card-info { flex: 1; min-width: 0; }
-        .inv-card-info h6 { font-weight: 700; margin-bottom: 0.2rem; color: var(--dark); }
-        .inv-card-info p { margin: 0; font-size: 0.85rem; color: var(--gray); }
-        .inv-card-info p i { width: 16px; margin-right: 4px; }
-        .inv-card-actions {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .btn-accept {
-            background: linear-gradient(135deg, #00CEC9 0%, #00B894 100%);
-            border: none; border-radius: 10px;
-            padding: 0.5rem 1.2rem;
-            font-weight: 600; font-size: 0.85rem;
-            color: white;
-            transition: all 0.3s;
-        }
-        .btn-accept:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 206, 201, 0.4); color: white; }
-        .btn-reject {
-            border: 2px solid #DFE6E9;
-            border-radius: 10px;
-            padding: 0.5rem 1.2rem;
-            font-weight: 600; font-size: 0.85rem;
-            color: var(--gray);
-            background: white;
-            transition: all 0.3s;
-        }
-        .btn-reject:hover { border-color: #E17055; color: #E17055; background: #FFF5F5; }
-
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 0.3rem 0.7rem;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .status-accepted { background: #E8F8F5; color: #00B894; }
-        .status-rejected { background: #FFF0F0; color: #E17055; }
-        .status-pending { background: #FFF8E1; color: #F39C12; }
-
-        /* ── 空状态 ── */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: white;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-        }
-        .empty-illustration {
-            width: 140px; height: 140px;
-            margin: 0 auto 1.5rem;
-            background: linear-gradient(135deg, #F0EDFF 0%, #EDE9FE 100%);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3.5rem;
-            color: var(--primary-light);
-        }
-        .empty-state h4 { font-weight: 700; color: var(--dark); }
-        .empty-state p { color: var(--gray); max-width: 400px; margin: 0 auto; }
-
-        .alert { border-radius: 14px; border: none; }
-    </style>
-    <%@ include file="includes/app-shell-assets.jspf" %>
+<%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-catalog app-page-invitations">
     <!-- 导航栏 -->
     <%
     request.setAttribute("activeNav", "invitations");
@@ -272,7 +116,7 @@
                     String timeStr = inv.getInviteTime() != null ? inv.getInviteTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "";
             %>
                 <div class="invitation-card">
-                    <div class="inv-card-icon" style="background: #EDE9FE; color: var(--primary);">
+                    <div class="inv-card-icon">
                         <i class="fas fa-user-plus"></i>
                     </div>
                     <div class="inv-card-info">
