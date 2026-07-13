@@ -64,7 +64,7 @@
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-detail app-page-award-detail">
 
 <%
     request.setAttribute("activeNav", "awards");
@@ -72,17 +72,19 @@
 <%@ include file="includes/navbar.jspf" %>
 
 <div class="container">
-    <div class="page-header">
-        <h2><i class="fas fa-medal"></i> <%= HtmlEscaper.escape(award.getAwardLevel()) %></h2>
-        <p><%= HtmlEscaper.escape(competition != null ? competition.getName() : "") %></p>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card-custom">
-                <h5 class="mb-3"><i class="fas fa-info-circle"></i> 获奖信息</h5>
+    <div class="app-detail-layout" style="margin-top:28px;">
+        <!-- ═══ Main: 获奖信息 ═══ -->
+        <div class="app-detail-main" style="padding:0;">
+            <div style="background: linear-gradient(135deg, #D4A843 0%, #F0D78C 100%); color: #5D3A1A; padding: 28px 28px 20px;">
+                <h2 style="color:#5D3A1A; margin:0 0 4px;">
+                    <i class="fas fa-medal me-2"></i><%= HtmlEscaper.escape(award.getAwardLevel()) %>
+                </h2>
+                <p style="margin:0; opacity:0.8;"><%= HtmlEscaper.escape(competition != null ? competition.getName() : "") %></p>
+            </div>
+            <div style="padding:22px 28px;">
+                <h3 style="margin-top:0;">获奖详情</h3>
                 <table class="table">
-                    <tr><td class="text-muted" width="150">获奖等级</td><td><strong class="text-warning"><%= HtmlEscaper.escape(award.getAwardLevel()) %></strong></td></tr>
+                    <tr><td class="text-muted" width="150">获奖等级</td><td><strong style="color:#D4A843;"><%= HtmlEscaper.escape(award.getAwardLevel()) %></strong></td></tr>
                     <tr><td class="text-muted">最终得分</td><td><strong><%= String.format("%.1f", award.getFinalScore()) %></strong> 分</td></tr>
                     <tr><td class="text-muted">获奖时间</td><td><%= award.getAwardTime() != null ? award.getAwardTime().format(dtf) : "" %></td></tr>
                     <tr><td class="text-muted">作品名称</td><td><strong><%= HtmlEscaper.escape(work != null ? work.getTitle() : "未知") %></strong></td></tr>
@@ -95,18 +97,20 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card-custom text-center">
-                <i class="fas fa-trophy" style="font-size:4rem;color:#FFD700;"></i>
-                <h4 class="mt-3"><%= HtmlEscaper.escape(award.getAwardLevel()) %></h4>
-                <p class="text-muted">最终得分: <%= String.format("%.1f", award.getFinalScore()) %> 分</p>
+        <!-- ═══ Rail: 奖状链接 ═══ -->
+        <div class="app-detail-rail" style="text-align:center;">
+            <i class="fas fa-trophy" style="font-size:4rem;color:#FFD700; margin-bottom:12px; display:block;"></i>
+            <h3 style="margin-top:0;"><%= HtmlEscaper.escape(award.getAwardLevel()) %></h3>
+            <p class="text-muted" style="margin-bottom:18px;">最终得分: <strong><%= String.format("%.1f", award.getFinalScore()) %></strong> 分</p>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
                 <a href="${pageContext.request.contextPath}/certificate?action=view&awardId=<%= award.getAwardId() %>"
-                   class="btn btn-warning w-100 mt-3" target="_blank">
-                    <i class="fas fa-certificate"></i> 查看电子奖状
+                   class="btn btn-warning w-100" target="_blank">
+                    <i class="fas fa-certificate me-1"></i> 查看电子奖状
                 </a>
                 <a href="${pageContext.request.contextPath}/work?action=detail&id=<%= award.getWorkId() %>"
-                   class="btn btn-outline-primary w-100 mt-2">
-                    <i class="fas fa-image"></i> 查看作品
+                   class="btn btn-outline-primary w-100">
+                    <i class="fas fa-image me-1"></i> 查看作品
                 </a>
             </div>
         </div>

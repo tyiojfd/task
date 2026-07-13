@@ -55,7 +55,7 @@
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-detail app-page-competition-detail">
     <%
     request.setAttribute("activeNav", "competitions");
 %>
@@ -63,146 +63,143 @@
 
     <div class="container mt-4">
         <% if (competition != null) { %>
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><%= HtmlEscaper.escape(competition.getName()) %></h4>
-                    <span class="badge bg-light text-dark">
-                        <% if (competition.getStatus() == 1) { %>报名中<% }
-                           else if (competition.getStatus() == 2) { %>进行中<% }
-                           else if (competition.getStatus() == 3) { %>已结束<% }
-                           else { %>已取消<% } %>
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="info-row">
-                        <span class="info-label">竞赛ID：</span>
-                        <span><%= competition.getCompetitionId() %></span>
+            <div class="app-detail-layout">
+                <!-- ═══ Main: 竞赛信息、描述、参赛状态 ═══ -->
+                <div class="app-detail-main" style="padding:0;">
+                    <div style="background: var(--app-ink); color: #fff; padding: 28px 28px 20px;">
+                        <h1 style="color:#fff; margin:0 0 6px;">
+                            <%= HtmlEscaper.escape(competition.getName()) %>
+                            <span style="display:inline-block; margin-left:14px; padding:4px 12px; border-radius:6px; font-size:0.74rem; font-weight:750; vertical-align:middle;
+                                <% if (competition.getStatus() == 1) { %>background:var(--app-mint); color:#124d3b;<% }
+                                   else if (competition.getStatus() == 2) { %>background:#c9e3f5; color:#0c4e82;<% }
+                                   else if (competition.getStatus() == 3) { %>background:#e0e7ea; color:var(--app-ink-soft);<% }
+                                   else { %>background:var(--app-pink); color:#8e3448;<% } %>">
+                                <% if (competition.getStatus() == 1) { %>报名中<% }
+                                   else if (competition.getStatus() == 2) { %>进行中<% }
+                                   else if (competition.getStatus() == 3) { %>已结束<% }
+                                   else { %>已取消<% } %>
+                            </span>
+                        </h1>
+                        <% if (competition.getTheme() != null) { %>
+                        <p style="margin:0; color:rgba(255,255,255,0.7);"><%= HtmlEscaper.escape(competition.getTheme()) %></p>
+                        <% } %>
                     </div>
+                    <div style="padding:22px 28px;">
+                        <h3 style="margin-top:0;">竞赛描述</h3>
+                        <p style="white-space:pre-wrap; line-height:1.7;"><%= HtmlEscaper.escape(competition.getDescription() != null ? competition.getDescription() : "暂无描述") %></p>
 
-                    <div class="info-row">
-                        <span class="info-label">年度：</span>
-                        <span><%= competition.getYear() %>年</span>
-                    </div>
+                        <% if (categories != null && !categories.isEmpty()) { %>
+                        <div class="app-detail-section">
+                            <h3>竞赛方向</h3>
+                            <div>
+                                <% for (CompetitionCategory cat : categories) { %>
+                                    <span class="badge" style="background:var(--app-surface-soft); color:var(--app-ink-soft); font-weight:760; padding:6px 12px; margin-right:8px; margin-bottom:6px;"><%= HtmlEscaper.escape(cat.getCategoryName()) %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                        <% } %>
 
-                    <% if (competition.getTheme() != null) { %>
-                    <div class="info-row">
-                        <span class="info-label">主题：</span>
-                        <span><%= HtmlEscaper.escape(competition.getTheme()) %></span>
-                    </div>
-                    <% } %>
+                        <!-- 参赛状态区域 -->
+                        <div class="app-detail-section">
+                            <h3>参赛状态</h3>
+                            <% if (sessionUser == null) { %>
+                                <p class="mb-2">请先登录后参加竞赛</p>
+                                <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">立即登录</a>
+                            <% } else if (!canParticipate) { %>
+                                <h5 class="text-secondary">当前角色无需参赛</h5>
+                                <p class="text-muted mb-0">管理员用于系统管理，评委用于评分，不参与创建或加入参赛队伍。</p>
+                            <% } else if (hasJoined) { %>
+                                <h5 class="text-success">✓ 您已参加此竞赛</h5>
+                                <p class="mb-2">队伍：<%= HtmlEscaper.escape(userTeam != null ? userTeam.getTeamName() : "未知") %></p>
+                                <a href="${pageContext.request.contextPath}/team?action=detail&id=<%= userTeam != null ? userTeam.getTeamId() : "" %>"
+                                   class="btn btn-primary me-2">查看队伍</a>
+                                <a href="${pageContext.request.contextPath}/work?action=myWorks" class="btn btn-success">查看作品</a>
+                            <% } else { %>
+                                <h5>参加此竞赛</h5>
+                                <% if (competition.getStatus() != null && competition.getStatus() == 1) { %>
+                                    <p class="text-muted mb-3">报名阶段可以创建队伍，或申请加入其他正在组建的队伍。</p>
+                                    <a href="${pageContext.request.contextPath}/team?action=create&competitionId=<%= competition.getCompetitionId() %>"
+                                       class="btn btn-primary me-2">创建队伍</a>
+                                    <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#joinTeamModal">
+                                        <i class="fas fa-search me-1"></i>搜索并加入队伍
+                                    </button>
+                                <% } else { %>
+                                    <p class="text-muted mb-0">当前竞赛不在报名阶段，不能创建或加入队伍。</p>
+                                <% } %>
+                            <% } %>
+                        </div>
 
-                    <div class="info-row">
-                        <span class="info-label">描述：</span>
-                        <p class="mt-2"><%= HtmlEscaper.escape(competition.getDescription() != null ? competition.getDescription() : "暂无描述") %></p>
-                    </div>
+                        <% if (competition.getStatus() != null && competition.getStatus() == 3) { %>
+                        <div class="app-detail-section">
+                            <h3><i class="fas fa-images me-2"></i>作品展厅</h3>
+                            <p class="text-muted mb-2">比赛已结束，参赛者可以查看本竞赛其他队伍的作品。</p>
+                            <a href="${pageContext.request.contextPath}/work?action=competitionWorks&competitionId=<%= competition.getCompetitionId() %>" class="btn btn-outline-primary">查看作品展厅</a>
+                        </div>
+                        <% } %>
 
-                    <div class="info-row">
-                        <span class="info-label">提交截止时间：</span>
-                        <span><%= competition.getSubmitDeadline() != null ? competition.getSubmitDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未设置" %></span>
-                    </div>
+                        <% if (canParticipate && !hasJoined && competition.getStatus() != null && competition.getStatus() == 1 && availableTeams != null && !availableTeams.isEmpty()) { %>
+                        <div class="app-detail-section">
+                            <h3><i class="fas fa-user-plus me-2"></i>申请加入队伍</h3>
+                            <p class="text-muted">以下队伍正在组建中，可以申请加入。</p>
+                            <% for (Team t : availableTeams) {
+                                int memberCount = teamMemberCounts != null && teamMemberCounts.get(t.getTeamId()) != null ? teamMemberCounts.get(t.getTeamId()) : 0;
+                                boolean applied = appliedTeamIds != null && appliedTeamIds.contains(t.getTeamId());
+                            %>
+                            <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2 flex-wrap gap-2" style="border-color:var(--app-rule) !important;">
+                                <div><strong><%= HtmlEscaper.escape(t.getTeamName()) %></strong><span class="text-muted ms-2"><%= memberCount %>/<%= competition.getMaxTeamSize() %> 人</span></div>
+                                <% if (applied) { %>
+                                    <button class="btn btn-sm btn-secondary" disabled>已申请</button>
+                                <% } else { %>
+                                    <form method="post" action="${pageContext.request.contextPath}/application?action=apply" class="d-flex gap-2">
+                                        <input type="hidden" name="teamId" value="<%= t.getTeamId() %>">
+                                        <input type="text" name="message" class="form-control form-control-sm" placeholder="申请留言" maxlength="200">
+                                        <button class="btn btn-sm btn-primary" type="submit">申请加入</button>
+                                    </form>
+                                <% } %>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% } %>
 
-                    <div class="info-row">
-                        <span class="info-label">最大队伍人数：</span>
-                        <span><%= competition.getMaxTeamSize() %>人</span>
-                    </div>
-
-                    <% if (categories != null && !categories.isEmpty()) { %>
-                    <div class="info-row">
-                        <span class="info-label">竞赛方向：</span>
-                        <div class="mt-2">
-                            <% for (CompetitionCategory cat : categories) { %>
-                                <span class="badge bg-info text-dark me-2 mb-2"><%= HtmlEscaper.escape(cat.getCategoryName()) %></span>
+                        <div class="app-detail-section d-flex gap-2">
+                            <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-secondary">返回列表</a>
+                            <% if (isAdmin) { %>
+                                <a href="${pageContext.request.contextPath}/competition?action=edit&id=<%= competition.getCompetitionId() %>" class="btn btn-primary">编辑竞赛</a>
+                                <% if (competition.getStatus() != 0) { %>
+                                <button type="button" class="btn btn-warning" onclick="cancelCompetition(<%= competition.getCompetitionId() %>)">取消竞赛</button>
+                                <% } %>
+                                <button type="button" class="btn btn-danger" onclick="deleteCompetition(<%= competition.getCompetitionId() %>)">删除竞赛</button>
                             <% } %>
                         </div>
                     </div>
-                    <% } %>
+                </div>
 
-                    <div class="info-row">
-                        <span class="info-label">创建时间：</span>
-                        <span><%= competition.getCreateTime() != null ? competition.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未知" %></span>
-                    </div>
+                <!-- ═══ Rail: 元数据侧边栏 ═══ -->
+                <div class="app-detail-rail">
+                    <h3 style="margin-top:0;">竞赛信息</h3>
+
+                    <span class="app-detail-label">竞赛ID</span>
+                    <p class="app-detail-value"><%= competition.getCompetitionId() %></p>
+
+                    <span class="app-detail-label">年度</span>
+                    <p class="app-detail-value"><%= competition.getYear() %>年</p>
+
+                    <span class="app-detail-label">提交截止时间</span>
+                    <p class="app-detail-value"><%= competition.getSubmitDeadline() != null ? competition.getSubmitDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未设置" %></p>
+
+                    <span class="app-detail-label">最大队伍人数</span>
+                    <p class="app-detail-value"><%= competition.getMaxTeamSize() %>人</p>
+
+                    <span class="app-detail-label">创建时间</span>
+                    <p class="app-detail-value"><%= competition.getCreateTime() != null ? competition.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "未知" %></p>
 
                     <!-- 竞赛统计 -->
                     <% java.util.Map stats = (java.util.Map) request.getAttribute("stats");
                        if (stats != null) { %>
-                    <div class="info-row">
-                        <span class="info-label">参赛统计：</span>
-                        <span><span class="badge bg-primary me-2"><%= stats.get("teamCount") %> 支队伍</span>
-                              <span class="badge bg-success"><%= stats.get("workCount") %> 件作品</span></span>
-                    </div>
+                    <span class="app-detail-label">参赛统计</span>
+                    <p class="app-detail-value"><span class="badge" style="background:var(--app-mint); color:#124d3b; margin-right:6px;"><%= stats.get("teamCount") %> 支队伍</span>
+                          <span class="badge" style="background:#c9e3f5; color:#0c4e82;"><%= stats.get("workCount") %> 件作品</span></p>
                     <% } %>
-
-                    <!-- 参赛状态区域 -->
-                    <div class="mt-4 p-3 bg-light rounded">
-                        <% if (sessionUser == null) { %>
-                            <p class="mb-2">请先登录后参加竞赛</p>
-                            <a href="${pageContext.request.contextPath}/login" class="btn btn-primary">立即登录</a>
-                        <% } else if (!canParticipate) { %>
-                            <h5 class="text-secondary">当前角色无需参赛</h5>
-                            <p class="text-muted mb-0">管理员用于系统管理，评委用于评分，不参与创建或加入参赛队伍。</p>
-                        <% } else if (hasJoined) { %>
-                            <h5 class="text-success">✓ 您已参加此竞赛</h5>
-                            <p class="mb-2">队伍：<%= HtmlEscaper.escape(userTeam != null ? userTeam.getTeamName() : "未知") %></p>
-                            <a href="${pageContext.request.contextPath}/team?action=detail&id=<%= userTeam != null ? userTeam.getTeamId() : "" %>"
-                               class="btn btn-primary me-2">查看队伍</a>
-                            <a href="${pageContext.request.contextPath}/work?action=myWorks" class="btn btn-success">查看作品</a>
-                        <% } else { %>
-                            <h5>参加此竞赛</h5>
-                            <% if (competition.getStatus() != null && competition.getStatus() == 1) { %>
-                                <p class="text-muted mb-3">报名阶段可以创建队伍，或申请加入其他正在组建的队伍。</p>
-                                <a href="${pageContext.request.contextPath}/team?action=create&competitionId=<%= competition.getCompetitionId() %>"
-                                   class="btn btn-primary me-2">创建队伍</a>
-                                <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#joinTeamModal">
-                                    <i class="fas fa-search me-1"></i>搜索并加入队伍
-                                </button>
-                            <% } else { %>
-                                <p class="text-muted mb-0">当前竞赛不在报名阶段，不能创建或加入队伍。</p>
-                            <% } %>
-                        <% } %>
-                    </div>
-
-                    <% if (competition.getStatus() != null && competition.getStatus() == 3) { %>
-                    <div class="mt-4 p-3 border rounded bg-white">
-                        <h5><i class="fas fa-images me-2"></i>作品展厅</h5>
-                        <p class="text-muted mb-2">比赛已结束，参赛者可以查看本竞赛其他队伍的作品。</p>
-                        <a href="${pageContext.request.contextPath}/work?action=competitionWorks&competitionId=<%= competition.getCompetitionId() %>" class="btn btn-outline-primary">查看作品展厅</a>
-                    </div>
-                    <% } %>
-
-                    <% if (canParticipate && !hasJoined && competition.getStatus() != null && competition.getStatus() == 1 && availableTeams != null && !availableTeams.isEmpty()) { %>
-                    <div class="mt-4 p-3 border rounded bg-white">
-                        <h5><i class="fas fa-user-plus me-2"></i>申请加入队伍</h5>
-                        <p class="text-muted">以下队伍正在组建中，可以申请加入。</p>
-                        <% for (Team t : availableTeams) {
-                            int memberCount = teamMemberCounts != null && teamMemberCounts.get(t.getTeamId()) != null ? teamMemberCounts.get(t.getTeamId()) : 0;
-                            boolean applied = appliedTeamIds != null && appliedTeamIds.contains(t.getTeamId());
-                        %>
-                        <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2 flex-wrap gap-2">
-                            <div><strong><%= HtmlEscaper.escape(t.getTeamName()) %></strong><span class="text-muted ms-2"><%= memberCount %>/<%= competition.getMaxTeamSize() %> 人</span></div>
-                            <% if (applied) { %>
-                                <button class="btn btn-sm btn-secondary" disabled>已申请</button>
-                            <% } else { %>
-                                <form method="post" action="${pageContext.request.contextPath}/application?action=apply" class="d-flex gap-2">
-                                    <input type="hidden" name="teamId" value="<%= t.getTeamId() %>">
-                                    <input type="text" name="message" class="form-control form-control-sm" placeholder="申请留言" maxlength="200">
-                                    <button class="btn btn-sm btn-primary" type="submit">申请加入</button>
-                                </form>
-                            <% } %>
-                        </div>
-                        <% } %>
-                    </div>
-                    <% } %>
-
-                    <div class="mt-4 d-flex gap-2">
-                        <a href="${pageContext.request.contextPath}/competition?action=list" class="btn btn-secondary">返回列表</a>
-                        <% if (isAdmin) { %>
-                            <a href="${pageContext.request.contextPath}/competition?action=edit&id=<%= competition.getCompetitionId() %>" class="btn btn-primary">编辑竞赛</a>
-                            <% if (competition.getStatus() != 0) { %>
-                            <button type="button" class="btn btn-warning" onclick="cancelCompetition(<%= competition.getCompetitionId() %>)">取消竞赛</button>
-                            <% } %>
-                            <button type="button" class="btn btn-danger" onclick="deleteCompetition(<%= competition.getCompetitionId() %>)">删除竞赛</button>
-                        <% } %>
-                    </div>
                 </div>
             </div>
         <% } else { %>

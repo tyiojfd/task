@@ -72,7 +72,7 @@
     </style>
     <%@ include file="includes/app-shell-assets.jspf" %>
 </head>
-<body>
+<body class="app-page app-page-detail app-page-submission-detail">
 <%
     request.setAttribute("activeNav", "works");
 %>
@@ -81,82 +81,108 @@
     <div class="mb-3">
         <a href="${pageContext.request.contextPath}/work" class="btn-action btn-back"><i class="fas fa-arrow-left me-1"></i>返回</a>
     </div>
-    <div class="row">
-        <div class="col-lg-7">
-            <div class="detail-card mb-4">
+    <div class="app-detail-layout">
+        <!-- ═══ Main: 作品图片 + 描述 ═══ -->
+        <div class="app-detail-main" style="padding:0;">
+            <div class="app-detail-media">
                 <div class="img-wrapper">
-                    <img src="<%= imgUrl %>" alt="<%= HtmlEscaper.escape(work.getTitle()) %>" class="detail-image" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#imageModal">
+                    <img src="<%= imgUrl %>" alt="<%= HtmlEscaper.escape(work.getTitle()) %>" style="cursor:pointer; display:block; width:100%; height:auto; max-height:720px; object-fit:contain;" data-bs-toggle="modal" data-bs-target="#imageModal">
                     <div class="img-overlay-icons">
                         <a href="javascript:void(0)" onclick="showFullImage()" title="查看大图"><i class="fas fa-expand"></i></a>
                         <a href="<%= downloadImgUrl %>" title="下载图片"><i class="fas fa-download"></i></a>
                     </div>
                 </div>
             </div>
-            </div>  <!-- /col-lg-7 -->
-            <div class="col-lg-5">
-                <div class="detail-card">
-                    <div class="detail-body">
-                        <h3 class="detail-title"><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "未命名") %></h3>
-                        <div class="detail-meta">
-                            <div><i class="fas fa-users"></i><strong>队伍：</strong><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知") %></div>
-                            <% if (comp != null) { %><div><i class="fas fa-flag"></i><strong>竞赛：</strong><%= HtmlEscaper.escape(comp.getName()) %></div><% } %>
-                            <% if (work.getSubmitTime() != null) { %><div><i class="fas fa-clock"></i><strong>提交：</strong><%= work.getSubmitTime().format(dtf) %></div><% } %>
-                            <div><i class="fas fa-heart"></i><strong>点赞：</strong><%= likeCount != null ? likeCount : 0 %></div>
-                            <div><i class="fas fa-share-alt"></i><strong>分享：</strong><%= shareCount != null ? shareCount : 0 %></div>
-                        </div>
-                        <% if (work.getDescription() != null && !work.getDescription().isEmpty()) { %>
-                            <hr><h6 style="font-weight:700;">作品描述</h6>
-                            <p style="white-space:pre-wrap;"><%= HtmlEscaper.escape(work.getDescription()) %></p>
-                        <% } %>
-                        <% if (attachments != null && !attachments.isEmpty()) { %>
-                            <hr><h6 style="font-weight:700;">作品附件</h6>
-                            <ul class="list-group list-group-flush">
-                                <% for (WorkFile attachment : attachments) { %>
-                                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                        <span><i class="fas fa-paperclip me-2"></i><%= HtmlEscaper.escape(attachment.getFileName()) %></span>
-                                        <a class="btn btn-sm btn-outline-secondary"
-                                           href="<%= request.getContextPath() %>/uploads<%= attachment.getFilePath() %>?download=true">
-                                            <i class="fas fa-download me-1"></i>下载
-                                        </a>
-                                    </li>
-                                <% } %>
-                            </ul>
-                        <% } %>
-                    </div>  <!-- /detail-body -->
-                <div class="action-bar">
-                    <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0">
-                        <input type="hidden" name="action" value="<%= liked != null && liked ? "unlike" : "like" %>">
-                        <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
-                        <button type="submit" class="btn-action btn-like <%= liked != null && liked ? "liked" : "" %>"><i class="fas fa-thumbs-up"></i> <%= liked != null && liked ? "已赞" : "点赞" %> <span class="like-count"><%= likeCount != null ? likeCount : 0 %></span></button>
-                    </form>
-                    <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0">
-                        <input type="hidden" name="action" value="share">
-                        <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
-                        <input type="hidden" name="platform" value="link">
-                        <button type="submit" class="btn-action" style="background:#EAF7F0;color:#198754;"><i class="fas fa-share-alt me-1"></i>分享</button>
-                    </form>
-                    <a href="<%= downloadImgUrl %>" class="btn-action btn-outline" title="下载原图"><i class="fas fa-download me-1"></i>下载</a>
-                    <% if (isLeader != null && isLeader) { %>
-                        <form action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data" style="margin:0;display:flex;gap:.35rem;align-items:center;">
-                            <input type="hidden" name="competitionId" value="<%= work.getCompetitionId() %>">
-                            <input type="hidden" name="teamId" value="<%= work.getTeamId() %>">
-                            <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
-                            <input type="file" name="file" accept=".jpg,.jpeg,.png" required style="max-width:180px;font-size:.75rem;">
-                            <button type="submit" class="btn-action btn-primary-custom"><i class="fas fa-paperclip me-1"></i>上传附件</button>
-                        </form>
-                        <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn-action btn-primary-custom"><i class="fas fa-edit me-1"></i>编辑</a>
-                        <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0" onsubmit="return confirm('确定删除？')">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<%= work.getWorkId() %>">
-                            <button type="submit" class="btn-action btn-danger-custom border-0"><i class="fas fa-trash me-1"></i>删除</button>
-                        </form>
-                    <% } else if (readOnlyView != null && readOnlyView) { %>
-                        <span class="text-muted small align-self-center"><i class="fas fa-lock me-1"></i>比赛已结束，作品仅供查看</span>
-                    <% } %>
-                </div>
+            <div style="padding:22px 28px;">
+                <h2 style="margin:0 0 12px;"><%= HtmlEscaper.escape(work.getTitle() != null ? work.getTitle() : "未命名") %></h2>
+                <% if (work.getDescription() != null && !work.getDescription().isEmpty()) { %>
+                    <h3>作品描述</h3>
+                    <p style="white-space:pre-wrap; line-height:1.7;"><%= HtmlEscaper.escape(work.getDescription()) %></p>
+                <% } %>
+                <% if (attachments != null && !attachments.isEmpty()) { %>
+                    <div class="app-detail-section">
+                        <h3>作品附件</h3>
+                        <ul class="list-group list-group-flush">
+                            <% for (WorkFile attachment : attachments) { %>
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center" style="border-color:var(--app-rule);">
+                                    <span><i class="fas fa-paperclip me-2"></i><%= HtmlEscaper.escape(attachment.getFileName()) %></span>
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="<%= request.getContextPath() %>/uploads<%= attachment.getFilePath() %>?download=true">
+                                        <i class="fas fa-download me-1"></i>下载
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </div>
+                <% } %>
             </div>
         </div>
-    </div>
+
+        <!-- ═══ Rail: 队伍信息、竞赛信息、提交时间、评分、操作按钮 ═══ -->
+        <div class="app-detail-rail">
+            <h3 style="margin-top:0;">作品信息</h3>
+
+            <span class="app-detail-label">所属队伍</span>
+            <p class="app-detail-value"><i class="fas fa-users me-1"></i><%= HtmlEscaper.escape(team != null ? team.getTeamName() : "未知") %></p>
+
+            <% if (comp != null) { %>
+            <span class="app-detail-label">参赛竞赛</span>
+            <p class="app-detail-value"><i class="fas fa-flag me-1"></i><%= HtmlEscaper.escape(comp.getName()) %></p>
+            <% } %>
+
+            <% if (work.getSubmitTime() != null) { %>
+            <span class="app-detail-label">提交时间</span>
+            <p class="app-detail-value"><i class="fas fa-clock me-1"></i><%= work.getSubmitTime().format(dtf) %></p>
+            <% } %>
+
+            <span class="app-detail-label">点赞</span>
+            <p class="app-detail-value"><i class="fas fa-heart me-1" style="color:#FF6B6B;"></i><%= likeCount != null ? likeCount : 0 %> 次</p>
+
+            <span class="app-detail-label">分享</span>
+            <p class="app-detail-value"><i class="fas fa-share-alt me-1"></i><%= shareCount != null ? shareCount : 0 %> 次</p>
+
+            <hr style="border-color:var(--app-rule); margin: 18px 0;">
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0">
+                    <input type="hidden" name="action" value="<%= liked != null && liked ? "unlike" : "like" %>">
+                    <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
+                    <button type="submit" class="btn btn-like btn-action <%= liked != null && liked ? "liked" : "" %>" style="width:100%;">
+                        <i class="fas fa-thumbs-up"></i> <%= liked != null && liked ? "已赞" : "点赞" %> (<%= likeCount != null ? likeCount : 0 %>)
+                    </button>
+                </form>
+
+                <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0">
+                    <input type="hidden" name="action" value="share">
+                    <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
+                    <input type="hidden" name="platform" value="link">
+                    <button type="submit" class="btn btn-outline-primary" style="width:100%;"><i class="fas fa-share-alt me-1"></i>分享</button>
+                </form>
+
+                <a href="<%= downloadImgUrl %>" class="btn btn-outline-secondary" style="width:100%;"><i class="fas fa-download me-1"></i>下载原图</a>
+
+                <% if (isLeader != null && isLeader) { %>
+                    <hr style="border-color:var(--app-rule); margin: 6px 0;">
+                    <form action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data" style="margin:0; display:flex; flex-direction:column; gap:6px;">
+                        <input type="hidden" name="competitionId" value="<%= work.getCompetitionId() %>">
+                        <input type="hidden" name="teamId" value="<%= work.getTeamId() %>">
+                        <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
+                        <label style="font-size:0.82rem; font-weight:800; color:var(--app-muted);">上传附件</label>
+                        <input type="file" name="file" accept=".jpg,.jpeg,.png" required style="font-size:.75rem;">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paperclip me-1"></i>上传</button>
+                    </form>
+                    <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn btn-primary" style="width:100%;"><i class="fas fa-edit me-1"></i>编辑作品</a>
+                    <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0" onsubmit="return confirm('确定删除？')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="<%= work.getWorkId() %>">
+                        <button type="submit" class="btn btn-danger" style="width:100%;"><i class="fas fa-trash me-1"></i>删除作品</button>
+                    </form>
+                <% } else if (readOnlyView != null && readOnlyView) { %>
+                    <p class="text-muted small" style="margin:0;"><i class="fas fa-lock me-1"></i>比赛已结束，作品仅供查看</p>
+                <% } %>
+            </div>
+        </div>  <!-- /app-detail-rail -->
+    </div>  <!-- /app-detail-layout -->
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- 大图预览 Modal -->
