@@ -1,0 +1,1024 @@
+/*
+ * Page-family language for every page outside the participant homepage.
+ * The homepage deliberately does not load this file.
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   Hero sections
+   ═══════════════════════════════════════════════════════════════ */
+
+body.app-page:not(.home-page) .app-page-hero {
+    position: relative;
+    margin: 0 0 32px;
+    padding: 36px 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--app-ink) 0%, #1a4058 100%);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+body.app-page:not(.home-page) .app-page-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+body.app-page:not(.home-page) .app-page-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0 28px;
+}
+
+body.app-page:not(.home-page) .app-page-hero-copy {
+    min-width: 0;
+}
+
+body.app-page:not(.home-page) .app-page-hero .app-page-kicker {
+    color: var(--app-yellow);
+    margin-bottom: 10px;
+}
+
+body.app-page:not(.home-page) .app-page-hero h1,
+body.app-page:not(.home-page) .app-page-hero h2 {
+    color: #fff;
+    margin: 0;
+}
+
+body.app-page:not(.home-page) .app-page-hero .app-page-summary {
+    color: rgba(255, 255, 255, 0.66);
+    max-width: 560px;
+    margin-top: 10px;
+    line-height: 1.7;
+}
+
+body.app-page:not(.home-page) .app-page-hero-stat {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    white-space: nowrap;
+}
+
+body.app-page:not(.home-page) .app-page-hero-stat strong {
+    font-size: 2rem;
+    font-weight: 850;
+    line-height: 1;
+    color: var(--app-yellow);
+}
+
+body.app-page:not(.home-page) .app-page-hero-stat span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ── Page header (legacy companion) ── */
+
+body.app-page:not(.home-page) .app-page-head,
+body.app-page:not(.home-page) .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 0 28px;
+}
+
+body.app-page:not(.home-page) .app-page-head {
+    min-height: 118px;
+    padding: 18px 0 22px;
+    border-bottom: 1px solid var(--app-rule-strong);
+}
+
+body.app-page:not(.home-page) .app-page-kicker {
+    margin: 0 0 9px;
+    color: var(--app-sea);
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+}
+
+body.app-page:not(.home-page) .app-page-head h1,
+body.app-page:not(.home-page) .app-page-head h2,
+body.app-page:not(.home-page) .page-header h1,
+body.app-page:not(.home-page) .page-header h2 {
+    margin: 0;
+}
+
+body.app-page:not(.home-page) .app-page-summary {
+    max-width: 620px;
+    margin: 10px 0 0;
+    color: var(--app-muted);
+    line-height: 1.7;
+}
+
+body.app-page:not(.home-page) .app-page-count {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--app-ink-soft);
+    white-space: nowrap;
+}
+
+body.app-page:not(.home-page) .app-page-count strong {
+    color: var(--app-blue);
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+body.app-page:not(.home-page) .app-toolbar {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0 0 30px;
+    padding: 14px;
+    border: 1px solid var(--app-rule);
+    border-radius: 10px;
+    background: var(--app-surface);
+}
+
+body.app-page:not(.home-page) .app-toolbar .toolbar-field {
+    flex: 1 1 200px;
+}
+
+body.app-page:not(.home-page) .app-toolbar .toolbar-field.toolbar-field-wide {
+    flex-basis: 320px;
+}
+
+body.app-page:not(.home-page) .app-toolbar label {
+    display: block;
+    margin: 0 0 5px;
+    color: var(--app-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+body.app-page:not(.home-page) .app-toolbar .form-control,
+body.app-page:not(.home-page) .app-toolbar .form-select {
+    min-height: 42px;
+}
+
+body.app-page:not(.home-page) .app-surface {
+    border: 1px solid var(--app-rule);
+    border-radius: 12px;
+    background: var(--app-surface);
+}
+
+body.app-page:not(.home-page) .app-surface-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--app-rule);
+}
+
+body.app-page:not(.home-page) .app-surface-heading h2,
+body.app-page:not(.home-page) .app-surface-heading h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+body.app-page:not(.home-page) .app-surface-heading small {
+    color: var(--app-muted);
+}
+
+/* Competition card — typographic, no forced image */
+body.app-page-catalog:not(.home-page) .competition-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+    overflow: hidden;
+    border: 1px solid rgba(21, 50, 71, 0.07);
+    border-left-width: 4px;
+    border-left-style: solid;
+    border-left-color: var(--app-sea);
+    border-radius: 10px;
+    background: var(--app-surface);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+
+body.app-page-catalog:not(.home-page) .competition-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Status-colored left border */
+body.app-page-catalog:not(.home-page) .competition-card.status-open {
+    border-left-color: var(--app-sea);
+}
+body.app-page-catalog:not(.home-page) .competition-card.status-active {
+    border-left-color: var(--app-blue);
+}
+body.app-page-catalog:not(.home-page) .competition-card.status-ended {
+    border-left-color: #94a3ac;
+}
+body.app-page-catalog:not(.home-page) .competition-card.status-cancelled {
+    border-left-color: #cb7f8b;
+}
+
+body.app-page-catalog:not(.home-page) .competition-card .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 20px 22px 18px;
+}
+
+body.app-page-catalog:not(.home-page) .competition-card .card-body::before {
+    content: "竞赛";
+    order: -1;
+    margin-bottom: 8px;
+    display: inline-block;
+    align-self: flex-start;
+    border: 1px solid var(--app-rule);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--app-ink-soft);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--app-surface-soft);
+}
+
+body.app-page-catalog:not(.home-page) .competition-card .card-title {
+    margin-bottom: 8px;
+    color: var(--app-ink);
+    font-size: 1.2rem;
+    font-weight: 850;
+    line-height: 1.25;
+}
+
+body.app-page-catalog:not(.home-page) .competition-card .card-text {
+    color: var(--app-ink-soft);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin-bottom: 12px;
+    flex: 1;
+}
+
+body.app-page-catalog:not(.home-page) .competition-card .status-badge {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 750;
+}
+
+/* Remove old image-related styles */
+body.app-page-catalog:not(.home-page) .app-catalog-art {
+    display: none;
+}
+
+body.app-page-catalog:not(.home-page) .app-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+body.app-page-catalog:not(.home-page) .app-catalog-empty {
+    padding: 56px 24px;
+    border: 1px dashed var(--app-rule-strong);
+    border-radius: 12px;
+    color: var(--app-muted);
+    text-align: center;
+    background: var(--app-surface);
+}
+
+body.app-page-catalog:not(.home-page) .app-catalog-empty i {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--app-sea);
+    font-size: 2.4rem;
+}
+
+body.app-page-catalog:not(.home-page) .status-badge.bg-success {
+    color: #124d3b !important;
+    background: var(--app-mint) !important;
+}
+
+body.app-page-catalog:not(.home-page) .status-badge.bg-primary {
+    color: #0c4e82 !important;
+    background: #c9e3f5 !important;
+}
+
+body.app-page-catalog:not(.home-page) .status-badge.bg-secondary {
+    color: var(--app-ink-soft) !important;
+    background: #e0e7ea !important;
+}
+
+body.app-page-catalog:not(.home-page) .status-badge.bg-danger {
+    color: #8e3448 !important;
+    background: var(--app-pink) !important;
+}
+
+body.app-page-catalog:not(.home-page) .list-group-item {
+    border-color: var(--app-rule);
+    background: transparent;
+}
+
+/* Gallery and review pages: the artwork is the first piece of information. */
+body.app-page-gallery:not(.home-page) .work-card,
+body.app-page-gallery:not(.home-page) .app-art-card {
+    overflow: hidden;
+    border: 1px solid var(--app-rule) !important;
+    border-radius: 10px !important;
+    background: var(--app-surface) !important;
+    box-shadow: none !important;
+}
+
+body.app-page-gallery:not(.home-page) .app-art-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+body.app-page-gallery:not(.home-page) .work-card:hover,
+body.app-page-gallery:not(.home-page) .app-art-card:hover {
+    border-color: var(--app-blue) !important;
+}
+
+body.app-page-gallery:not(.home-page) .work-card > div:first-child,
+body.app-page-gallery:not(.home-page) .app-art-media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    height: auto !important;
+    background: var(--app-surface-soft) !important;
+}
+
+body.app-page-gallery:not(.home-page) .app-art-media {
+    display: block;
+    overflow: hidden;
+}
+
+body.app-page-gallery:not(.home-page) .app-art-index {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 4px 7px;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+    background: rgba(21, 50, 71, 0.78);
+}
+
+body.app-page-gallery:not(.home-page) .work-card > div:first-child img,
+body.app-page-gallery:not(.home-page) .app-art-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.app-page-gallery:not(.home-page) .work-body,
+body.app-page-gallery:not(.home-page) .app-art-info {
+    padding: 16px 18px 14px;
+}
+
+body.app-page-gallery:not(.home-page) .work-title,
+body.app-page-gallery:not(.home-page) .app-art-info h3 {
+    margin-bottom: 9px;
+    color: var(--app-ink);
+    font-size: 1.08rem;
+    font-weight: 850;
+}
+
+body.app-page-gallery:not(.home-page) .work-title a,
+body.app-page-gallery:not(.home-page) .app-art-info a {
+    color: var(--app-ink);
+}
+
+body.app-page-gallery:not(.home-page) .work-title a:hover,
+body.app-page-gallery:not(.home-page) .app-art-info a:hover {
+    color: var(--app-blue);
+}
+
+body.app-page-gallery:not(.home-page) .work-meta,
+body.app-page-gallery:not(.home-page) .app-art-meta {
+    display: grid;
+    gap: 5px;
+    color: var(--app-muted);
+    font-size: 0.84rem;
+}
+
+body.app-page-gallery:not(.home-page) .work-actions,
+body.app-page-gallery:not(.home-page) .app-art-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 14px;
+    border-top: 1px solid var(--app-rule);
+    background: var(--app-surface-soft);
+}
+
+body.app-page-gallery:not(.home-page) .work-actions .btn-sm,
+body.app-page-gallery:not(.home-page) .app-art-actions .btn-sm {
+    border: 1px solid var(--app-rule-strong) !important;
+    border-radius: 6px !important;
+    color: var(--app-ink-soft) !important;
+    background: #fff !important;
+    font-weight: 760;
+}
+
+body.app-page-gallery:not(.home-page) .work-actions .btn-like.liked,
+body.app-page-gallery:not(.home-page) .app-art-actions .is-active {
+    border-color: var(--app-sea) !important;
+    color: #fff !important;
+    background: var(--app-sea) !important;
+}
+
+body.app-page-gallery:not(.home-page) .work-actions .btn-edit,
+body.app-page-gallery:not(.home-page) .app-art-actions .btn-edit {
+    border-color: var(--app-blue) !important;
+    color: var(--app-blue-deep) !important;
+    background: #fff !important;
+}
+
+body.app-page-gallery:not(.home-page) .work-actions .btn-delete,
+body.app-page-gallery:not(.home-page) .app-art-actions .btn-delete {
+    border-color: #e4b3bd !important;
+    color: #a43e53 !important;
+    background: #fff !important;
+}
+
+body.app-page-gallery:not(.home-page) .work-actions form,
+body.app-page-gallery:not(.home-page) .app-art-actions form {
+    margin: 0 !important;
+}
+
+body.app-page-gallery:not(.home-page) .app-empty {
+    padding: 66px 24px;
+    border: 1px dashed var(--app-rule-strong);
+    border-radius: 12px;
+    color: var(--app-muted);
+    text-align: center;
+    background: var(--app-surface);
+}
+
+body.app-page-gallery:not(.home-page) .app-empty i {
+    display: block;
+    margin-bottom: 16px;
+    color: var(--app-sea);
+    font-size: 2.8rem;
+}
+
+body.app-page-gallery:not(.home-page) .app-empty h2 {
+    margin-bottom: 8px;
+    font-size: 1.35rem;
+}
+
+body.app-page-gallery:not(.home-page) .score-row,
+body.app-page-gallery:not(.home-page) .review-row {
+    border-bottom: 1px solid var(--app-rule);
+    background: var(--app-surface);
+}
+
+/* Detail pages: one visual subject and one information rail. */
+body.app-page-detail:not(.home-page) .app-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+    gap: 28px;
+    align-items: start;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-main,
+body.app-page-detail:not(.home-page) .app-detail-rail {
+    min-width: 0;
+    border: 1px solid var(--app-rule);
+    border-radius: 12px;
+    background: var(--app-surface);
+}
+
+body.app-page-detail:not(.home-page) .app-detail-main {
+    overflow: hidden;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-rail {
+    padding: 22px;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-rail h2,
+body.app-page-detail:not(.home-page) .app-detail-rail h3 {
+    margin-top: 0;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--app-muted);
+    font-size: 0.76rem;
+    font-weight: 820;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-value {
+    margin: 0 0 18px;
+    color: var(--app-ink);
+    font-weight: 760;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-media,
+body.app-page-detail:not(.home-page) .work-preview,
+body.app-page-detail:not(.home-page) .certificate-preview {
+    overflow: hidden;
+    background: var(--app-surface-soft);
+}
+
+body.app-page-detail:not(.home-page) .app-detail-media img,
+body.app-page-detail:not(.home-page) .work-preview img,
+body.app-page-detail:not(.home-page) .certificate-preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 720px;
+    object-fit: contain;
+}
+
+body.app-page-detail:not(.home-page) .app-detail-section {
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--app-rule);
+}
+
+body.app-page-detail:not(.home-page) .app-detail-section h2,
+body.app-page-detail:not(.home-page) .app-detail-section h3 {
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+/* Workbench pages: a clear working surface instead of one giant card. */
+body.app-page-workbench:not(.home-page) .app-workbench,
+body.app-page-auth:not(.home-page) .app-workbench {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+    gap: 24px;
+    align-items: start;
+}
+
+body.app-page-workbench:not(.home-page) .app-form-section,
+body.app-page-auth:not(.home-page) .app-form-section {
+    margin-bottom: 18px;
+    padding: 22px;
+    border: 1px solid var(--app-rule);
+    border-radius: 10px;
+    background: var(--app-surface);
+}
+
+body.app-page-workbench:not(.home-page) .app-form-section:last-child,
+body.app-page-auth:not(.home-page) .app-form-section:last-child {
+    margin-bottom: 0;
+}
+
+body.app-page-workbench:not(.home-page) .app-form-section h2,
+body.app-page-workbench:not(.home-page) .app-form-section h3,
+body.app-page-auth:not(.home-page) .app-form-section h2,
+body.app-page-auth:not(.home-page) .app-form-section h3 {
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--app-rule);
+    font-size: 1.05rem;
+}
+
+body.app-page-workbench:not(.home-page) .app-workbench-rail,
+body.app-page-auth:not(.home-page) .app-workbench-rail {
+    position: sticky;
+    top: 92px;
+    padding: 18px;
+    border: 1px solid var(--app-rule);
+    border-radius: 10px;
+    background: var(--app-ink);
+    color: #f4f7f8;
+}
+
+body.app-page-workbench:not(.home-page) .app-workbench-rail h2,
+body.app-page-workbench:not(.home-page) .app-workbench-rail h3,
+body.app-page-auth:not(.home-page) .app-workbench-rail h2,
+body.app-page-auth:not(.home-page) .app-workbench-rail h3 {
+    margin-top: 0;
+    color: #fff;
+    font-size: 1.05rem;
+}
+
+body.app-page-workbench:not(.home-page) .app-workbench-rail p,
+body.app-page-auth:not(.home-page) .app-workbench-rail p {
+    color: rgba(244, 247, 248, 0.72);
+}
+
+body.app-page-workbench:not(.home-page) .app-action-row,
+body.app-page-auth:not(.home-page) .app-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    align-items: center;
+    margin-top: 22px;
+}
+
+body.app-page-auth:not(.home-page) .modal-content {
+    border: 1px solid var(--app-rule);
+    border-radius: 10px;
+}
+
+body.app-page-auth:not(.home-page) .modal-header {
+    color: #fff;
+    background: var(--app-ink) !important;
+}
+
+/* Existing pages that have not yet received new wrapper markup still gain the family rhythm. */
+body.app-page:not(.home-page) .page-header h2 {
+    font-weight: 850;
+}
+
+body.app-page:not(.home-page) .page-header > .d-flex,
+body.app-page:not(.home-page) .page-header > form {
+    align-items: center;
+}
+
+body.app-page:not(.home-page) .page-header .btn-add-work {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    border: 1px solid var(--app-blue);
+    border-radius: 8px;
+    color: #fff;
+    background: var(--app-blue);
+    font-weight: 800;
+}
+
+body.app-page:not(.home-page) .row > [class*="col"] {
+    margin-bottom: 20px;
+}
+
+/* Bridge rules for older JSPs that still use their original local class names. */
+body.app-page:not(.home-page) .page-header {
+    min-height: 0;
+    margin: 0 0 28px;
+    padding: 24px 26px;
+    border: 1px solid var(--app-rule-strong) !important;
+    border-radius: 10px !important;
+    color: #fff !important;
+    background: var(--app-ink) !important;
+    text-align: left !important;
+}
+
+body.app-page:not(.home-page) .page-header h1,
+body.app-page:not(.home-page) .page-header h2,
+body.app-page:not(.home-page) .page-header h3,
+body.app-page:not(.home-page) .page-header h4,
+body.app-page:not(.home-page) .page-header p,
+body.app-page:not(.home-page) .page-header .text-muted {
+    color: #fff !important;
+}
+
+body.app-page:not(.home-page) .page-header p {
+    opacity: 0.72;
+}
+
+body.app-page:not(.home-page) .news-card,
+body.app-page:not(.home-page) .award-card,
+body.app-page:not(.home-page) .cert-card,
+body.app-page:not(.home-page) .card-custom {
+    border: 1px solid var(--app-rule) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+body.app-page:not(.home-page) .news-card:hover,
+body.app-page:not(.home-page) .award-card:hover,
+body.app-page:not(.home-page) .cert-card:hover {
+    border-color: var(--app-blue) !important;
+    transform: translateY(-2px);
+}
+
+body.app-page:not(.home-page) .news-title,
+body.app-page:not(.home-page) .award-card h3,
+body.app-page:not(.home-page) .award-card h4,
+body.app-page:not(.home-page) .cert-card strong {
+    color: var(--app-ink) !important;
+}
+
+body.app-page:not(.home-page) .rank-1,
+body.app-page:not(.home-page) .award-badge-1 {
+    color: #5b4300 !important;
+    background: var(--app-yellow) !important;
+}
+
+body.app-page:not(.home-page) .rank-2,
+body.app-page:not(.home-page) .award-badge-2 {
+    color: var(--app-ink-soft) !important;
+    background: #dfe7ea !important;
+}
+
+body.app-page:not(.home-page) .rank-3,
+body.app-page:not(.home-page) .award-badge-3 {
+    color: #713c23 !important;
+    background: #e5b494 !important;
+}
+
+body.app-page:not(.home-page) .detail-header,
+body.app-page:not(.home-page) .brand-panel,
+body.app-page:not(.home-page) .login-header,
+body.app-page:not(.home-page) .visual-panel {
+    color: #fff !important;
+    background: var(--app-ink) !important;
+}
+
+body.app-page:not(.home-page) .detail-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+body.app-page:not(.home-page) .detail-body {
+    border: 1px solid var(--app-rule);
+    border-top: 0;
+    border-radius: 0 0 10px 10px !important;
+    box-shadow: none !important;
+}
+
+body.app-page:not(.home-page) .btn-login,
+body.app-page:not(.home-page) .btn-publish,
+body.app-page:not(.home-page) .btn-add-work {
+    border: 1px solid var(--app-blue) !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    background: var(--app-blue) !important;
+}
+
+body.app-page-auth:not(.home-page) .mode-badge {
+    border-radius: 6px;
+}
+
+body.app-page-auth:not(.home-page) .switch-card {
+    border-color: var(--app-rule) !important;
+    border-radius: 8px !important;
+    background: var(--app-surface-soft) !important;
+}
+
+body.app-page:not(.home-page) .team-card-cover,
+body.app-page:not(.home-page) .avatar-circle {
+    background: var(--app-blue) !important;
+}
+
+body.app-page:not(.home-page) .modal-header {
+    color: #fff !important;
+    background: var(--app-ink) !important;
+}
+
+body.app-page:not(.home-page) .modal-content,
+body.app-page:not(.home-page) .toast {
+    border-radius: 10px !important;
+}
+
+body.app-page:not(.home-page) .app-page-head + .app-toolbar,
+body.app-page:not(.home-page) .page-header + .app-toolbar {
+    margin-top: 0;
+}
+
+body.app-page-detail:not(.home-page) .cover-banner {
+    overflow: hidden;
+    border: 1px solid var(--app-rule) !important;
+    border-radius: 10px !important;
+    background: var(--app-ink) !important;
+    box-shadow: none !important;
+}
+
+body.app-page-detail:not(.home-page) .cover-banner::before,
+body.app-page-detail:not(.home-page) .cover-banner::after {
+    background: transparent !important;
+}
+
+body.app-page-detail:not(.home-page) .cover-content {
+    padding: 28px !important;
+}
+
+body.app-page-detail:not(.home-page) .tab-nav {
+    border-bottom: 1px solid var(--app-rule) !important;
+    background: #fff !important;
+}
+
+body.app-page-detail:not(.home-page) .tab-btn {
+    border-radius: 6px !important;
+    color: var(--app-muted) !important;
+}
+
+body.app-page-detail:not(.home-page) .tab-btn.active {
+    color: var(--app-blue-deep) !important;
+    background: #d8edf4 !important;
+}
+
+body.app-page-detail:not(.home-page) .info-card,
+body.app-page-workbench:not(.home-page) .score-form-card,
+body.app-page-workbench:not(.home-page) .stat-card,
+body.app-page-gallery:not(.home-page) .score-table-card {
+    border: 1px solid var(--app-rule) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+body.app-page-gallery:not(.home-page) .work-info-banner {
+    border: 1px solid var(--app-rule) !important;
+    border-radius: 10px !important;
+    color: #fff !important;
+    background: var(--app-ink) !important;
+    box-shadow: none !important;
+}
+
+body.app-page-workbench:not(.home-page) .score-form-card h4,
+body.app-page-workbench:not(.home-page) .stat-card .stat-number,
+body.app-page-gallery:not(.home-page) .stat-card .stat-number {
+    color: var(--app-blue-deep) !important;
+}
+
+body.app-page-workbench:not(.home-page) .score-form-card .form-range::-webkit-slider-thumb {
+    background: var(--app-blue);
+}
+
+body.app-page-workbench:not(.home-page) .score-form-card .form-range::-moz-range-thumb {
+    background: var(--app-blue);
+}
+
+body.app-page:not(.home-page) .card.border-0.shadow-sm[style*="border-radius"] {
+    border-radius: 10px !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 920px) {
+    body.app-page-gallery:not(.home-page) .app-art-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.app-page-detail:not(.home-page) .app-detail-layout,
+    body.app-page-workbench:not(.home-page) .app-workbench,
+    body.app-page-auth:not(.home-page) .app-workbench {
+        grid-template-columns: 1fr;
+    }
+
+    body.app-page-workbench:not(.home-page) .app-workbench-rail,
+    body.app-page-auth:not(.home-page) .app-workbench-rail {
+        position: static;
+    }
+}
+
+@media (max-width: 720px) {
+    body.app-page:not(.home-page) .app-page-head,
+    body.app-page:not(.home-page) .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Hero responsive */
+    body.app-page:not(.home-page) .app-page-hero {
+        padding: 28px 0;
+    }
+
+    body.app-page:not(.home-page) .app-page-hero-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0 20px;
+    }
+
+    body.app-page:not(.home-page) .app-page-hero-stat {
+        flex-direction: row;
+        gap: 10px;
+        padding: 10px 14px;
+    }
+
+    body.app-page:not(.home-page) .app-page-hero-stat strong {
+        font-size: 1.5rem;
+    }
+
+    body.app-page-catalog:not(.home-page) .app-catalog-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.app-page-catalog:not(.home-page) .competition-card .status-badge {
+        position: static;
+        align-self: flex-start;
+        margin-top: 9px;
+    }
+
+    body.app-page-workbench:not(.home-page) .app-form-section,
+    body.app-page-auth:not(.home-page) .app-form-section {
+        padding: 16px;
+    }
+
+    body.app-page-gallery:not(.home-page) .app-art-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Auth: glass card layout
+   ═══════════════════════════════════════════════════════════════ */
+
+body.app-page-auth:not(.home-page) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--app-paper);
+}
+
+body.app-page-auth:not(.home-page) .container {
+    max-width: 880px;
+    width: min(880px, calc(100% - 32px));
+}
+
+body.app-page-auth:not(.home-page) .app-auth-glass {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    overflow: hidden;
+    border: 1px solid rgba(21, 50, 71, 0.08);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: var(--shadow-lg);
+}
+
+body.app-page-auth:not(.home-page) .app-auth-brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 36px;
+    color: #fff;
+    background: linear-gradient(160deg, var(--app-ink) 0%, #1e4260 100%);
+}
+
+body.app-page-auth:not(.home-page) .app-auth-brand h1 {
+    color: #fff;
+    margin: 0 0 12px;
+    font-size: 1.8rem;
+    font-weight: 850;
+}
+
+body.app-page-auth:not(.home-page) .app-auth-brand p {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin: 0;
+}
+
+body.app-page-auth:not(.home-page) .app-auth-form {
+    padding: 48px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+body.app-page-auth:not(.home-page) .app-auth-form h2 {
+    margin: 0 0 24px;
+    font-size: 1.35rem;
+}
+
+body.app-page-auth:not(.home-page) .app-auth-form .btn-primary {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 8px;
+    font-size: 1rem;
+}
+
+body.app-page-auth:not(.home-page) .app-auth-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    font-size: 0.88rem;
+}
+
+body.app-page-auth:not(.home-page) .app-auth-links a {
+    color: var(--app-blue);
+    font-weight: 700;
+}
+
+@media (max-width: 720px) {
+    body.app-page-auth:not(.home-page) .app-auth-glass {
+        grid-template-columns: 1fr;
+    }
+
+    body.app-page-auth:not(.home-page) .app-auth-brand {
+        padding: 32px 24px;
+    }
+
+    body.app-page-auth:not(.home-page) .app-auth-form {
+        padding: 28px 24px;
+    }
+}
