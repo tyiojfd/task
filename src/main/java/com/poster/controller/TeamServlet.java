@@ -412,36 +412,90 @@ public class TeamServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
+        boolean isAjax = "true".equals(request.getParameter("ajax"));
 
         try {
             Integer teamId = Integer.parseInt(request.getParameter("teamId"));
             Integer inviteeId = Integer.parseInt(request.getParameter("inviteeId"));
 
+            // 逐一精确校验，提供具体错误提示
+            Team team = teamService.getTeamById(teamId);
+            if (team == null) {
+                writeJson(response, isAjax, teamId, false, "队伍不存在");
+                return;
+            }
+
+            // 1. 验证队长身份
+            if (!team.getLeaderId().equals(user.getUserId())) {
+                writeJson(response, isAjax, teamId, false, "只有队长才能邀请队员");
+                return;
+            }
+
+            // 2. 不能邀请自己
+            if (user.getUserId().equals(inviteeId)) {
+                writeJson(response, isAjax, teamId, false, "不能邀请自己");
+                return;
+            }
+
+            // 3. 检查是否已是队员
+            if (teamService.isUserMemberOfTeam(inviteeId, teamId)) {
+                writeJson(response, isAjax, teamId, false, "该用户已在队伍中");
+                return;
+            }
+
+            // 4. 检查队伍人数
+            int memberCount = teamMemberDAO.countByTeamId(teamId);
+            Competition comp = competitionService.getCompetitionById(team.getCompetitionId());
+            int maxSize = (comp != null && comp.getMaxTeamSize() != null && comp.getMaxTeamSize() > 0)
+                    ? comp.getMaxTeamSize() : 5;
+            if (memberCount >= maxSize) {
+                writeJson(response, isAjax, teamId, false,
+                        "队伍已满（" + memberCount + "/" + maxSize + "人），无法再邀请新成员");
+                return;
+            }
+
+            // 5. 检查被邀请人是否已在同竞赛的其他队伍中
+            Team joinedTeam = teamService.getUserTeamInCompetition(inviteeId, team.getCompetitionId());
+            if (joinedTeam != null) {
+                writeJson(response, isAjax, teamId, false,
+                        "该用户已在同竞赛的队伍「" + joinedTeam.getTeamName() + "」中，同一竞赛只能加入一支队伍");
+                return;
+            }
+
+            // 通过所有校验，执行邀请
             boolean success = teamService.inviteMember(teamId, user.getUserId(), inviteeId);
 
-            // 支持AJAX请求返回JSON
-            if ("true".equals(request.getParameter("ajax"))) {
-                response.setContentType("application/json;charset=UTF-8");
-                if (success) {
-                    response.getWriter().write("{\"success\":true}");
-                } else {
-                    response.getWriter().write("{\"success\":false,\"message\":\"邀请失败：仅可邀请队员/队长账号，管理员和评委不可加入队伍；请确认对方未在本队或同竞赛其他队伍中，且队伍未满。\"}");
-                }
-                return;
-            }
-
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&msg=invite_success");
+                writeJson(response, isAjax, teamId, true, null);
             } else {
-                response.sendRedirect(request.getContextPath() + "/team?action=detail&id=" + teamId + "&error=invite_failed");
+                writeJson(response, isAjax, teamId, false, "已向该用户发送过邀请，请等待对方回复");
             }
         } catch (Exception e) {
-            if ("true".equals(request.getParameter("ajax"))) {
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"success\":false,\"message\":\"系统错误\"}");
-                return;
+            writeJson(response, isAjax, null, false, "系统错误：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 统一响应：AJAX返回JSON，普通请求重定向
+     */
+    private void writeJson(HttpServletResponse response, boolean isAjax, Integer teamId,
+                           boolean success, String message) throws IOException {
+        if (isAjax) {
+            response.setContentType("application/json;charset=UTF-8");
+            if (success) {
+                response.getWriter().write("{\"success\":true}");
+            } else {
+                String escapedMsg = message != null ? message.replace("\\", "\\\\").replace("\"", "\\\"") : "";
+                response.getWriter().write("{\"success\":false,\"message\":\"" + escapedMsg + "\"}");
             }
-            response.sendRedirect(request.getContextPath() + "/team?action=myTeams&error=invite_error");
+        } else if (teamId != null) {
+            if (success) {
+                response.sendRedirect("team?action=detail&id=" + teamId + "&msg=invite_success");
+            } else {
+                response.sendRedirect("team?action=detail&id=" + teamId + "&error=invite_failed");
+            }
+        } else {
+            response.sendRedirect("team?action=myTeams&error=invite_error");
         }
     }
 

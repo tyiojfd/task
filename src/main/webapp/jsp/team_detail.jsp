@@ -809,7 +809,7 @@
                         html += '<div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px;background:linear-gradient(135deg, #6C5CE7, #A29BFE);color:white;font-weight:700;font-size:0.9rem;">' + u.realName.charAt(0) + '</div>';
                         html += '<div class="flex-grow-1"><strong>' + u.realName + '</strong><br><small class="text-muted">@' + u.username + '</small></div>';
                         html += '<button class="btn btn-sm btn-invite-action" style="background:linear-gradient(135deg, #00CEC9, #00B894); color:white; border:none; border-radius:10px; padding:0.4rem 1rem; font-weight:600;" ';
-                        html += 'onclick="inviteUser(' + u.userId + ', \'' + u.realName.replace(/'/g, "\\'") + '\')">';
+                        html += 'onclick="inviteUser(' + u.userId + ', \'' + u.realName.replace(/'/g, "\\'") + '\', this)">';
                         html += '<i class="fas fa-paper-plane me-1"></i>邀请</button>';
                         html += '</div>';
                     });
@@ -821,7 +821,7 @@
             }, 300);
         }
 
-        function inviteUser(userId, realName) {
+        function inviteUser(userId, realName, btn) {
             if (!confirm('确定要邀请「' + realName + '」加入队伍吗？')) return;
 
             var formData = new URLSearchParams();
@@ -842,11 +842,13 @@
                     document.getElementById('toastMessage').innerHTML = '<i class="fas fa-check-circle me-2"></i>已向 ' + realName + ' 发送邀请';
                     var toast = new bootstrap.Toast(document.getElementById('inviteToast'));
                     toast.show();
-                    // 从搜索结果中移除该用户
-                    var btn = event.target.closest('.d-flex');
-                    if (btn) btn.style.opacity = '0.5';
-                    event.target.disabled = true;
-                    event.target.innerHTML = '<i class="fas fa-check me-1"></i>已邀请';
+                    // 禁用按钮并更新状态
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-check me-1"></i>已邀请';
+                        var row = btn.closest('.d-flex');
+                        if (row) row.style.opacity = '0.5';
+                    }
                 } else {
                     alert('邀请失败：' + (data.message || '未知错误'));
                 }
