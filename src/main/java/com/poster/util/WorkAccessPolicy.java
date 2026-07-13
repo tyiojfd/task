@@ -14,6 +14,7 @@ public final class WorkAccessPolicy {
         if (administrator || judge || teamMember) {
             return true;
         }
-        return competitionEnded && participantInCompetition;
+        // 竞赛结束后，所有登录用户均可查看作品
+        return competitionEnded;
     }
 }

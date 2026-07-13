@@ -428,6 +428,21 @@ public class TeamServlet extends HttpServlet {
                 return;
             }
 
+            // 成员只能在队伍仍处于组建中时调整，报名后需要先取消报名再继续邀请。
+            if (team.getStatus() == null || team.getStatus() != 1) {
+                writeJson(response, isAjax, teamId, false,
+                        "当前队伍已报名或已取消，只有组建中的队伍可以邀请成员");
+                return;
+            }
+
+            Competition teamCompetition = competitionService.getCompetitionById(team.getCompetitionId());
+            if (teamCompetition == null || teamCompetition.getStatus() == null
+                    || teamCompetition.getStatus() != 1) {
+                writeJson(response, isAjax, teamId, false,
+                        "当前赛事不在报名阶段，暂不能调整队伍成员");
+                return;
+            }
+
             // 1. 验证队长身份
             if (!team.getLeaderId().equals(user.getUserId())) {
                 writeJson(response, isAjax, teamId, false, "只有队长才能邀请队员");
@@ -471,7 +486,8 @@ public class TeamServlet extends HttpServlet {
             if (success) {
                 writeJson(response, isAjax, teamId, true, null);
             } else {
-                writeJson(response, isAjax, teamId, false, "已向该用户发送过邀请，请等待对方回复");
+                writeJson(response, isAjax, teamId, false,
+                        "邀请失败：对方可能已有待处理邀请、已加入本赛事其他队伍，或账号角色不可参赛");
             }
         } catch (Exception e) {
             writeJson(response, isAjax, null, false, "系统错误：" + e.getMessage());
@@ -743,4 +759,3 @@ public class TeamServlet extends HttpServlet {
         return team;
     }
 }
-

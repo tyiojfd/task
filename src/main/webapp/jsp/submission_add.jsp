@@ -35,6 +35,7 @@
     boolean isEdit = (editWork != null);
     String error = request.getParameter("error");
     String msg = request.getParameter("msg");
+    boolean hasEligibleTeam = isEdit || Boolean.TRUE.equals(request.getAttribute("hasEligibleTeam"));
     String placeholderClass = (isEdit && editWork.getImagePath() != null) ? "d-none" : "";
     String previewClass = (isEdit && editWork.getImagePath() != null) ? "" : "d-none";
     String previewImgSrc = (isEdit && editWork.getWorkId() != null) ? request.getContextPath() + "/image-data?workId=" + editWork.getWorkId() + "&type=original" : "";
@@ -87,7 +88,10 @@
         <div class="alert alert-success mt-3"><%= "submit_success".equals(msg) ? "作品提交成功！" : "update_success".equals(msg) ? "作品已更新" : msg %></div>
     <% } %>
     <% if (error != null) { %>
-        <div class="alert alert-danger mt-3"><%= "already_submitted".equals(error) ? "该队伍已提交过作品，每个队伍只能提交一次" : "permission_denied".equals(error) ? "没有操作权限" : "deadline_passed".equals(error) ? "提交已截止" : "no_team".equals(error) ? "请选择队伍" : "no_title".equals(error) ? "请输入作品名称" : "no_image".equals(error) ? "请上传图片" : "upload_failed".equals(error) ? "上传失败" : "submit_failed".equals(error) ? "提交失败，请重试" : error %></div>
+        <div class="alert alert-danger mt-3"><%= "already_submitted".equals(error) ? "该队伍已提交过作品，每个队伍只能提交一次" : "permission_denied".equals(error) ? "没有操作权限" : "team_not_registered".equals(error) ? "队伍尚未报名，不能提交作品" : "competition_not_open".equals(error) ? "赛事尚未进入进行中阶段或提交时间已截止" : "deadline_passed".equals(error) ? "提交已截止" : "no_team".equals(error) ? "请选择队伍" : "no_title".equals(error) ? "请输入作品名称" : "no_image".equals(error) ? "请上传图片" : "invalid_type".equals(error) ? "仅支持 JPG/PNG 图片" : "file_too_large".equals(error) ? "图片不能超过 10MB" : "invalid_image".equals(error) ? "图片无法解析，请重新选择 JPG/PNG 文件" : "upload_failed".equals(error) ? "上传失败" : "submit_failed".equals(error) ? "提交失败，请重试" : error %></div>
+    <% } %>
+    <% if (!isEdit && !hasEligibleTeam) { %>
+        <div class="alert alert-warning mt-3"><i class="fas fa-lock me-2"></i>当前没有可提交作品的队伍；队伍需已报名、赛事进行中且尚未提交作品。</div>
     <% } %>
     <form action="${pageContext.request.contextPath}/work" method="post" enctype="multipart/form-data" id="submitForm">
         <input type="hidden" name="action" value="<%= isEdit ? "update" : "submit" %>">
@@ -171,7 +175,7 @@
         </div>
         <div class="d-flex gap-2 justify-content-end mb-4">
             <a href="${pageContext.request.contextPath}/work" class="btn btn-cancel"><i class="fas fa-times me-1"></i>取消</a>
-            <button type="submit" class="btn btn-submit" id="submitBtn"><i class="fas fa-paper-plane me-1"></i><%= isEdit ? "保存修改" : "提交作品" %></button>
+            <button type="submit" class="btn btn-submit" id="submitBtn" <%= (!isEdit && !hasEligibleTeam) ? "disabled title=\"当前没有可提交的队伍\"" : "" %>><i class="fas fa-paper-plane me-1"></i><%= isEdit ? "保存修改" : "提交作品" %></button>
         </div>
     </form>
 </div>

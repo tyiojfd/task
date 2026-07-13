@@ -31,6 +31,7 @@
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     String msg = request.getParameter("msg");
     String error = request.getParameter("error");
+    boolean canSubmitWork = Boolean.TRUE.equals(request.getAttribute("canSubmitWork"));
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -84,7 +85,11 @@
                     <button type="submit"><i class="fas fa-search"></i></button>
                 </div>
             </form>
-            <a href="${pageContext.request.contextPath}/work?action=add" class="btn-add-work"><i class="fas fa-plus me-1"></i>提交作品</a>
+            <% if (canSubmitWork) { %>
+                <a href="${pageContext.request.contextPath}/work?action=add" class="btn-add-work"><i class="fas fa-plus me-1"></i>提交作品</a>
+            <% } else { %>
+                <span class="btn-add-work" style="opacity:0.55;cursor:not-allowed;" title="当前没有处于进行中的可提交赛事"><i class="fas fa-lock me-1"></i>暂不可提交</span>
+            <% } %>
         </div>
     </div>
     <% if (msg != null) { %>
