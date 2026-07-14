@@ -141,8 +141,9 @@ public class TeamServiceImpl implements TeamService {
             return false;
         }
 
-        // 只有组建中的空队伍允许解散，避免删除已报名/已提交/已评分的历史数据
-        if (team.getStatus() == null || team.getStatus() != 1) {
+        // 只有组建中或已报名的队伍允许解散（无作品时）
+        if (team.getStatus() == null
+                || (team.getStatus() != 1 && team.getStatus() != 2)) {
             return false;
         }
         List<Work> works = workDAO.findByTeamId(teamId);
@@ -395,7 +396,8 @@ public class TeamServiceImpl implements TeamService {
         }
 
         Competition competition = competitionDAO.findById(team.getCompetitionId());
-        if (competition == null || competition.getStatus() == null || competition.getStatus() != 1) {
+        if (competition == null || competition.getStatus() == null
+                || (competition.getStatus() != 1 && competition.getStatus() != 2)) {
             return false;
         }
         List<Work> works = workDAO.findByTeamId(teamId);
