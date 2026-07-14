@@ -299,6 +299,17 @@ class TeamApplicationServiceImplTest {
         public List<Competition> findByFilters(String keyword, Integer year, Integer status) {
             return Collections.emptyList();
         }
+
+        @Override
+        public List<Competition> findAllWithLimit(int offset, int limit) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<Competition> findByFiltersWithLimit(String keyword, Integer year,
+                                                         Integer status, int offset, int limit) {
+            return Collections.emptyList();
+        }
     }
 
     private static class FixedUserRoleDAO implements UserRoleDAO {

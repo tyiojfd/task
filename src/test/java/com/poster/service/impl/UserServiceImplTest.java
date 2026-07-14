@@ -154,6 +154,16 @@ class UserServiceImplTest {
         public List<User> search(String keyword) {
             return Collections.emptyList();
         }
+
+        @Override
+        public List<User> findAllWithLimit(int offset, int limit) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<User> searchWithLimit(String keyword, int offset, int limit) {
+            return Collections.emptyList();
+        }
     }
 
     private static class FixedRoleDAO implements RoleDAO {
