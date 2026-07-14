@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.poster.model.Competition" %>
+<%@ page import="com.poster.model.PageInfo" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
@@ -7,7 +8,8 @@
 <%@ page import="com.poster.util.HtmlEscaper" %>
 <%
     @SuppressWarnings("unchecked")
-    List<Competition> competitions = (List<Competition>) request.getAttribute("competitions");
+    PageInfo<Competition> pageInfo = (PageInfo<Competition>) request.getAttribute("pageInfo");
+    List<Competition> competitions = pageInfo != null ? pageInfo.getItems() : null;
 
     User sessionUser = (User) session.getAttribute("user");
     boolean isAdmin = false;
@@ -22,7 +24,7 @@
             }
         }
     }
-    int competitionCount = competitions == null ? 0 : competitions.size();
+    long competitionCount = pageInfo != null ? pageInfo.getTotalItems() : 0;
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -142,6 +144,23 @@
                 </article>
             <% } %>
         </section>
+        <% if (pageInfo != null && pageInfo.getTotalPages() > 1) { %>
+        <nav aria-label="竞赛分页" class="d-flex justify-content-center mt-4">
+            <ul class="pagination">
+                <li class="page-item <%= pageInfo.getHasPrev() ? "" : "disabled" %>">
+                    <a class="page-link" href="?<%= request.getQueryString() != null ? request.getQueryString().replaceAll("&?page=\\d+", "") + "&" : "" %>page=<%= pageInfo.getPage() - 1 %>">上一页</a>
+                </li>
+                <% for (int i = 1; i <= pageInfo.getTotalPages(); i++) { %>
+                <li class="page-item <%= i == pageInfo.getPage() ? "active" : "" %>">
+                    <a class="page-link" href="?<%= request.getQueryString() != null ? request.getQueryString().replaceAll("&?page=\\d+", "") + "&" : "" %>page=<%= i %>"><%= i %></a>
+                </li>
+                <% } %>
+                <li class="page-item <%= pageInfo.getHasNext() ? "" : "disabled" %>">
+                    <a class="page-link" href="?<%= request.getQueryString() != null ? request.getQueryString().replaceAll("&?page=\\d+", "") + "&" : "" %>page=<%= pageInfo.getPage() + 1 %>">下一页</a>
+                </li>
+            </ul>
+        </nav>
+        <% } %>
     <% } else { %>
         <section class="app-catalog-empty">
             <i class="far fa-folder-open"></i>

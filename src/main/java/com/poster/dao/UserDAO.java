@@ -71,4 +71,14 @@ public interface UserDAO {
      * 搜索用户（按用户名/姓名/邮箱模糊匹配）
      */
     List<User> search(String keyword);
+
+    /**
+     * 分页查询所有用户
+     */
+    List<User> findAllWithLimit(int offset, int limit);
+
+    /**
+     * 分页搜索用户（按用户名/姓名/邮箱模糊匹配）
+     */
+    List<User> searchWithLimit(String keyword, int offset, int limit);
 }

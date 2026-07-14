@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.poster.model.PageInfo" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="java.util.List" %>
@@ -8,11 +9,13 @@
 <%
     User sessionUser = (User) session.getAttribute("user");
     @SuppressWarnings("unchecked")
-    List<User> users = (List<User>) request.getAttribute("users");
+    PageInfo<User> pageInfo = (PageInfo<User>) request.getAttribute("pageInfo");
     @SuppressWarnings("unchecked")
     List<Role> allRoles = (List<Role>) request.getAttribute("allRoles");
     @SuppressWarnings("unchecked")
     Map<Integer, List<Role>> userRolesMap = (Map<Integer, List<Role>>) request.getAttribute("userRolesMap");
+    // expose page items for JSTL
+    request.setAttribute("users", pageInfo != null ? pageInfo.getItems() : null);
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -131,6 +134,23 @@
             </table>
         </div>
     </div>
+    <% if (pageInfo != null && pageInfo.getTotalPages() > 1) { %>
+    <nav aria-label="用户分页" class="d-flex justify-content-center mt-4">
+        <ul class="pagination">
+            <li class="page-item <%= pageInfo.getHasPrev() ? "" : "disabled" %>">
+                <a class="page-link" href="?<%= request.getQueryString() != null ? request.getQueryString().replaceAll("&?page=\\d+", "") + "&" : "" %>page=<%= pageInfo.getPage() - 1 %>">上一页</a>
+            </li>
+            <% for (int i = 1; i <= pageInfo.getTotalPages(); i++) { %>
+            <li class="page-item <%= i == pageInfo.getPage() ? "active" : "" %>">
+                <a class="page-link" href="?<%= request.getQueryString() != null ? request.getQueryString().replaceAll("&?page=\\d+", "") + "&" : "" %>page=<%= i %>"><%= i %></a>
+            </li>
+            <% } %>
+            <li class="page-item <%= pageInfo.getHasNext() ? "" : "disabled" %>">
+                <a class="page-link" href="?<%= request.getQueryString() != null ? request.getQueryString().replaceAll("&?page=\\d+", "") + "&" : "" %>page=<%= pageInfo.getPage() + 1 %>">下一页</a>
+            </li>
+        </ul>
+    </nav>
+    <% } %>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

@@ -284,6 +284,97 @@ public class WorkDAOImpl implements WorkDAO {
         return list;
     }
 
+    @Override
+    public int countByTeamIds(List<Integer> teamIds) {
+        if (teamIds == null || teamIds.isEmpty()) return 0;
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM work WHERE team_id IN (");
+        for (int i = 0; i < teamIds.size(); i++) sql.append(i > 0 ? ",?" : "?");
+        sql.append(")");
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < teamIds.size(); i++) pstmt.setInt(i + 1, teamIds.get(i));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    @Override
+    public List<Work> findByTeamIdsWithLimit(List<Integer> teamIds, int offset, int limit) {
+        if (teamIds == null || teamIds.isEmpty()) return new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM work WHERE team_id IN (");
+        for (int i = 0; i < teamIds.size(); i++) sql.append(i > 0 ? ",?" : "?");
+        sql.append(") ORDER BY submit_time DESC LIMIT ?, ?");
+        List<Work> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < teamIds.size(); i++) pstmt.setInt(i + 1, teamIds.get(i));
+            pstmt.setInt(teamIds.size() + 1, offset);
+            pstmt.setInt(teamIds.size() + 2, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) list.add(extractWorkFromResultSet(rs));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    @Override
+    public List<Work> findByTeamIdsAndKeywordWithLimit(List<Integer> teamIds, String keyword, int offset, int limit) {
+        if (teamIds == null || teamIds.isEmpty()) return new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT DISTINCT w.* FROM work w LEFT JOIN team t ON w.team_id = t.team_id WHERE w.team_id IN (");
+        for (int i = 0; i < teamIds.size(); i++) sql.append(i > 0 ? ",?" : "?");
+        sql.append(")");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (w.work_title LIKE ? OR t.team_name LIKE ?)");
+        }
+        sql.append(" ORDER BY w.submit_time DESC LIMIT ?, ?");
+        List<Work> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Integer teamId : teamIds) pstmt.setInt(idx++, teamId);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String like = "%" + keyword.trim() + "%";
+                pstmt.setString(idx++, like);
+                pstmt.setString(idx++, like);
+            }
+            pstmt.setInt(idx++, offset);
+            pstmt.setInt(idx, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) list.add(extractWorkFromResultSet(rs));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    @Override
+    public int countByTeamIdsAndKeyword(List<Integer> teamIds, String keyword) {
+        if (teamIds == null || teamIds.isEmpty()) return 0;
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT COUNT(DISTINCT w.work_id) FROM work w LEFT JOIN team t ON w.team_id = t.team_id WHERE w.team_id IN (");
+        for (int i = 0; i < teamIds.size(); i++) sql.append(i > 0 ? ",?" : "?");
+        sql.append(")");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (w.work_title LIKE ? OR t.team_name LIKE ?)");
+        }
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Integer teamId : teamIds) pstmt.setInt(idx++, teamId);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String like = "%" + keyword.trim() + "%";
+                pstmt.setString(idx++, like);
+                pstmt.setString(idx, like);
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
     /**
      * 从ResultSet提取Work对象
      */
@@ -324,5 +415,44 @@ public class WorkDAOImpl implements WorkDAO {
         }
 
         return work;
+    }
+
+    @Override
+    public List<Work> findAllWithLimit(int offset, int limit) {
+        String sql = "SELECT * FROM work ORDER BY submit_time DESC LIMIT ?, ?";
+        List<Work> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, offset);
+            pstmt.setInt(2, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(extractWorkFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public List<Work> findByCompetitionIdWithLimit(Integer competitionId, int offset, int limit) {
+        String sql = "SELECT * FROM work WHERE competition_id = ? ORDER BY submit_time DESC LIMIT ?, ?";
+        List<Work> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, competitionId);
+            pstmt.setInt(2, offset);
+            pstmt.setInt(3, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(extractWorkFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

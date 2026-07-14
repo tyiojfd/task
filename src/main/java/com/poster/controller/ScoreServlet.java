@@ -6,6 +6,7 @@ import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
 import com.poster.model.Comment;
 import com.poster.model.Competition;
+import com.poster.model.PageInfo;
 import com.poster.model.Role;
 import com.poster.model.Score;
 import com.poster.model.User;
@@ -100,9 +101,15 @@ public class ScoreServlet extends HttpServlet {
         }
         request.setAttribute("selectedCompetitionId", selectedCompetitionId);
 
-        // 评分必须按竞赛查看，避免所有比赛作品混在一起。
+        int page = parsePage(request);
+        final int pageSize = 12;
+
+        // paginated query — loaded from DB with LIMIT
+        long totalCount = selectedCompetitionId != null
+                ? workDAO.countByCompetitionId(selectedCompetitionId) : 0;
+        int offset = (page - 1) * pageSize;
         List<Work> sourceWorks = selectedCompetitionId != null
-                ? workDAO.findByCompetitionId(selectedCompetitionId)
+                ? workDAO.findByCompetitionIdWithLimit(selectedCompetitionId, offset, pageSize)
                 : java.util.Collections.emptyList();
         List<Work> submittedWorks = new java.util.ArrayList<>();
         for (Work w : sourceWorks) {
@@ -110,6 +117,8 @@ public class ScoreServlet extends HttpServlet {
                 submittedWorks.add(w);
             }
         }
+        PageInfo<Work> pageInfo = new PageInfo<>(submittedWorks, totalCount, page, pageSize);
+        request.setAttribute("pageInfo", pageInfo);
         request.setAttribute("works", submittedWorks);
 
         // 获取当前评委的评分记录，用于标记已评分的作品
@@ -394,6 +403,15 @@ public class ScoreServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("error", "请输入有效的分数");
             response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+        }
+    }
+
+    private int parsePage(HttpServletRequest request) {
+        try {
+            int p = Integer.parseInt(request.getParameter("page"));
+            return Math.max(1, p);
+        } catch (Exception e) {
+            return 1;
         }
     }
 

@@ -69,4 +69,34 @@ public interface WorkDAO {
      * 根据队伍ID列表和关键词搜索作品（关键词匹配作品标题）
      */
     List<Work> findByTeamIdsAndKeyword(List<Integer> teamIds, String keyword);
+
+    /**
+     * 分页查询所有作品
+     */
+    List<Work> findAllWithLimit(int offset, int limit);
+
+    /**
+     * 分页查询指定竞赛作品
+     */
+    List<Work> findByCompetitionIdWithLimit(Integer competitionId, int offset, int limit);
+
+    /**
+     * 统计指定队伍ID列表的作品数
+     */
+    int countByTeamIds(List<Integer> teamIds);
+
+    /**
+     * 分页查询指定队伍ID列表的作品（按提交时间倒序）
+     */
+    List<Work> findByTeamIdsWithLimit(List<Integer> teamIds, int offset, int limit);
+
+    /**
+     * 分页搜索：根据队伍ID列表和关键词搜索作品
+     */
+    List<Work> findByTeamIdsAndKeywordWithLimit(List<Integer> teamIds, String keyword, int offset, int limit);
+
+    /**
+     * 统计：根据队伍ID列表和关键词统计作品数
+     */
+    int countByTeamIdsAndKeyword(List<Integer> teamIds, String keyword);
 }

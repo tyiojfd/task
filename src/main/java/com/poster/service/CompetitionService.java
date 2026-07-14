@@ -1,6 +1,7 @@
 package com.poster.service;
 
 import com.poster.model.Competition;
+import com.poster.model.PageInfo;
 import java.util.List;
 
 /**
@@ -59,6 +60,22 @@ public interface CompetitionService {
      * 多条件搜索竞赛
      */
     List<Competition> searchCompetitions(String keyword, Integer year, Integer status);
+
+    /**
+     * 分页多条件搜索竞赛
+     */
+    List<Competition> searchCompetitionsPaginated(String keyword, Integer year, Integer status,
+                                                   int page, int pageSize);
+
+    /**
+     * 统计所有竞赛
+     */
+    int getCompetitionCount();
+
+    /**
+     * 按条件统计竞赛数
+     */
+    int countByFilters(String keyword, Integer year, Integer status);
 
     /**
      * 获取竞赛统计信息

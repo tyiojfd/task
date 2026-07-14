@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.poster.model.PageInfo" %>
 <%@ page import="com.poster.model.User" %>
 <%@ page import="com.poster.model.Role" %>
 <%@ page import="com.poster.model.Work" %>
@@ -18,6 +19,8 @@
 
     @SuppressWarnings("unchecked")
     List<Work> works = (List<Work>) request.getAttribute("works");
+    @SuppressWarnings("unchecked")
+    PageInfo<Work> pageInfo = (PageInfo<Work>) request.getAttribute("pageInfo");
     @SuppressWarnings("unchecked")
     List<Score> myScores = (List<Score>) request.getAttribute("myScores");
     @SuppressWarnings("unchecked")
@@ -486,6 +489,23 @@
         <% } %>
     </div>
     <% } %>
+    <% } %>
+    <% if (pageInfo != null && pageInfo.getTotalPages() > 1) { %>
+    <nav aria-label="评分工作台分页" class="d-flex justify-content-center mt-4">
+        <ul class="pagination">
+            <li class="page-item <%= pageInfo.getHasPrev() ? "" : "disabled" %>">
+                <a class="page-link" href="?action=list&competitionId=<%= selectedCompetitionId %>&page=<%= pageInfo.getPage() - 1 %>">上一页</a>
+            </li>
+            <% for (int i = 1; i <= pageInfo.getTotalPages(); i++) { %>
+            <li class="page-item <%= i == pageInfo.getPage() ? "active" : "" %>">
+                <a class="page-link" href="?action=list&competitionId=<%= selectedCompetitionId %>&page=<%= i %>"><%= i %></a>
+            </li>
+            <% } %>
+            <li class="page-item <%= pageInfo.getHasNext() ? "" : "disabled" %>">
+                <a class="page-link" href="?action=list&competitionId=<%= selectedCompetitionId %>&page=<%= pageInfo.getPage() + 1 %>">下一页</a>
+            </li>
+        </ul>
+    </nav>
     <% } %>
 
 </div>

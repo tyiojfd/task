@@ -42,6 +42,7 @@ public class WorkServlet extends HttpServlet {
     private TeamDAO teamDAO = new TeamDAOImpl();
     private UserDAO userDAO = new UserDAOImpl();
     private WorkFileDAO workFileDAO = new WorkFileDAOImpl();
+    private WorkDAO workDAO = new WorkDAOImpl();
 
     private static final String UPLOAD_BASE = "uploads";
     private static final int THUMBNAIL_MAX_WIDTH = 300;
@@ -108,6 +109,15 @@ public class WorkServlet extends HttpServlet {
             writer.dispose();
         }
         return output.toByteArray();
+    }
+
+    private int parsePage(HttpServletRequest request) {
+        try {
+            int p = Integer.parseInt(request.getParameter("page"));
+            return Math.max(1, p);
+        } catch (Exception e) {
+            return 1;
+        }
     }
 
     private boolean hasRole(HttpServletRequest request, String roleName) {
@@ -207,37 +217,42 @@ public class WorkServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
         String keyword = request.getParameter("keyword");
+        int page = parsePage(request);
+        final int pageSize = 12;
 
-        List<Work> works;
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            works = workService.searchWorksByUserTeams(user.getUserId(), keyword.trim());
-        } else {
-            works = workService.getWorksByUserId(user.getUserId());
-        }
-
-        // 加载关联数据
-        Map<Integer, Team> teamMap = new HashMap<>();
-        Map<Integer, Competition> compMap = new HashMap<>();
-        Map<Integer, Integer> likeCountMap = new HashMap<>();
-        Map<Integer, Integer> shareCountMap = new HashMap<>();
-        Map<Integer, Boolean> likedMap = new HashMap<>();
-        List<Integer> userTeamIds = new ArrayList<>();
-
+        // collect user's team IDs for DB-level pagination
         List<TeamMember> memberships = teamMemberDAO.findByUserId(user.getUserId());
-        for (TeamMember m : memberships) {
-            userTeamIds.add(m.getTeamId());
-        }
-
-        // 找出用户是队长的队伍ID集合
+        List<Integer> teamIds = new ArrayList<>();
         Set<Integer> leaderTeamIds = new HashSet<>();
         for (TeamMember m : memberships) {
+            teamIds.add(m.getTeamId());
             Team t = teamDAO.findById(m.getTeamId());
             if (t != null && t.getLeaderId() != null && t.getLeaderId().equals(user.getUserId())) {
                 leaderTeamIds.add(t.getTeamId());
             }
         }
 
-        for (Work work : works) {
+        long totalCount;
+        List<Work> pagedWorks;
+        int offset = (page - 1) * pageSize;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            totalCount = workDAO.countByTeamIdsAndKeyword(teamIds, keyword.trim());
+            pagedWorks = workDAO.findByTeamIdsAndKeywordWithLimit(teamIds, keyword.trim(), offset, pageSize);
+        } else {
+            totalCount = workDAO.countByTeamIds(teamIds);
+            pagedWorks = workDAO.findByTeamIdsWithLimit(teamIds, offset, pageSize);
+        }
+        PageInfo<Work> pageInfo = new PageInfo<>(pagedWorks, totalCount, page, pageSize);
+
+        // 加载关联数据 (only for current page)
+        Map<Integer, Team> teamMap = new HashMap<>();
+        Map<Integer, Competition> compMap = new HashMap<>();
+        Map<Integer, Integer> likeCountMap = new HashMap<>();
+        Map<Integer, Integer> shareCountMap = new HashMap<>();
+        Map<Integer, Boolean> likedMap = new HashMap<>();
+
+        for (Work work : pagedWorks) {
             if (!teamMap.containsKey(work.getTeamId())) {
                 Team t = teamDAO.findById(work.getTeamId());
                 if (t != null) teamMap.put(work.getTeamId(), t);
@@ -251,7 +266,7 @@ public class WorkServlet extends HttpServlet {
             likedMap.put(work.getWorkId(), workService.isWorkLikedByUser(work.getWorkId(), user.getUserId()));
         }
 
-        request.setAttribute("works", works);
+        request.setAttribute("pageInfo", pageInfo);
         request.setAttribute("teamMap", teamMap);
         request.setAttribute("compMap", compMap);
         request.setAttribute("likeCountMap", likeCountMap);
@@ -658,7 +673,13 @@ public class WorkServlet extends HttpServlet {
             return;
         }
 
-        List<Work> works = workService.getWorksByCompetitionId(competitionId);
+        int page = parsePage(request);
+        final int pageSize = 12;
+        long totalCount = workDAO.countByCompetitionId(competitionId);
+        int offset = (page - 1) * pageSize;
+        List<Work> works = workDAO.findByCompetitionIdWithLimit(competitionId, offset, pageSize);
+        PageInfo<Work> pageInfo = new PageInfo<>(works, totalCount, page, pageSize);
+
         Map<Integer, Team> teamMap = new HashMap<>();
         Map<Integer, Integer> likeCountMap = new HashMap<>();
         for (Work work : works) {
@@ -669,7 +690,7 @@ public class WorkServlet extends HttpServlet {
             }
         }
         request.setAttribute("competition", competition);
-        request.setAttribute("works", works);
+        request.setAttribute("pageInfo", pageInfo);
         request.setAttribute("teamMap", teamMap);
         request.setAttribute("likeCountMap", likeCountMap);
         request.getRequestDispatcher("/jsp/competition_works.jsp").forward(request, response);

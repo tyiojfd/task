@@ -1,5 +1,8 @@
 package com.poster.controller;
 
+import com.poster.dao.UserDAO;
+import com.poster.dao.impl.UserDAOImpl;
+import com.poster.model.PageInfo;
 import com.poster.model.Role;
 import com.poster.model.User;
 import com.poster.service.UserService;
@@ -19,6 +22,7 @@ import java.util.Map;
 @WebServlet("/admin/users")
 public class UserManageServlet extends HttpServlet {
     private final UserService userService = new UserServiceImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -26,18 +30,42 @@ public class UserManageServlet extends HttpServlet {
         if (!isAdmin(request)) { response.sendError(403); return; }
 
         String keyword = request.getParameter("keyword");
-        List<User> users = userService.searchUsers(keyword);
+        int page = parsePage(request);
+        final int pageSize = 12;
+
+        int offset = (page - 1) * pageSize;
+        List<User> users;
+        long totalCount;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            users = userDAO.searchWithLimit(keyword.trim(), offset, pageSize);
+            // count: fallback to full search size
+            totalCount = userDAO.search(keyword.trim()).size();
+        } else {
+            users = userDAO.findAllWithLimit(offset, pageSize);
+            totalCount = userDAO.count();
+        }
+        PageInfo<User> pageInfo = new PageInfo<>(users, totalCount, page, pageSize);
+
         List<Role> allRoles = userService.getAllRoles();
         Map<Integer, List<Role>> userRolesMap = new HashMap<>();
         for (User user : users) {
             userRolesMap.put(user.getUserId(), userService.getUserRoles(user.getUserId()));
         }
 
-        request.setAttribute("users", users);
+        request.setAttribute("pageInfo", pageInfo);
         request.setAttribute("allRoles", allRoles);
         request.setAttribute("userRolesMap", userRolesMap);
         request.setAttribute("keyword", keyword);
         request.getRequestDispatcher("/jsp/user_manage.jsp").forward(request, response);
+    }
+
+    private int parsePage(HttpServletRequest request) {
+        try {
+            int p = Integer.parseInt(request.getParameter("page"));
+            return Math.max(1, p);
+        } catch (Exception e) {
+            return 1;
+        }
     }
 
     @Override

@@ -245,6 +245,30 @@ public class CompetitionServiceImpl implements CompetitionService {
     }
 
     @Override
+    public List<Competition> searchCompetitionsPaginated(String keyword, Integer year,
+                                                          Integer status, int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        if ((keyword == null || keyword.trim().isEmpty()) && year == null && status == null) {
+            return competitionDAO.findAllWithLimit(offset, pageSize);
+        }
+        return competitionDAO.findByFiltersWithLimit(keyword, year, status, offset, pageSize);
+    }
+
+    @Override
+    public int getCompetitionCount() {
+        return competitionDAO.count();
+    }
+
+    @Override
+    public int countByFilters(String keyword, Integer year, Integer status) {
+        if ((keyword == null || keyword.trim().isEmpty()) && year == null && status == null) {
+            return competitionDAO.count();
+        }
+        List<Competition> all = competitionDAO.findByFilters(keyword, year, status);
+        return all != null ? all.size() : 0;
+    }
+
+    @Override
     public Map<String, Integer> getCompetitionStats(Integer competitionId) {
         Map<String, Integer> stats = new HashMap<>();
         if (competitionId == null) {

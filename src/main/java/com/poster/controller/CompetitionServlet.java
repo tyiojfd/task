@@ -1,6 +1,7 @@
 package com.poster.controller;
 
 import com.poster.model.Competition;
+import com.poster.model.PageInfo;
 import com.poster.model.User;
 import com.poster.model.Team;
 import com.poster.model.CompetitionCategory;
@@ -86,40 +87,51 @@ public class CompetitionServlet extends HttpServlet {
         String keyword = request.getParameter("keyword");
         String yearStr = request.getParameter("year");
         String statusStr = request.getParameter("status");
+        int page = parsePage(request);
 
         Integer year = null;
         Integer status = null;
         try {
-            if (yearStr != null && !yearStr.isEmpty()) {
-                year = Integer.parseInt(yearStr);
-            }
+            if (yearStr != null && !yearStr.isEmpty()) year = Integer.parseInt(yearStr);
         } catch (NumberFormatException ignored) {}
         try {
-            if (statusStr != null && !statusStr.isEmpty()) {
-                status = Integer.parseInt(statusStr);
-            }
+            if (statusStr != null && !statusStr.isEmpty()) status = Integer.parseInt(statusStr);
         } catch (NumberFormatException ignored) {}
 
-        List<Competition> competitions = competitionService.searchCompetitions(keyword, year, status);
+        final int pageSize = 6;
 
-        Map<String, Integer> globalStats = new java.util.HashMap<>();
-        int totalTeams = 0;
-        int totalWorks = 0;
-        for (Competition c : competitions) {
-            Map<String, Integer> s = competitionService.getCompetitionStats(c.getCompetitionId());
-            totalTeams += s.getOrDefault("teamCount", 0);
-            totalWorks += s.getOrDefault("workCount", 0);
+        // total count (across all pages)
+        long totalCount;
+        if (keyword == null && year == null && status == null) {
+            totalCount = competitionService.getCompetitionCount();
+        } else {
+            totalCount = competitionService.countByFilters(keyword, year, status);
         }
-        globalStats.put("compCount", competitions != null ? competitions.size() : 0);
-        globalStats.put("teamCount", totalTeams);
-        globalStats.put("workCount", totalWorks);
+
+        // paginated data
+        List<Competition> competitions = competitionService.searchCompetitionsPaginated(
+                keyword, year, status, page, pageSize);
+        PageInfo<Competition> pageInfo = new PageInfo<>(competitions, totalCount, page, pageSize);
+
+        // stats (across ALL competitions, not just current page)
+        Map<String, Integer> globalStats = new java.util.HashMap<>();
+        globalStats.put("compCount", (int) totalCount);
         request.setAttribute("globalStats", globalStats);
 
-        request.setAttribute("competitions", competitions);
+        request.setAttribute("pageInfo", pageInfo);
         request.setAttribute("keyword", keyword);
         request.setAttribute("filterYear", year);
         request.setAttribute("filterStatus", status);
         request.getRequestDispatcher("/jsp/competition_list.jsp").forward(request, response);
+    }
+
+    private int parsePage(HttpServletRequest request) {
+        try {
+            int p = Integer.parseInt(request.getParameter("page"));
+            return Math.max(1, p);
+        } catch (Exception e) {
+            return 1;
+        }
     }
 
     /**

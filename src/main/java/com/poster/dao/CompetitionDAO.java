@@ -64,4 +64,14 @@ public interface CompetitionDAO {
      * 多条件组合筛选
      */
     List<Competition> findByFilters(String keyword, Integer year, Integer status);
+
+    /**
+     * 分页查询所有竞赛
+     */
+    List<Competition> findAllWithLimit(int offset, int limit);
+
+    /**
+     * 分页多条件筛选竞赛
+     */
+    List<Competition> findByFiltersWithLimit(String keyword, Integer year, Integer status, int offset, int limit);
 }

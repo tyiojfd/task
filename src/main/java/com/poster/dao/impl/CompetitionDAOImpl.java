@@ -296,4 +296,65 @@ public class CompetitionDAOImpl implements CompetitionDAO {
 
         return competition;
     }
+
+    @Override
+    public List<Competition> findAllWithLimit(int offset, int limit) {
+        String sql = "SELECT * FROM competition ORDER BY create_time DESC LIMIT ?, ?";
+        List<Competition> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, offset);
+            pstmt.setInt(2, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(extractCompetitionFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public List<Competition> findByFiltersWithLimit(String keyword, Integer year,
+                                                     Integer status, int offset, int limit) {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM competition WHERE 1=1");
+        java.util.List<Object> params = new java.util.ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String likeKeyword = "%" + keyword.trim() + "%";
+            sqlBuilder.append(" AND (name LIKE ? OR theme LIKE ? OR description LIKE ?)");
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+        }
+        if (year != null) {
+            sqlBuilder.append(" AND year = ?");
+            params.add(year);
+        }
+        if (status != null) {
+            sqlBuilder.append(" AND status = ?");
+            params.add(status);
+        }
+        sqlBuilder.append(" ORDER BY create_time DESC LIMIT ?, ?");
+
+        List<Competition> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+            pstmt.setInt(params.size() + 1, offset);
+            pstmt.setInt(params.size() + 2, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(extractCompetitionFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

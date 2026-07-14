@@ -234,6 +234,38 @@ public class UserDAOImpl implements UserDAO {
         return list;
     }
 
+    @Override
+    public List<User> findAllWithLimit(int offset, int limit) {
+        String sql = "SELECT * FROM user ORDER BY create_time DESC LIMIT ?, ?";
+        List<User> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, offset);
+            ps.setInt(2, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(extractUser(rs));
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    @Override
+    public List<User> searchWithLimit(String keyword, int offset, int limit) {
+        String sql = "SELECT * FROM user WHERE username LIKE ? OR real_name LIKE ? OR email LIKE ? ORDER BY create_time DESC LIMIT ?, ?";
+        List<User> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String pattern = "%" + keyword + "%";
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            ps.setString(3, pattern);
+            ps.setInt(4, offset);
+            ps.setInt(5, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(extractUser(rs));
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
     /**
      * 从ResultSet提取User对象
      */
