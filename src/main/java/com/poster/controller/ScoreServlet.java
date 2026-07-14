@@ -150,6 +150,12 @@ public class ScoreServlet extends HttpServlet {
             Work work = workDAO.findById(workId);
             Integer competitionId = parseInteger(request.getParameter("competitionId"));
             if (!isSubmittedOrScored(work)) {
+                request.getSession().setAttribute("error", "该作品尚未提交");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
+            if (!isCompetitionRunning(work)) {
+                request.getSession().setAttribute("error", "仅进行中的竞赛可评分");
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
@@ -284,9 +290,23 @@ public class ScoreServlet extends HttpServlet {
             Integer competitionId = parseInteger(request.getParameter("competitionId"));
             Double scoreValue = Double.parseDouble(request.getParameter("score"));
             Work work = workDAO.findById(workId);
-            if (!isSubmittedOrScored(work)
-                    || (competitionId != null && !competitionId.equals(work.getCompetitionId()))
-                    || !isCompetitionRunning(work)) {
+            if (work == null) {
+                request.getSession().setAttribute("error", "作品不存在");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
+            if (!isSubmittedOrScored(work)) {
+                request.getSession().setAttribute("error", "该作品尚未提交，无法评分");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
+            if (competitionId != null && !competitionId.equals(work.getCompetitionId())) {
+                request.getSession().setAttribute("error", "作品与竞赛不匹配");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
+            if (!isCompetitionRunning(work)) {
+                request.getSession().setAttribute("error", "仅进行中的竞赛可提交评分");
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
@@ -313,7 +333,7 @@ public class ScoreServlet extends HttpServlet {
                 request.getRequestDispatcher("/jsp/score_input.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "请输入有效的分数");
+            request.getSession().setAttribute("error", "请输入有效的分数");
             response.sendRedirect(request.getContextPath() + "/score?action=list");
         }
     }
@@ -329,18 +349,31 @@ public class ScoreServlet extends HttpServlet {
             return;
         }
 
+        Integer competitionId = null;
         try {
             Integer scoreId = Integer.parseInt(request.getParameter("scoreId"));
-            Integer competitionId = parseInteger(request.getParameter("competitionId"));
+            competitionId = parseInteger(request.getParameter("competitionId"));
             Double scoreValue = Double.parseDouble(request.getParameter("score"));
             User user = (User) session.getAttribute("user");
             Score existing = scoreService.getScoreById(scoreId);
-            if (existing == null || !user.getUserId().equals(existing.getJudgeId())) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "只能修改自己的评分");
+            if (existing == null) {
+                request.getSession().setAttribute("error", "评分记录不存在");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
+            if (!user.getUserId().equals(existing.getJudgeId())) {
+                request.getSession().setAttribute("error", "只能修改自己的评分");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
             Work work = workDAO.findById(existing.getWorkId());
+            if (work == null) {
+                request.getSession().setAttribute("error", "作品不存在");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
+                return;
+            }
             if (!isCompetitionRunning(work)) {
+                request.getSession().setAttribute("error", "仅进行中的竞赛可修改评分");
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
                 return;
             }
@@ -355,12 +388,12 @@ public class ScoreServlet extends HttpServlet {
                 request.getSession().setAttribute("message", "评分更新成功！");
                 response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
             } else {
-                request.setAttribute("error", "评分更新失败，请检查分数范围（0-100）");
-                response.sendRedirect(request.getContextPath() + "/score?action=list");
+                request.getSession().setAttribute("error", "评分更新失败，请检查分数范围（0-100）");
+                response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
             }
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "请输入有效的分数");
-            response.sendRedirect(request.getContextPath() + "/score?action=list");
+            request.getSession().setAttribute("error", "请输入有效的分数");
+            response.sendRedirect(request.getContextPath() + "/score?action=list" + competitionQuery(competitionId));
         }
     }
 
