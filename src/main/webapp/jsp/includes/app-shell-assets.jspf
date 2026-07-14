@@ -1,4 +1,4 @@
 <%@ page pageEncoding="UTF-8" %>
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-shell.css?v=20260714">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-pages.css?v=20260714">
-<script src="${pageContext.request.contextPath}/js/app-scroll.js?v=20260714" defer></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-shell.css?v=20260714-glass1">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-pages.css?v=20260714-glass1">
+<script src="${pageContext.request.contextPath}/js/app-scroll.js?v=20260714-glass1" defer></script>

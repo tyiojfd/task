@@ -11,9 +11,14 @@ body.app-page:not(.home-page) .app-page-hero {
     position: relative;
     margin: 0 0 32px;
     padding: 36px 0;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--app-ink) 0%, #1a4058 100%);
-    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.94);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 88% 8%, rgba(255, 255, 255, 0.98), transparent 26%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(231, 237, 241, 0.86) 100%);
+    box-shadow: 0 20px 52px rgba(55, 75, 88, 0.1), inset 0 1px 0 #fff;
+    backdrop-filter: blur(20px) saturate(1.25);
+    -webkit-backdrop-filter: blur(20px) saturate(1.25);
     overflow: hidden;
 }
 
@@ -21,9 +26,20 @@ body.app-page:not(.home-page) .app-page-hero::before {
     content: "";
     position: absolute;
     inset: 0;
-    opacity: 0.06;
-    background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px);
-    background-size: 40px 40px;
+    pointer-events: none;
+    background:
+        linear-gradient(115deg, rgba(255, 255, 255, 0.62), transparent 36%),
+        repeating-linear-gradient(90deg, transparent 0 42px, rgba(117, 136, 148, 0.028) 42px 43px);
+}
+
+body.app-page:not(.home-page) .app-page-hero::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 24px;
+    left: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(155, 169, 177, 0.5), #fff, rgba(155, 169, 177, 0.5), transparent);
 }
 
 body.app-page:not(.home-page) .app-page-hero-inner {
@@ -41,18 +57,18 @@ body.app-page:not(.home-page) .app-page-hero-copy {
 }
 
 body.app-page:not(.home-page) .app-page-hero .app-page-kicker {
-    color: var(--app-yellow);
+    color: var(--app-sea);
     margin-bottom: 10px;
 }
 
 body.app-page:not(.home-page) .app-page-hero h1,
 body.app-page:not(.home-page) .app-page-hero h2 {
-    color: #fff;
+    color: var(--app-ink);
     margin: 0;
 }
 
 body.app-page:not(.home-page) .app-page-hero .app-page-summary {
-    color: rgba(255, 255, 255, 0.66);
+    color: var(--app-muted);
     max-width: 560px;
     margin-top: 10px;
     line-height: 1.7;
@@ -64,10 +80,11 @@ body.app-page:not(.home-page) .app-page-hero-stat {
     align-items: center;
     gap: 6px;
     padding: 16px 22px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 10px;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    border-radius: 16px;
+    color: var(--app-ink);
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow: 0 10px 28px rgba(55, 75, 88, 0.08), inset 0 1px 0 #fff;
     white-space: nowrap;
 }
 
@@ -75,13 +92,13 @@ body.app-page:not(.home-page) .app-page-hero-stat strong {
     font-size: 2rem;
     font-weight: 850;
     line-height: 1;
-    color: var(--app-yellow);
+    color: var(--app-blue-deep);
 }
 
 body.app-page:not(.home-page) .app-page-hero-stat span {
     font-size: 0.78rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--app-muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
@@ -668,14 +685,32 @@ body.app-page:not(.home-page) .row > [class*="col"] {
 
 /* Bridge rules for older JSPs that still use their original local class names. */
 body.app-page:not(.home-page) .page-header {
+    position: relative;
     min-height: 0;
     margin: 0 0 28px;
-    padding: 24px 26px;
-    border: 1px solid var(--app-rule-strong) !important;
-    border-radius: 10px !important;
-    color: #fff !important;
-    background: var(--app-ink) !important;
+    padding: 26px 28px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.94) !important;
+    border-radius: 22px !important;
+    color: var(--app-ink) !important;
+    background:
+        radial-gradient(circle at 92% 0%, rgba(255, 255, 255, 0.96), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(232, 238, 241, 0.86)) !important;
+    box-shadow: 0 18px 46px rgba(55, 75, 88, 0.09), inset 0 1px 0 #fff;
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
     text-align: left !important;
+}
+
+body.app-page:not(.home-page) .page-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 24px;
+    left: 24px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(154, 168, 177, 0.48), #fff, rgba(154, 168, 177, 0.48), transparent);
 }
 
 body.app-page:not(.home-page) .page-header h1,
@@ -684,11 +719,12 @@ body.app-page:not(.home-page) .page-header h3,
 body.app-page:not(.home-page) .page-header h4,
 body.app-page:not(.home-page) .page-header p,
 body.app-page:not(.home-page) .page-header .text-muted {
-    color: #fff !important;
+    color: var(--app-ink) !important;
 }
 
 body.app-page:not(.home-page) .page-header p {
-    opacity: 0.72;
+    color: var(--app-muted) !important;
+    opacity: 1;
 }
 
 body.app-page:not(.home-page) .news-card,
@@ -1020,5 +1056,437 @@ body.app-page-auth:not(.home-page) .app-auth-links a {
 
     body.app-page-auth:not(.home-page) .app-auth-form {
         padding: 28px 24px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2026 visual refinement: warm editorial surfaces
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Warm yellow is reserved for the participant-facing section titles. */
+body.app-page-invitations:not(.home-page) .page-header,
+body.app-page-certificates:not(.home-page) .page-header,
+body.app-page-awards:not(.home-page) .page-header,
+body.app-page-news-list:not(.home-page) .page-header {
+    border-color: rgba(255, 255, 255, 0.96) !important;
+    background:
+        radial-gradient(circle at 88% 2%, rgba(255, 255, 255, 0.82), transparent 27%),
+        linear-gradient(135deg, rgba(255, 249, 216, 0.96), rgba(247, 215, 119, 0.86)) !important;
+    box-shadow: 0 18px 46px rgba(139, 105, 28, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.94);
+}
+
+body.app-page-invitations:not(.home-page) .page-header i,
+body.app-page-certificates:not(.home-page) .page-header i,
+body.app-page-awards:not(.home-page) .page-header i,
+body.app-page-news-list:not(.home-page) .page-header i {
+    color: #8a6817;
+}
+
+body.app-page-invitations:not(.home-page) .page-header .btn-light,
+body.app-page-certificates:not(.home-page) .page-header .btn-light,
+body.app-page-awards:not(.home-page) .page-header .btn-light,
+body.app-page-news-list:not(.home-page) .page-header .btn-light {
+    border-color: rgba(255, 255, 255, 0.86);
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: inset 0 1px 0 #fff, 0 8px 20px rgba(120, 90, 23, 0.1);
+}
+
+/* The work wall uses a paler yellow to keep artwork visually dominant. */
+body.app-page-submission-list:not(.home-page) .app-page-head {
+    position: relative;
+    min-height: 136px;
+    margin: 0 0 28px;
+    padding: 26px 28px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.96);
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 90% 4%, rgba(255, 255, 255, 0.9), transparent 28%),
+        linear-gradient(135deg, rgba(255, 252, 230, 0.98), rgba(255, 237, 172, 0.82));
+    box-shadow: 0 18px 46px rgba(139, 105, 28, 0.09), inset 0 1px 0 #fff;
+}
+
+body.app-page-submission-list:not(.home-page) .app-page-head::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 24px;
+    left: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(166, 146, 93, 0.42), #fff, rgba(166, 146, 93, 0.42), transparent);
+}
+
+body.app-page-submission-list:not(.home-page) .app-page-kicker,
+body.app-page-submission-list:not(.home-page) .app-page-count strong {
+    color: #8a6817;
+}
+
+/* Team overview: generous rounded categories with clear reading distance. */
+body.app-page-team-list:not(.home-page) .stats-row {
+    margin-bottom: 10px;
+}
+
+body.app-page-team-list:not(.home-page) .stats-row > [class*="col"] {
+    display: flex;
+}
+
+body.app-page-team-list:not(.home-page) .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    min-height: 112px;
+    padding: 20px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.94) !important;
+    border-radius: 22px !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(238, 243, 245, 0.78));
+    box-shadow: 0 13px 34px rgba(55, 75, 88, 0.08), inset 0 1px 0 #fff;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, border-color 220ms ease;
+}
+
+body.app-page-team-list:not(.home-page) .stat-card:hover {
+    border-color: rgba(207, 218, 224, 0.88) !important;
+    box-shadow: 0 19px 42px rgba(55, 75, 88, 0.13), inset 0 1px 0 #fff;
+    transform: translateY(-4px);
+}
+
+body.app-page-team-list:not(.home-page) .stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 17px;
+    font-size: 1.12rem;
+    flex: 0 0 52px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 8px 18px rgba(55, 75, 88, 0.08);
+}
+
+body.app-page-team-list:not(.home-page) .stat-value {
+    color: var(--app-ink);
+    font-size: 1.65rem;
+    font-weight: 880;
+    line-height: 1;
+}
+
+body.app-page-team-list:not(.home-page) .stat-label {
+    margin-top: 8px;
+    color: var(--app-muted);
+    font-size: 0.86rem;
+    font-weight: 760;
+    line-height: 1.25;
+}
+
+body.app-page-team-list:not(.home-page) .competition-card {
+    border-color: rgba(203, 214, 220, 0.82);
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(55, 75, 88, 0.07);
+}
+
+body.app-page-team-list:not(.home-page) .competition-card:hover {
+    border-color: rgba(164, 184, 194, 0.86);
+    box-shadow: 0 20px 46px rgba(55, 75, 88, 0.13);
+    transform: translateY(-4px);
+}
+
+/* Invitation tabs and notification blocks. */
+body.app-page-invitations:not(.home-page) .tab-nav {
+    gap: 6px;
+    margin-bottom: 24px;
+    padding: 6px;
+    border: 1px solid rgba(202, 213, 219, 0.82);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 12px 32px rgba(55, 75, 88, 0.07), inset 0 1px 0 #fff;
+    backdrop-filter: blur(16px);
+}
+
+body.app-page-invitations:not(.home-page) .tab-btn {
+    min-height: 46px;
+    border: 1px solid transparent;
+    border-radius: 13px;
+    padding: 0.72rem 1.25rem;
+    transition: color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+body.app-page-invitations:not(.home-page) .tab-btn:hover {
+    color: var(--app-ink);
+    background: rgba(255, 255, 255, 0.76);
+}
+
+body.app-page-invitations:not(.home-page) .tab-btn.active {
+    color: #5d470e;
+    border-color: rgba(214, 173, 62, 0.28);
+    background: linear-gradient(145deg, #fff8d7, #f4d371);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 18px rgba(139, 105, 28, 0.13);
+}
+
+body.app-page-invitations:not(.home-page) .tab-btn.active .badge-count {
+    color: #5d470e;
+    background: rgba(255, 255, 255, 0.58);
+}
+
+body.app-page-invitations:not(.home-page) .invitation-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 14px;
+    padding: 20px 22px;
+    border: 1px solid rgba(202, 213, 219, 0.86);
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(247, 249, 250, 0.86));
+    box-shadow: 0 12px 32px rgba(55, 75, 88, 0.07), inset 0 1px 0 #fff;
+    transition: transform 210ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 210ms ease, border-color 210ms ease;
+}
+
+body.app-page-invitations:not(.home-page) .invitation-card:hover {
+    border-color: rgba(218, 181, 79, 0.52);
+    box-shadow: 0 19px 42px rgba(55, 75, 88, 0.12), inset 0 1px 0 #fff;
+    transform: translateY(-3px);
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border: 1px solid rgba(226, 194, 106, 0.36);
+    border-radius: 18px;
+    color: #846413;
+    background: var(--app-yellow-pale);
+    box-shadow: inset 0 1px 0 #fff;
+    flex: 0 0 54px;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-info h6,
+body.app-page-invitations:not(.home-page) .inv-card-info p {
+    margin: 0;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-info h6 {
+    color: var(--app-ink);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-info p {
+    margin-top: 5px;
+    color: var(--app-muted);
+    font-size: 0.84rem;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-info p i {
+    width: 18px;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+body.app-page-invitations:not(.home-page) .inv-card-actions form {
+    margin: 0;
+}
+
+body.app-page-invitations:not(.home-page) .btn-accept,
+body.app-page-invitations:not(.home-page) .btn-reject {
+    min-height: 40px;
+    border-radius: 12px;
+    padding: 0.48rem 0.9rem;
+    font-weight: 780;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+body.app-page-invitations:not(.home-page) .btn-accept {
+    border: 1px solid #0c7e70;
+    color: #fff;
+    background: #0c8f7e;
+}
+
+body.app-page-invitations:not(.home-page) .btn-reject {
+    border: 1px solid rgba(156, 169, 176, 0.68);
+    color: var(--app-ink-soft);
+    background: rgba(255, 255, 255, 0.86);
+}
+
+body.app-page-invitations:not(.home-page) .btn-accept:hover,
+body.app-page-invitations:not(.home-page) .btn-reject:hover {
+    box-shadow: 0 8px 18px rgba(55, 75, 88, 0.13);
+    transform: translateY(-2px);
+}
+
+body.app-page-invitations:not(.home-page) .status-badge {
+    border: 1px solid var(--app-rule);
+    border-radius: 999px;
+    padding: 0.42rem 0.72rem;
+    color: var(--app-muted);
+    background: var(--app-surface-soft);
+    font-size: 0.76rem;
+    font-weight: 780;
+    white-space: nowrap;
+}
+
+/* Soft borders keep every requested content block distinct. */
+body.app-page-submission-list:not(.home-page) .app-toolbar,
+body.app-page-awards:not(.home-page) .competition-selector,
+body.app-page-invitations:not(.home-page) .empty-state,
+body.app-page-certificates:not(.home-page) .empty-state,
+body.app-page-awards:not(.home-page) .empty-state,
+body.app-page-news-list:not(.home-page) .empty-state {
+    border: 1px solid rgba(202, 213, 219, 0.82);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: 0 12px 32px rgba(55, 75, 88, 0.06), inset 0 1px 0 #fff;
+}
+
+body.app-page-submission-list:not(.home-page) .work-card,
+body.app-page-submission-list:not(.home-page) .app-art-card {
+    border-color: rgba(202, 213, 219, 0.86) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 12px 32px rgba(55, 75, 88, 0.07) !important;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, border-color 220ms ease !important;
+}
+
+body.app-page-submission-list:not(.home-page) .work-card:hover,
+body.app-page-submission-list:not(.home-page) .app-art-card:hover {
+    border-color: rgba(218, 181, 79, 0.6) !important;
+    box-shadow: 0 22px 48px rgba(55, 75, 88, 0.13) !important;
+    transform: translateY(-5px);
+}
+
+body.app-page-submission-list:not(.home-page) .work-actions,
+body.app-page-submission-list:not(.home-page) .app-art-actions {
+    background: linear-gradient(90deg, rgba(255, 251, 231, 0.82), rgba(246, 249, 250, 0.9));
+}
+
+body.app-page-certificates:not(.home-page) .cert-card {
+    height: 100%;
+    padding: 22px;
+    border-color: rgba(202, 213, 219, 0.86) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 12px 32px rgba(55, 75, 88, 0.07) !important;
+}
+
+body.app-page-certificates:not(.home-page) .cert-card:hover {
+    border-color: rgba(218, 181, 79, 0.58) !important;
+    box-shadow: 0 21px 46px rgba(55, 75, 88, 0.13) !important;
+    transform: translateY(-5px);
+}
+
+body.app-page-awards:not(.home-page) .competition-selector {
+    padding: 18px 20px;
+}
+
+body.app-page-awards:not(.home-page) section.mb-5 {
+    padding: 24px;
+    border: 1px solid rgba(202, 213, 219, 0.82);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.64);
+    box-shadow: 0 14px 36px rgba(55, 75, 88, 0.06), inset 0 1px 0 #fff;
+}
+
+body.app-page-awards:not(.home-page) .award-card {
+    height: 100%;
+    overflow: hidden;
+    border-color: rgba(202, 213, 219, 0.86) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 11px 30px rgba(55, 75, 88, 0.07) !important;
+}
+
+body.app-page-awards:not(.home-page) .award-card:hover {
+    border-color: rgba(218, 181, 79, 0.6) !important;
+    box-shadow: 0 20px 44px rgba(55, 75, 88, 0.13) !important;
+    transform: translateY(-5px);
+}
+
+body.app-page-awards:not(.home-page) .award-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    font-weight: 880;
+    flex: 0 0 44px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+body.app-page-news-list:not(.home-page) .news-card {
+    overflow: hidden;
+    border-color: rgba(202, 213, 219, 0.86) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 11px 30px rgba(55, 75, 88, 0.07) !important;
+    cursor: pointer;
+}
+
+body.app-page-news-list:not(.home-page) .news-card:hover {
+    border-color: rgba(218, 181, 79, 0.6) !important;
+    box-shadow: 0 20px 44px rgba(55, 75, 88, 0.13) !important;
+    transform: translateY(-4px);
+}
+
+body.app-page-news-list:not(.home-page) .news-card .fa-chevron-right {
+    transition: color 180ms ease, transform 180ms ease;
+}
+
+body.app-page-news-list:not(.home-page) .news-card:hover .fa-chevron-right {
+    color: #9b7418 !important;
+    transform: translateX(4px);
+}
+
+body.app-page-news-list:not(.home-page) .news-meta {
+    margin: 7px 0 10px;
+    color: var(--app-muted);
+    font-size: 0.82rem;
+}
+
+body.app-page-news-list:not(.home-page) .news-excerpt {
+    margin: 0;
+    color: var(--app-ink-soft);
+    line-height: 1.72;
+}
+
+@media (max-width: 991.98px) {
+    body.app-page-submission-list:not(.home-page) .app-page-head {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 720px) {
+    body.app-page-submission-list:not(.home-page) .app-page-head,
+    body.app-page:not(.home-page) .page-header {
+        padding: 22px 20px;
+        border-radius: 18px !important;
+    }
+
+    body.app-page-invitations:not(.home-page) .invitation-card {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 18px;
+    }
+
+    body.app-page-invitations:not(.home-page) .inv-card-actions {
+        width: 100%;
+        padding-left: 72px;
+    }
+
+    body.app-page-invitations:not(.home-page) .inv-card-actions form,
+    body.app-page-invitations:not(.home-page) .btn-accept,
+    body.app-page-invitations:not(.home-page) .btn-reject {
+        flex: 1;
+    }
+
+    body.app-page-awards:not(.home-page) section.mb-5 {
+        padding: 18px;
     }
 }

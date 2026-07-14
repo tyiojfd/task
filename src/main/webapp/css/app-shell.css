@@ -7,6 +7,8 @@
     --app-sea: #078e9f;
     --app-mint: #cdeee3;
     --app-yellow: #efc65c;
+    --app-yellow-soft: #fff3bf;
+    --app-yellow-pale: #fff9df;
     --app-pink: #f3c9d5;
     --app-paper: #f4f7f8;
     --app-surface: #ffffff;
@@ -36,7 +38,10 @@ body:not(.home-page) {
     margin: 0;
     overflow-x: hidden;
     color: var(--app-ink);
-    background: var(--app-paper);
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.96), transparent 28rem),
+        radial-gradient(circle at 92% 4%, rgba(224, 232, 236, 0.72), transparent 30rem),
+        linear-gradient(180deg, #f7f9fa 0%, var(--app-paper) 34%, #f8fafb 100%);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 15px;
     line-height: 1.6;
