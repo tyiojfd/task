@@ -114,45 +114,13 @@
                                         <button class="btn btn-sm ${user.status == 1 ? 'btn-outline-danger' : 'btn-outline-success'}" type="submit">${user.status == 1 ? '禁用' : '启用'}</button>
                                     </form>
                                     <!-- 角色管理 -->
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#roleModal${user.userId}">角色</button>
+                                    <button class="btn btn-sm btn-outline-primary btn-role-trigger" type="button"
+                                            data-userid="${user.userId}"
+                                            data-realname="<c:out value='${user.realName}'/>">角色</button>
                                     <!-- 重置密码 -->
-                                    <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#pwdModal${user.userId}">重置密码</button>
-                                </div>
-
-                                <!-- 角色 Modal -->
-                                <div class="modal fade" id="roleModal${user.userId}" tabindex="-1">
-                                    <div class="modal-dialog"><div class="modal-content">
-                                        <form method="post" action="${pageContext.request.contextPath}/admin/users">
-                                            <div class="modal-header"><h5 class="modal-title">分配角色 - <c:out value="${user.realName}"/></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                                            <div class="modal-body">
-                                                <input type="hidden" name="action" value="roles">
-                                                <input type="hidden" name="userId" value="${user.userId}">
-                                                <c:forEach var="role" items="${allRoles}">
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" name="roleIds" value="${role.roleId}" id="r${user.userId}_${role.roleId}"
-                                                        <c:forEach var="ur" items="${userRolesMap[user.userId]}"><c:if test="${ur.roleId == role.roleId}">checked</c:if></c:forEach>>
-                                                    <label class="form-check-label" for="r${user.userId}_${role.roleId}"><c:out value="${role.roleName}"/> <span class="text-muted"><c:out value="${role.roleDesc}" default=""/></span></label>
-                                                </div>
-                                                </c:forEach>
-                                            </div>
-                                            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button><button type="submit" class="btn btn-primary">保存</button></div>
-                                        </form>
-                                    </div></div>
-                                </div>
-
-                                <!-- 重置密码 Modal -->
-                                <div class="modal fade" id="pwdModal${user.userId}" tabindex="-1">
-                                    <div class="modal-dialog"><div class="modal-content">
-                                        <form method="post" action="${pageContext.request.contextPath}/admin/users">
-                                            <div class="modal-header"><h5 class="modal-title">重置密码 - <c:out value="${user.realName}"/></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                                            <div class="modal-body">
-                                                <input type="hidden" name="action" value="resetPwd">
-                                                <input type="hidden" name="userId" value="${user.userId}">
-                                                <div class="mb-3"><label class="form-label">新密码（至少6位）</label><input type="password" name="newPassword" class="form-control" minlength="6" required></div>
-                                            </div>
-                                            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button><button type="submit" class="btn btn-warning">重置</button></div>
-                                        </form>
-                                    </div></div>
+                                    <button class="btn btn-sm btn-outline-warning btn-pwd-trigger" type="button"
+                                            data-userid="${user.userId}"
+                                            data-realname="<c:out value='${user.realName}'/>">重置密码</button>
                                 </div>
                             </td>
                         </tr>
@@ -165,5 +133,110 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ═══════════ 共享角色 Modal ═══════════ -->
+<div class="modal fade" id="sharedRoleModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form method="post" action="${pageContext.request.contextPath}/admin/users">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roleModalTitle">分配角色</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="roleModalBody">
+                <input type="hidden" name="action" value="roles">
+                <input type="hidden" name="userId" id="roleUserId">
+                <div id="roleChecks"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+<!-- ═══════════ 共享重置密码 Modal ═══════════ -->
+<div class="modal fade" id="sharedPwdModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form method="post" action="${pageContext.request.contextPath}/admin/users">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pwdModalTitle">重置密码</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="action" value="resetPwd">
+                <input type="hidden" name="userId" id="pwdUserId">
+                <div class="mb-3">
+                    <label class="form-label">新密码（至少6位）</label>
+                    <input type="password" name="newPassword" class="form-control" minlength="6" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-warning">重置</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+<script>
+// 所有角色数据（服务端渲染到 JS 变量）
+var _allRoles = [
+    <c:forEach var="r" items="${allRoles}" varStatus="st">
+    {roleId: ${r.roleId}, roleName: '<c:out value="${r.roleName}"/>', roleDesc: '<c:out value="${r.roleDesc}" default=""/>'}<c:if test="${!st.last}">,</c:if>
+    </c:forEach>
+];
+// 每个用户的角色ID集合 { userId: [roleId, ...] }
+var _userRoleIds = {
+    <c:forEach var="entry" items="${userRolesMap}" varStatus="st">
+    ${entry.key}: [<c:forEach var="ur" items="${entry.value}" varStatus="st2">${ur.roleId}<c:if test="${!st2.last}">,</c:if></c:forEach>]<c:if test="${!st.last}">,</c:if>
+    </c:forEach>
+};
+
+// 获取 Bootstrap modal 实例（带缓存）
+var _roleModal = null, _pwdModal = null;
+function getRoleModal() {
+    if (!_roleModal) _roleModal = new bootstrap.Modal(document.getElementById('sharedRoleModal'));
+    return _roleModal;
+}
+function getPwdModal() {
+    if (!_pwdModal) _pwdModal = new bootstrap.Modal(document.getElementById('sharedPwdModal'));
+    return _pwdModal;
+}
+
+// 角色按钮点击
+document.querySelectorAll('.btn-role-trigger').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var userId = parseInt(this.dataset.userid);
+        var realName = this.dataset.realname;
+        document.getElementById('roleModalTitle').textContent = '分配角色 - ' + realName;
+        document.getElementById('roleUserId').value = userId;
+
+        // 生成角色复选框
+        var roleIds = _userRoleIds[userId] || [];
+        var html = '';
+        _allRoles.forEach(function(r) {
+            var checked = roleIds.indexOf(r.roleId) >= 0 ? ' checked' : '';
+            html += '<div class="form-check mb-2">';
+            html += '<input class="form-check-input" type="checkbox" name="roleIds" value="' + r.roleId + '" id="r_' + userId + '_' + r.roleId + '"' + checked + '>';
+            html += '<label class="form-check-label" for="r_' + userId + '_' + r.roleId + '">' + r.roleName + ' <span class="text-muted">' + (r.roleDesc || '') + '</span></label>';
+            html += '</div>';
+        });
+        document.getElementById('roleChecks').innerHTML = html;
+        getRoleModal().show();
+    });
+});
+
+// 密码重置按钮点击
+document.querySelectorAll('.btn-pwd-trigger').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var userId = parseInt(this.dataset.userid);
+        var realName = this.dataset.realname;
+        document.getElementById('pwdModalTitle').textContent = '重置密码 - ' + realName;
+        document.getElementById('pwdUserId').value = userId;
+        getPwdModal().show();
+    });
+});
+</script>
 </body>
 </html>
