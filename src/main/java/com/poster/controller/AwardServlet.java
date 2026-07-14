@@ -1,12 +1,16 @@
 package com.poster.controller;
 
 import com.poster.dao.CompetitionDAO;
+import com.poster.dao.ScoreDAO;
 import com.poster.dao.WorkDAO;
 import com.poster.dao.impl.CompetitionDAOImpl;
+import com.poster.dao.impl.ScoreDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
+import com.poster.model.AutoAwardResult;
 import com.poster.model.Award;
 import com.poster.model.Competition;
 import com.poster.model.Role;
+import com.poster.model.Score;
 import com.poster.model.User;
 import com.poster.model.Work;
 import com.poster.service.AwardService;
@@ -38,6 +42,7 @@ public class AwardServlet extends HttpServlet {
     private CompetitionDAO competitionDAO = new CompetitionDAOImpl();
     private TeamService teamService = new TeamServiceImpl();
     private ScoreService scoreService = new ScoreServiceImpl();
+    private ScoreDAO scoreDAO = new ScoreDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -67,6 +72,9 @@ public class AwardServlet extends HttpServlet {
         if ("set".equals(action)) {
             // 设置获奖
             setAward(request, response);
+        } else if ("autoGenerate".equals(action)) {
+            // 一键生成获奖名单
+            autoGenerateAwards(request, response);
         } else if ("delete".equals(action)) {
             // 删除获奖
             deleteAward(request, response);
@@ -199,9 +207,14 @@ public class AwardServlet extends HttpServlet {
                 // 加载每个作品的平均分和队伍名
                 Map<Integer, Double> avgScoreMap = new HashMap<>();
                 Map<Integer, String> teamNameMap = new HashMap<>();
+                Set<Integer> scoredWorkIds = new HashSet<>();
                 for (Work w : competitionWorks) {
                     Double avg = scoreService.getAverageScore(w.getWorkId());
                     avgScoreMap.put(w.getWorkId(), avg != null ? avg : 0.0);
+                    List<Score> scores = scoreDAO.findByWorkId(w.getWorkId());
+                    if (scores != null && !scores.isEmpty()) {
+                        scoredWorkIds.add(w.getWorkId());
+                    }
                     teamNameMap.put(w.getWorkId(),
                             teamService.getTeamById(w.getTeamId()) != null
                                     ? teamService.getTeamById(w.getTeamId()).getTeamName()
@@ -214,6 +227,7 @@ public class AwardServlet extends HttpServlet {
                 request.setAttribute("awardedWorkIds", awardedWorkIds);
                 request.setAttribute("avgScoreMap", avgScoreMap);
                 request.setAttribute("teamNameMap", teamNameMap);
+                request.setAttribute("scoredWorkIds", scoredWorkIds);
             } catch (NumberFormatException e) {
                 // ignore
             }
@@ -326,6 +340,40 @@ public class AwardServlet extends HttpServlet {
                     + "/award?action=manage&competitionId=" + competitionId);
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("error", "请输入有效的数据");
+            response.sendRedirect(request.getContextPath() + "/award?action=manage");
+        }
+    }
+
+    /**
+     * 一键生成获奖名单（管理员操作）
+     */
+    private void autoGenerateAwards(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (!isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/index");
+            return;
+        }
+
+        User user = (User) session.getAttribute("user");
+        String competitionIdStr = request.getParameter("competitionId");
+
+        try {
+            Integer competitionId = Integer.parseInt(competitionIdStr);
+            AutoAwardResult result = awardService.autoGenerateAwards(competitionId, user.getUserId());
+            if (result.isSuccess()) {
+                request.getSession().setAttribute("message", result.getMessage());
+            } else {
+                request.getSession().setAttribute("error", result.getMessage());
+            }
+            response.sendRedirect(request.getContextPath()
+                    + "/award?action=manage&competitionId=" + competitionId);
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("error", "请选择有效竞赛");
             response.sendRedirect(request.getContextPath() + "/award?action=manage");
         }
     }

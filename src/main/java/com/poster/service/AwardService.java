@@ -1,5 +1,6 @@
 package com.poster.service;
 
+import com.poster.model.AutoAwardResult;
 import com.poster.model.Award;
 import java.util.List;
 
@@ -14,6 +15,11 @@ public interface AwardService {
      * 设置获奖
      */
     boolean setAward(Award award);
+
+    /**
+     * 一键生成获奖名单
+     */
+    AutoAwardResult autoGenerateAwards(Integer competitionId, Integer issuerId);
 
     /**
      * 根据竞赛ID查询获奖列表

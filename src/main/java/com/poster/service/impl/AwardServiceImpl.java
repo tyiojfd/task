@@ -12,6 +12,7 @@ import com.poster.dao.impl.CompetitionDAOImpl;
 import com.poster.dao.impl.NewsDAOImpl;
 import com.poster.dao.impl.ScoreDAOImpl;
 import com.poster.dao.impl.WorkDAOImpl;
+import com.poster.model.AutoAwardResult;
 import com.poster.model.Competition;
 import com.poster.model.Award;
 import com.poster.model.Certificate;
@@ -19,9 +20,13 @@ import com.poster.model.News;
 import com.poster.model.Work;
 import com.poster.service.AwardService;
 import com.poster.util.AwardEligibilityPolicy;
+import com.poster.util.AutoAwardPolicy;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,6 +95,148 @@ public class AwardServiceImpl implements AwardService {
         }
 
         return success;
+    }
+
+    @Override
+    public AutoAwardResult autoGenerateAwards(Integer competitionId, Integer issuerId) {
+        if (competitionId == null || issuerId == null) {
+            return AutoAwardResult.failure("请选择有效竞赛");
+        }
+
+        Competition competition = competitionDAO.findById(competitionId);
+        if (competition == null) {
+            return AutoAwardResult.failure("竞赛不存在");
+        }
+        if (!Integer.valueOf(3).equals(competition.getStatus())) {
+            return AutoAwardResult.failure("仅已结束竞赛可一键生成获奖名单");
+        }
+
+        List<Work> works = workDAO.findByCompetitionId(competitionId);
+        if (works == null || works.isEmpty()) {
+            return AutoAwardResult.failure("该竞赛暂无作品，无法生成获奖名单");
+        }
+
+        List<AwardCandidate> candidates = new ArrayList<>();
+        int skippedUnscoredCount = 0;
+        for (Work work : works) {
+            if (work == null || work.getStatus() == null
+                    || (!Integer.valueOf(2).equals(work.getStatus())
+                        && !Integer.valueOf(3).equals(work.getStatus()))) {
+                continue;
+            }
+
+            List<com.poster.model.Score> scores = scoreDAO.findByWorkId(work.getWorkId());
+            if (scores == null || scores.isEmpty()) {
+                skippedUnscoredCount++;
+                continue;
+            }
+
+            Double averageScore = scoreDAO.getAverageScoreByWorkId(work.getWorkId());
+            candidates.add(new AwardCandidate(work, averageScore != null ? averageScore : 0.0));
+        }
+
+        if (candidates.isEmpty()) {
+            return AutoAwardResult.failure("当前没有已评分作品，无法生成获奖名单");
+        }
+
+        // stable sort: average desc → submitTime asc → workId asc
+        Collections.sort(candidates, new Comparator<AwardCandidate>() {
+            @Override
+            public int compare(AwardCandidate a, AwardCandidate b) {
+                int scoreCompare = Double.compare(b.averageScore, a.averageScore);
+                if (scoreCompare != 0) return scoreCompare;
+
+                if (a.work.getSubmitTime() != null && b.work.getSubmitTime() != null) {
+                    int timeCompare = a.work.getSubmitTime().compareTo(b.work.getSubmitTime());
+                    if (timeCompare != 0) return timeCompare;
+                } else if (a.work.getSubmitTime() != null) {
+                    return -1;
+                } else if (b.work.getSubmitTime() != null) {
+                    return 1;
+                }
+
+                return Integer.compare(a.work.getWorkId(), b.work.getWorkId());
+            }
+        });
+
+        AutoAwardPolicy.PrizeCounts prizeCounts =
+                AutoAwardPolicy.calculatePrizeCounts(candidates.size());
+
+        if (!clearExistingAwardsForCompetition(competitionId)) {
+            return AutoAwardResult.failure("生成失败，请稍后重试或手动设置");
+        }
+
+        int created = 0;
+        created += createAwardsForLevel(candidates, 0,
+                prizeCounts.getFirstPrizeCount(), "一等奖", competitionId, issuerId);
+        created += createAwardsForLevel(candidates, prizeCounts.getFirstPrizeCount(),
+                prizeCounts.getSecondPrizeCount(), "二等奖", competitionId, issuerId);
+        created += createAwardsForLevel(candidates,
+                prizeCounts.getFirstPrizeCount() + prizeCounts.getSecondPrizeCount(),
+                prizeCounts.getThirdPrizeCount(), "三等奖", competitionId, issuerId);
+
+        if (created != prizeCounts.getTotalCount()) {
+            return AutoAwardResult.failure("生成失败，请稍后重试或手动设置");
+        }
+
+        return AutoAwardResult.success(candidates.size(), skippedUnscoredCount, prizeCounts);
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────
+
+    private boolean clearExistingAwardsForCompetition(Integer competitionId) {
+        List<Award> existingAwards = awardDAO.findByCompetitionId(competitionId);
+        if (existingAwards == null || existingAwards.isEmpty()) {
+            return true;
+        }
+
+        for (Award existingAward : existingAwards) {
+            Certificate certificate = certificateDAO.findByAwardId(existingAward.getAwardId());
+            if (certificate != null) {
+                if (certificateDAO.deleteById(certificate.getCertificateId()) <= 0) {
+                    return false;
+                }
+            }
+            if (awardDAO.deleteById(existingAward.getAwardId()) <= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int createAwardsForLevel(List<AwardCandidate> candidates, int startIndex,
+                                     int count, String awardLevel,
+                                     Integer competitionId, Integer issuerId) {
+        int created = 0;
+        for (int i = 0; i < count && (startIndex + i) < candidates.size(); i++) {
+            AwardCandidate candidate = candidates.get(startIndex + i);
+            Award award = new Award();
+            award.setCompetitionId(competitionId);
+            award.setWorkId(candidate.work.getWorkId());
+            award.setAwardLevel(awardLevel);
+            award.setFinalScore(candidate.averageScore);
+            award.setIssuerId(issuerId);
+
+            if (awardDAO.insert(award) <= 0) {
+                return created;
+            }
+            if (!generateCertificate(award.getAwardId())) {
+                awardDAO.deleteById(award.getAwardId());
+                return created;
+            }
+            created++;
+        }
+        return created;
+    }
+
+    private static class AwardCandidate {
+        private final Work work;
+        private final double averageScore;
+
+        private AwardCandidate(Work work, double averageScore) {
+            this.work = work;
+            this.averageScore = averageScore;
+        }
     }
 
     @Override

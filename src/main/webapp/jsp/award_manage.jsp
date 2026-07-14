@@ -47,6 +47,8 @@
     Map<Integer, Double> avgScoreMap = (Map<Integer, Double>) request.getAttribute("avgScoreMap");
     @SuppressWarnings("unchecked")
     Map<Integer, String> teamNameMap = (Map<Integer, String>) request.getAttribute("teamNameMap");
+    @SuppressWarnings("unchecked")
+    Set<Integer> scoredWorkIds = (Set<Integer>) request.getAttribute("scoredWorkIds");
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -109,11 +111,26 @@
     <div class="row">
         <!-- 左侧：作品列表 -->
         <div class="col-lg-7">
-            <h5 class="mb-3"><i class="fas fa-image"></i> <%= HtmlEscaper.escape(selectedCompetition.getName()) %> - 作品列表</h5>
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                <div>
+                    <h5 class="mb-1"><i class="fas fa-image"></i> <%= HtmlEscaper.escape(selectedCompetition.getName()) %> - 作品列表</h5>
+                    <small class="text-muted">一键获奖只统计已评分作品，未评分作品会自动跳过。</small>
+                </div>
+                <form method="post" action="${pageContext.request.contextPath}/award"
+                      onsubmit="return confirm('确定要一键生成获奖名单吗？此操作会撤销当前竞赛已有获奖记录并重新生成奖状。')">
+                    <input type="hidden" name="action" value="autoGenerate">
+                    <input type="hidden" name="competitionId" value="<%= selectedCompetition.getCompetitionId() %>">
+                    <button type="submit" class="btn btn-warning btn-sm">
+                        <i class="fas fa-wand-magic-sparkles"></i> 一键生成获奖名单
+                    </button>
+                    <div class="form-text text-end">前10%一等奖，后15%二等奖，后20%三等奖</div>
+                </form>
+            </div>
 
             <% if (works != null && !works.isEmpty()) {
                 for (Work w : works) {
                     boolean awarded = awardedWorkIds != null && awardedWorkIds.contains(w.getWorkId());
+                    boolean scored  = scoredWorkIds != null && scoredWorkIds.contains(w.getWorkId());
                     Double avg = avgScoreMap != null ? avgScoreMap.get(w.getWorkId()) : 0.0;
                     String tName = teamNameMap != null ? teamNameMap.get(w.getWorkId()) : "未知队伍";
             %>
@@ -123,7 +140,11 @@
                         <div class="fw-bold"><%= HtmlEscaper.escape(w.getTitle()) %></div>
                         <small class="text-muted">
                             <i class="fas fa-users"></i> <%= HtmlEscaper.escape(tName) %> &nbsp;
-                            <i class="fas fa-star"></i> 均分: <%= String.format("%.1f", avg != null ? avg : 0.0) %>
+                            <% if (scored) { %>
+                                <i class="fas fa-star"></i> 均分: <%= String.format("%.1f", avg != null ? avg : 0.0) %>
+                            <% } else { %>
+                                <i class="fas fa-circle-info"></i> 暂无评分，不参与一键获奖
+                            <% } %>
                         </small>
                     </div>
                     <div class="col-md-3">
