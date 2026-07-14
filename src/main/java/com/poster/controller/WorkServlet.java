@@ -299,6 +299,16 @@ public class WorkServlet extends HttpServlet {
         request.setAttribute("submittedTeamIds", submittedTeamIds);
         request.setAttribute("ineligibleTeamIds", ineligibleTeamIds);
         request.setAttribute("ineligibleReasonMap", ineligibleReasonMap);
+        boolean hasEligible = false;
+        if (leaderTeams != null) {
+            for (Team team : leaderTeams) {
+                if (ineligibleTeamIds == null || !ineligibleTeamIds.contains(team.getTeamId())) {
+                    hasEligible = true;
+                    break;
+                }
+            }
+        }
+        request.setAttribute("hasEligibleTeam", hasEligible);
         request.getRequestDispatcher("/jsp/submission_add.jsp").forward(request, response);
     }
 
