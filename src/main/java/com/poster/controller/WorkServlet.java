@@ -13,11 +13,7 @@ import com.poster.dao.impl.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -96,17 +92,8 @@ public class WorkServlet extends HttpServlet {
         }
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-        try (ImageOutputStream imageOutput = ImageIO.createImageOutputStream(output)) {
-            writer.setOutput(imageOutput);
-            ImageWriteParam params = writer.getDefaultWriteParam();
-            if (params.canWriteCompressed()) {
-                params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                params.setCompressionQuality(THUMBNAIL_JPEG_QUALITY);
-            }
-            writer.write(null, new IIOImage(thumbnail, null, null), params);
-        } finally {
-            writer.dispose();
+        if (!ImageIO.write(thumbnail, "jpeg", output)) {
+            throw new IOException("JPEG编码器不可用");
         }
         return output.toByteArray();
     }
