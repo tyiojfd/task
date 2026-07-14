@@ -150,6 +150,33 @@ public class FileUploadUtil {
     }
 
     /**
+     * 将字节数组直接写入文件（用于已经读取过Part流的情况，避免二次读取流变空）
+     */
+    public static String saveBytes(byte[] data, String originalFileName,
+                                   String uploadBasePath, Integer competitionId, Integer teamId)
+            throws IOException {
+        if (data == null || data.length == 0) {
+            throw new IOException("文件数据为空");
+        }
+
+        String compDir = "competition_" + competitionId;
+        String relativeDir = "/" + compDir;
+        Path uploadPath = Paths.get(uploadBasePath, compDir);
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        String fileName = generateFileName(teamId, originalFileName);
+        String relativePath = relativeDir + "/" + fileName;
+
+        Path filePath = uploadPath.resolve(fileName);
+        Files.write(filePath, data);
+
+        return relativePath;
+    }
+
+    /**
      * 删除文件
      * @param uploadBasePath 上传根目录
      * @param relativePath 相对路径（如 /competition_1/team_3_file.jpg）
