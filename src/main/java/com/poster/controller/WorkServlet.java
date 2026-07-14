@@ -394,7 +394,9 @@ public class WorkServlet extends HttpServlet {
                 imageContentType = contentType;
                 thumbnailData = createThumbnail(imageData);
                 thumbnailContentType = THUMBNAIL_CONTENT_TYPE;
-                imagePath = FileUploadUtil.saveFile(filePart, uploadRealPath, team.getCompetitionId(), teamId);
+                imagePath = FileUploadUtil.saveBytes(imageData,
+                        filePart.getSubmittedFileName(), uploadRealPath,
+                        team.getCompetitionId(), teamId);
             } catch (IOException e) {
                 response.sendRedirect(request.getContextPath() + "/work?action=add&error=invalid_image");
                 return;
@@ -595,7 +597,8 @@ public class WorkServlet extends HttpServlet {
                 try {
                     byte[] imageData = readPartBytes(filePart);
                     byte[] thumbnailData = createThumbnail(imageData);
-                    newImagePath = FileUploadUtil.saveFile(filePart, uploadRealPath,
+                    newImagePath = FileUploadUtil.saveBytes(imageData,
+                            filePart.getSubmittedFileName(), uploadRealPath,
                             team.getCompetitionId(), team.getTeamId());
                     existingWork.setImagePath(newImagePath);
                     existingWork.setImageData(imageData);

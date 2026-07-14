@@ -56,11 +56,13 @@
         .form-label { font-weight: 600; font-size: 0.9rem; }
         .form-control { border-radius: 8px; border: 2px solid var(--app-rule); padding: 0.6rem 1rem; }
         .form-control:focus { border-color: var(--app-blue); box-shadow: 0 0 0 3px rgba(23,105,170,0.1); }
-        .upload-area { border: 2px dashed var(--app-rule-strong); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--app-surface-soft); position: relative; }
+        .upload-area { border: 2px dashed var(--app-rule-strong); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--app-surface-soft); position: relative; transition: padding 0.2s; display: inline-block; min-width: 200px; }
+        .upload-area.has-preview { padding: 0; border-style: solid; border-color: transparent; }
         .upload-area:hover { border-color: var(--app-blue); background: var(--app-surface-soft); }
+        .upload-area.has-preview:hover { border-color: var(--app-blue); }
         .upload-area input[type="file"] { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; }
         .preview-container { position: relative; display: inline-block; max-width: 100%; }
-        .preview-container img { max-height: 300px; border-radius: 8px; }
+        .preview-container img { max-width: 100%; max-height: 400px; border-radius: 8px; display: block; }
         .remove-image { position: absolute; top: -10px; right: -10px; background: #c44e63; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; }
         .btn-submit { background: var(--app-blue); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600; }
         .btn-submit:hover { background: var(--app-blue-deep); }
@@ -157,7 +159,7 @@
             <div class="col-lg-4">
                 <div class="form-card">
                     <h5><i class="fas fa-image me-2" style="color:var(--app-blue)"></i>海报图片</h5>
-                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageFile').click()">
+                    <div class="upload-area<%= (isEdit && editWork.getImagePath() != null) ? " has-preview" : "" %>" id="uploadArea" onclick="document.getElementById('imageFile').click()">
                         <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png">
                         <div id="uploadPlaceholder" class="<%= placeholderClass %>">
                             <i class="fas fa-cloud-upload-alt"></i>
@@ -190,6 +192,7 @@
                 document.getElementById('previewImage').src = e.target.result;
                 document.getElementById('previewContainer').classList.remove('d-none');
                 document.getElementById('uploadPlaceholder').classList.add('d-none');
+                document.getElementById('uploadArea').classList.add('has-preview');
             };
             reader.readAsDataURL(file);
         }
@@ -199,6 +202,7 @@
         document.getElementById('imageFile').value = '';
         document.getElementById('previewContainer').classList.add('d-none');
         document.getElementById('uploadPlaceholder').classList.remove('d-none');
+        document.getElementById('uploadArea').classList.remove('has-preview');
     });
     document.getElementById('submitForm').addEventListener('submit', function(e) {
         var title = document.querySelector('input[name="title"]').value.trim();
