@@ -159,7 +159,7 @@
             <div class="col-lg-4">
                 <div class="form-card">
                     <h5><i class="fas fa-image me-2" style="color:var(--app-blue)"></i>海报图片</h5>
-                    <div class="upload-area<%= (isEdit && editWork.getImagePath() != null) ? " has-preview" : "" %>" id="uploadArea" onclick="document.getElementById('imageFile').click()">
+                    <label class="upload-area<%= (isEdit && editWork.getImagePath() != null) ? " has-preview" : "" %>" id="uploadArea">
                         <input type="file" id="imageFile" name="imageFile" accept="image/jpeg,image/png">
                         <div id="uploadPlaceholder" class="<%= placeholderClass %>">
                             <i class="fas fa-cloud-upload-alt"></i>
@@ -168,9 +168,9 @@
                         </div>
                         <div id="previewContainer" class="preview-container <%= previewClass %>">
                             <img id="previewImage" src="<%= previewImgSrc %>" alt="预览">
-                            <button type="button" class="remove-image" id="removeImage">&times;</button>
+                            <button type="button" class="remove-image" id="removeImage" tabindex="-1" onclick="event.preventDefault(); event.stopPropagation();">×</button>
                         </div>
-                </div>
+                    </label>
             </div>
         </div>
         </div>
@@ -199,6 +199,7 @@
     });
     document.getElementById('removeImage').addEventListener('click', function(e) {
         e.stopPropagation();
+        e.preventDefault();
         document.getElementById('imageFile').value = '';
         document.getElementById('previewContainer').classList.add('d-none');
         document.getElementById('uploadPlaceholder').classList.remove('d-none');
