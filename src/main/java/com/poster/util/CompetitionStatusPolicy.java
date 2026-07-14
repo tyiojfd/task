@@ -16,6 +16,6 @@ public final class CompetitionStatusPolicy {
             return true;
         }
         return (currentStatus == 1 && (nextStatus == 2 || nextStatus == 0))
-                || (currentStatus == 2 && (nextStatus == 3 || nextStatus == 0));
+                || (currentStatus == 2 && (nextStatus == 3 || nextStatus == 1 || nextStatus == 0));
     }
 }
