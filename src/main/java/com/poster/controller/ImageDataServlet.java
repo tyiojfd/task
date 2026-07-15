@@ -90,7 +90,9 @@ public class ImageDataServlet extends HttpServlet {
             // 设置响应头
             response.setContentType(contentType != null ? contentType : "image/jpeg");
             response.setContentLength(imageData.length);
-            response.setHeader("Cache-Control", "private, max-age=3600");
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
             if ("true".equalsIgnoreCase(request.getParameter("download"))) {
                 String downloadName = work.getImagePath();
                 if (downloadName == null || downloadName.trim().isEmpty()) {

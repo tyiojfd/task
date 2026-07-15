@@ -96,9 +96,9 @@ public class FileUploadServlet extends HttpServlet {
             }
 
             if (!FileUploadUtil.isAllowedType(filePart.getContentType())
-                    || !FileUploadUtil.isAllowedExtension(filePart.getSubmittedFileName())) {
+                    && !FileUploadUtil.isAllowedExtension(filePart.getSubmittedFileName())) {
                 writeError(response, out, HttpServletResponse.SC_BAD_REQUEST,
-                        "不支持的文件类型，仅支持 JPG/PNG");
+                        "不支持的文件类型，仅支持 JPG/PNG/ZIP/DOCX");
                 return;
             }
 
@@ -109,7 +109,11 @@ public class FileUploadServlet extends HttpServlet {
             workFile.setWorkId(workId);
             workFile.setFileName(safeFileName(filePart.getSubmittedFileName()));
             workFile.setFilePath(filePath);
-            workFile.setFileType(filePart.getContentType());
+            String fileType = filePart.getContentType();
+            if (fileType != null && fileType.length() > 50) {
+                fileType = fileType.substring(0, 50);
+            }
+            workFile.setFileType(fileType);
             workFile.setFileSize(filePart.getSize());
             if (workFileDAO.insert(workFile) <= 0) {
                 FileUploadUtil.deleteFile(uploadRealPath, filePath);

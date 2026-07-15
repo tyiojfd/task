@@ -16,8 +16,15 @@ import java.util.UUID;
  */
 public class FileUploadUtil {
 
-    private static final String[] ALLOWED_TYPES = {"image/jpeg", "image/png"};
-    private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"};
+    private static final String[] ALLOWED_TYPES = {
+        "image/jpeg", "image/png",
+        "application/zip", "application/x-zip-compressed",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    };
+    private static final String[] ALLOWED_EXTENSIONS = {
+        ".jpg", ".jpeg", ".png",
+        ".zip", ".docx"
+    };
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024L; // 10MB
 
     /**
@@ -119,11 +126,8 @@ public class FileUploadUtil {
         String submittedFileName = part.getSubmittedFileName();
         long fileSize = part.getSize();
 
-        if (!isAllowedType(contentType)) {
-            throw new IOException("不支持的文件类型：" + contentType + "，仅支持 JPG/PNG");
-        }
-        if (!isAllowedExtension(submittedFileName)) {
-            throw new IOException("不支持的文件扩展名，仅支持 .jpg/.jpeg/.png");
+        if (!isAllowedType(contentType) && !isAllowedExtension(submittedFileName)) {
+            throw new IOException("不支持的文件类型：" + contentType + "，仅支持 JPG/PNG/ZIP/DOCX");
         }
         if (!isAllowedSize(fileSize)) {
             throw new IOException("文件大小超过限制（最大 10MB）");

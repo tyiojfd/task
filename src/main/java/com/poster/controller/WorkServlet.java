@@ -69,11 +69,12 @@ public class WorkServlet extends HttpServlet {
         }
     }
 
-    private byte[] createThumbnail(byte[] imageData) throws IOException {
-        BufferedImage source = ImageIO.read(new ByteArrayInputStream(imageData));
-        if (source == null) {
-            throw new IOException("无法读取上传图片");
-        }
+    private byte[] createThumbnail(byte[] imageData) {
+        try {
+            BufferedImage source = ImageIO.read(new ByteArrayInputStream(imageData));
+            if (source == null) {
+                return null; // 服务器可能缺解码库，回退原图
+            }
 
         int sourceWidth = source.getWidth();
         int sourceHeight = source.getHeight();
@@ -91,11 +92,14 @@ public class WorkServlet extends HttpServlet {
             graphics.dispose();
         }
 
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        if (!ImageIO.write(thumbnail, "jpeg", output)) {
-            throw new IOException("JPEG编码器不可用");
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            if (!ImageIO.write(thumbnail, "jpeg", output)) {
+                return null;
+            }
+            return output.toByteArray();
+        } catch (Exception e) {
+            return null; // 缩略图生成失败，回退原图
         }
-        return output.toByteArray();
     }
 
     private int parsePage(HttpServletRequest request) {
@@ -395,7 +399,12 @@ public class WorkServlet extends HttpServlet {
                 imageData = readPartBytes(filePart);
                 imageContentType = contentType;
                 thumbnailData = createThumbnail(imageData);
-                thumbnailContentType = THUMBNAIL_CONTENT_TYPE;
+                if (thumbnailData == null) {
+                    thumbnailData = imageData;       // 服务器缺解码库时回退原图
+                    thumbnailContentType = imageContentType;
+                } else {
+                    thumbnailContentType = THUMBNAIL_CONTENT_TYPE;
+                }
                 imagePath = FileUploadUtil.saveBytes(imageData,
                         filePart.getSubmittedFileName(), uploadRealPath,
                         team.getCompetitionId(), teamId);
@@ -599,6 +608,12 @@ public class WorkServlet extends HttpServlet {
                 try {
                     byte[] imageData = readPartBytes(filePart);
                     byte[] thumbnailData = createThumbnail(imageData);
+                    if (thumbnailData == null) {
+                        thumbnailData = imageData;
+                        existingWork.setThumbnailContentType(contentType);
+                    } else {
+                        existingWork.setThumbnailContentType(THUMBNAIL_CONTENT_TYPE);
+                    }
                     newImagePath = FileUploadUtil.saveBytes(imageData,
                             filePart.getSubmittedFileName(), uploadRealPath,
                             team.getCompetitionId(), team.getTeamId());
@@ -606,7 +621,6 @@ public class WorkServlet extends HttpServlet {
                     existingWork.setImageData(imageData);
                     existingWork.setImageContentType(contentType);
                     existingWork.setThumbnailData(thumbnailData);
-                    existingWork.setThumbnailContentType(THUMBNAIL_CONTENT_TYPE);
                 } catch (IOException e) {
                     response.sendRedirect(request.getContextPath() + "/work?action=edit&id=" + workId + "&error=invalid_image");
                     return;

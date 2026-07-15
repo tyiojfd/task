@@ -51,7 +51,7 @@
 <%@ include file="includes/navbar.jspf" %>
 <div class="container py-4">
     <div class="mb-3">
-        <a href="${pageContext.request.contextPath}/work" class="btn-action btn-back"><i class="fas fa-arrow-left me-1"></i>返回</a>
+        <a href="${pageContext.request.contextPath}/work" class="btn-action btn-back" id="backBtn"><i class="fas fa-arrow-left me-1"></i>返回</a>
     </div>
     <div class="app-detail-layout">
         <!-- ═══ Main: 作品图片 + 描述 ═══ -->
@@ -135,13 +135,14 @@
 
                 <% if (isLeader != null && isLeader) { %>
                     <hr style="border-color:var(--app-rule); margin: 6px 0;">
-                    <form action="<%= request.getContextPath() %>/upload" method="post" enctype="multipart/form-data" style="margin:0; display:flex; flex-direction:column; gap:6px;">
+                    <form id="attachmentForm" style="margin:0; display:flex; flex-direction:column; gap:6px;">
                         <input type="hidden" name="competitionId" value="<%= work.getCompetitionId() %>">
                         <input type="hidden" name="teamId" value="<%= work.getTeamId() %>">
                         <input type="hidden" name="workId" value="<%= work.getWorkId() %>">
                         <label style="font-size:0.82rem; font-weight:800; color:var(--app-muted);">上传附件</label>
-                        <input type="file" name="file" accept=".jpg,.jpeg,.png" required style="font-size:.75rem;">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paperclip me-1"></i>上传</button>
+                        <input type="file" name="file" id="attachmentFile" accept=".jpg,.jpeg,.png,.zip,.docx" required style="font-size:.75rem;">
+                        <button type="submit" class="btn btn-primary" id="uploadBtn"><i class="fas fa-paperclip me-1"></i>上传</button>
+                        <span id="uploadMsg" style="font-size:0.8rem; display:none;"></span>
                     </form>
                     <a href="${pageContext.request.contextPath}/work?action=edit&id=<%= work.getWorkId() %>" class="btn btn-primary" style="width:100%;"><i class="fas fa-edit me-1"></i>编辑作品</a>
                     <form action="${pageContext.request.contextPath}/work" method="post" style="margin:0" onsubmit="return confirm('确定删除？')">
@@ -180,6 +181,61 @@ function showFullImage() {
     var modal = new bootstrap.Modal(document.getElementById('imageModal'));
     modal.show();
 }
+
+// 智能返回：优先使用浏览器历史，来自本站则返回上一页，否则回退到作品列表
+(function() {
+    var backBtn = document.getElementById('backBtn');
+    if (!backBtn) return;
+    backBtn.addEventListener('click', function(e) {
+        if (document.referrer) {
+            var referrerHost = document.createElement('a');
+            referrerHost.href = document.referrer;
+            if (referrerHost.host === window.location.host && window.history.length > 1) {
+                e.preventDefault();
+                window.history.back();
+            }
+        }
+    });
+})();
+
+// AJAX 附件上传
+(function() {
+    var form = document.getElementById('attachmentForm');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var fileInput = document.getElementById('attachmentFile');
+        var btn = document.getElementById('uploadBtn');
+        var msg = document.getElementById('uploadMsg');
+        if (!fileInput.files[0]) { msg.style.display = 'block'; msg.style.color = '#dc3545'; msg.textContent = '请选择文件'; return; }
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>上传中...';
+        msg.style.display = 'none';
+
+        var data = new FormData();
+        data.append('competitionId', form.querySelector('[name="competitionId"]').value);
+        data.append('teamId', form.querySelector('[name="teamId"]').value);
+        data.append('workId', form.querySelector('[name="workId"]').value);
+        data.append('file', fileInput.files[0]);
+
+        fetch('<%= request.getContextPath() %>/upload', { method: 'POST', body: data })
+        .then(function(r) { return r.json(); })
+        .then(function(json) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paperclip me-1"></i>上传';
+            if (json.success) {
+                msg.style.display = 'block'; msg.style.color = '#198754'; msg.textContent = '上传成功';
+                setTimeout(function() { location.reload(); }, 800);
+            } else {
+                msg.style.display = 'block'; msg.style.color = '#dc3545'; msg.textContent = json.message || '上传失败';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paperclip me-1"></i>上传';
+            msg.style.display = 'block'; msg.style.color = '#dc3545'; msg.textContent = '网络错误，请重试';
+        });
+    });
+})();
 </script>
 </body>
 </html>
